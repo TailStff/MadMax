@@ -4,9 +4,9 @@ mmMinOnOff::mmMinOnOff(ExecutionEnv *_executionEnv, bool initialValue)
 {
   this->executionEnv = _executionEnv;
   this->cycle = executionEnv->GetCycle();
-  this->minOnTime = 0;
-  this->minOffTime = 0;
-  this->value = initialValue;
+  this->status.minOnTime = 0;
+  this->status.minOffTime = 0;
+  this->status.output = initialValue;
   this->lastOntickNumber = 0;
   this->lastOfftickNumber = 0;
 }
@@ -15,22 +15,23 @@ mmMinOnOff::~mmMinOnOff()
 {
 }
 
-bool mmMinOnOff::Evaluate(bool in, unsigned long int minOnTime, unsigned long int minOffTime, DelayStatus *status)
+bool mmMinOnOff::Evaluate(bool in, uint32_t minOnTime, uint32_t minOffTime, DelayStatus *status)
 {
-  this->minOnTime = minOnTime;
-  this->minOffTime = minOffTime;
+  this->status.input = in;
+  this->status.minOnTime = minOnTime;
+  this->status.minOffTime = minOffTime;
 
   int64_t _tickNumber = executionEnv->GetTicks();
 
   remainingTime = -1;
 
-  if (!value && in)
+  if (!this->status.output && in)
   {
     int64_t elapsedTime = (_tickNumber - lastOfftickNumber) * cycle;
 
     if (elapsedTime >= minOffTime)
     {
-      value = true;
+      this->status.output = true;
       lastOntickNumber = _tickNumber;
       remainingTime = -1;
     }
@@ -39,13 +40,13 @@ bool mmMinOnOff::Evaluate(bool in, unsigned long int minOnTime, unsigned long in
       remainingTime = minOffTime - elapsedTime;
     }
   }
-  else if (value && !in)
+  else if (this->status.output && !in)
   {
     int64_t elapsedTime = (_tickNumber - lastOntickNumber) * cycle;
 
     if (elapsedTime >= minOnTime)
     {
-      value = false;
+      this->status.output = false;
       lastOfftickNumber = _tickNumber;
       remainingTime = -1;
     }
@@ -58,17 +59,17 @@ bool mmMinOnOff::Evaluate(bool in, unsigned long int minOnTime, unsigned long in
   if (status)
   {
     status->remainingTime = remainingTime;
-    status->value = value;
+    status->value = this->status.output;
   }
 
-  return value;
+  return this->status.output;
 }
 
 void mmMinOnOff::EmergencyOn()
 {
   signed long long int _tickNumber = executionEnv->GetTicks();
 
-  value = true;
+  this->status.output = true;
   lastOntickNumber = _tickNumber;
 }
 
@@ -76,6 +77,18 @@ void mmMinOnOff::EmergencyOff()
 {
   signed long long int _tickNumber = executionEnv->GetTicks();
 
-  value = false;
+  this->status.output = false;
   lastOfftickNumber = _tickNumber;
 }
+
+#pragma region IPersistable
+/// @brief Get the bytes vector that represent the object persistency values, here we just serialize all pumps runtimes and start counts in a byte vector
+/// @param data Reference to the vector that will receive the bytes that represent the object persistency values
+void mmMinOnOff::GetBytesFromData(std::vector<uint8_t> &data) const
+{
+}
+
+void mmMinOnOff::SetDataFromBytes(std::vector<uint8_t> &data)
+{
+}
+#pragma endregion IPersistable

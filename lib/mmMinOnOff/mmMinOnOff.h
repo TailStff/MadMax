@@ -1,20 +1,27 @@
 #ifndef MINONOFF
 #define MINONOFF
 
-#include <stdio.h>
-#include <HardwareSerial.h>
+#include <cstdint>
+#include "IPrimitive.h"
 #include "ExecutionEnv.h"
+#include "mmMinOnOffStatus.h"
 #include "structDelayStatus.h"
 
-class mmMinOnOff
+class mmMinOnOff : public IPrimitive
 {
 
 private:
+  ExecutionEnv *executionEnv;
+
+  MinOnOffStatus status;
+
   signed long long int lastOntickNumber, lastOfftickNumber;
   unsigned int cycle;
-  unsigned long int minOnTime, minOffTime;
-  bool value;
-  ExecutionEnv *executionEnv;
+
+  //uint32_t minOnTime;
+  //uint32_t minOffTime;
+  //bool value;
+
   int64_t remainingTime;
 
 public:
@@ -22,9 +29,15 @@ public:
   mmMinOnOff(ExecutionEnv *_executionEnv, bool initialValue);
   ~mmMinOnOff();
 
-  bool Evaluate(bool in, unsigned long int minOnTime, unsigned long int minOffTime, DelayStatus *status = nullptr);
+  bool Evaluate(bool in, uint32_t minOnTime, uint32_t minOffTime, DelayStatus *status = nullptr);
   void EmergencyOn();
   void EmergencyOff();
+
+  const bool GetValue() const { return this->status.output; };
+  const MinOnOffStatus GetStatus() const { return this->status; }
+
+  void GetBytesFromData(std::vector<uint8_t> &data) const override;
+  void SetDataFromBytes(std::vector<uint8_t> &data) override;
 };
 
 #endif
