@@ -22,7 +22,7 @@ namespace MadMax
 
         selectedIndex.resize(count);
 
-        miniScheduler = std::make_unique<mmMiniScheduler>(_executionEnv);
+        miniScheduler = std::make_unique<MiniScheduler>(_executionEnv);
 
         // Default orders
         indexes.assign(count, -1);

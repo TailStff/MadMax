@@ -1,28 +1,28 @@
 #include "ObjectProvider.h"
-#include "mmRunTime.h"
+#include "RunTime.h"
 #include "IPersistable.h"
-#include "mmRunTimeDTOMapper.h"
+#include "RunTimeDTOMapper.h"
 
 namespace MadMax
 {
-    class mmRunTimeProvider : public ObjectProvider<mmRunTime>, public IPersistable, public IProviderDTO
+    class RunTimeProvider : public ObjectProvider<RunTime>, public IPersistable, public IProviderDTO
     {
     private:
         std::unique_ptr<IDTOMapperBase> dtoMappers;
 
     public:
-        mmRunTimeProvider(ExecutionEnv *executionEnv)
+        RunTimeProvider(ExecutionEnv *executionEnv)
         {
             this->executionEnv = executionEnv;
-            dtoMappers = std::make_unique<mmRunTimeDTOMapper>();
+            dtoMappers = std::make_unique<RunTimeDTOMapper>();
         }
 
-        mmRunTime *Create(const std::string &name, uint32_t address, mmRunTimePersistencyValues data = {.value = 0})
+        RunTime *Create(const std::string &name, uint32_t address, RunTimePersistencyValues data = {.value = 0})
         {
             // Mini prefs method
             // executionEnv->GetMiniPrefs()->read(address, reinterpret_cast<uint8_t *>(&data), mmRunTime::GetSerializedSize());
 
-            return ObjectProvider<mmRunTime>::Create(name, address, executionEnv, data);
+            return ObjectProvider<RunTime>::Create(name, address, executionEnv, data);
         }
 
         void SavePersistencyValuesToMem(const std::string &name) override
@@ -57,7 +57,7 @@ namespace MadMax
             result.reserve(this->size());
 
             this->ForEach(
-                [&](const std::string &name, mmRunTime *base)
+                [&](const std::string &name, RunTime *base)
                 {
                     DTOBase dto;
                     if (dtoMappers && dtoMappers->ToDTO(*base, dto, name))
@@ -69,7 +69,7 @@ namespace MadMax
 
         bool GetDTO(const std::string &name, DTOBase &dto) const override
         {
-            auto *obj = ObjectProvider<mmRunTime>::Get(name);
+            auto *obj = ObjectProvider<RunTime>::Get(name);
 
             if (!obj)
                 return false;
@@ -82,7 +82,7 @@ namespace MadMax
 
         bool GetDetailDTO(const std::string &name, DTOBase &dto) const override
         {
-            auto *obj = ObjectProvider<mmRunTime>::Get(name);
+            auto *obj = ObjectProvider<RunTime>::Get(name);
 
             if (!obj)
                 return false;

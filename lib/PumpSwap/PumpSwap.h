@@ -7,11 +7,11 @@
 #include "IPrimitive.h"
 #include "FeedbackError.h"
 #include "structFaults.h"
-#include "mmRunTime.h"
+#include "RunTime.h"
 #include "Accum.h"
 #include "DigitalEquipment.h"
 #include "helpersVector.h"
-#include "mmMiniScheduler.h"
+#include "MiniScheduler.h"
 
 namespace MadMax
 {
@@ -69,7 +69,7 @@ namespace MadMax
         std::vector<std::unique_ptr<SetPumpValue>> inputsValues;
         std::vector<std::unique_ptr<DigitalEquipmentStatus>> statuses;
 
-        std::unique_ptr<mmMiniScheduler> miniScheduler;
+        std::unique_ptr<MiniScheduler> miniScheduler;
 
         std::vector<int> indexes;
         std::vector<bool> physicalValues;

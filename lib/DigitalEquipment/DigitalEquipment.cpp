@@ -5,7 +5,7 @@ namespace MadMax
     DigitalEquipment::DigitalEquipment(ExecutionEnv *_executionEnv, DigitalEquipementPersistencyValues data) : executionEnv(_executionEnv), memAcknowledge(false)
     {
         feedbackErrorObj = new FeedbackError(executionEnv);
-        runTimeObj = new mmRunTime(executionEnv, {.value = data.runTime});
+        runTimeObj = new RunTime(executionEnv, {.value = data.runTime});
         accumObj = new Accum<uint64_t>(executionEnv, {.value = data.startCount});
 
         this->status.feedbackFault = false;

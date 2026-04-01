@@ -1,8 +1,8 @@
-#include "mmRunTime.h"
+#include "RunTime.h"
 
 namespace MadMax
 {
-  mmRunTime::mmRunTime(ExecutionEnv *_executionEnv, mmRunTimePersistencyValues data)
+  RunTime::RunTime(ExecutionEnv *_executionEnv, RunTimePersistencyValues data)
   {
     executionEnv = _executionEnv;
     cycle = executionEnv->GetCycle();
@@ -11,26 +11,26 @@ namespace MadMax
     value = data.value;
   }
 
-  mmRunTime::~mmRunTime()
+  RunTime::~RunTime()
   {
     this->executionEnv = nullptr;
     cycle = 0;
     value = 0;
   }
 
-  uint64_t mmRunTime::Evaluate(bool in)
+  uint64_t RunTime::Evaluate(bool in)
   {
     if (in)
       value += cycle;
     return value;
   }
 
-  void mmRunTime::Reset()
+  void RunTime::Reset()
   {
     value = 0;
   }
 
-  void mmRunTime::Reset(uint64_t value)
+  void RunTime::Reset(uint64_t value)
   {
     this->value = value;
   }
@@ -38,16 +38,16 @@ namespace MadMax
   /// @brief Get the persistency values of the object, here we just get the runtime value
   /// @param persistencyValues Object that will receive persistency values
   /// @return true if we have an error during persistency values retrieval, false otherwise
-  void mmRunTime::GetPersistencyValues(mmRunTimePersistencyValues &persistencyValues) const
+  void RunTime::GetPersistencyValues(RunTimePersistencyValues &persistencyValues) const
   {
     persistencyValues.value = this->value;
   }
 
   /// @brief Get the bytes vector that represent the object persistency values,
   /// @param data Reference to the vector that will receive the bytes that represent the object persistency values
-  void mmRunTime::GetBytesFromData(std::vector<uint8_t> &data) const
+  void RunTime::GetBytesFromData(std::vector<uint8_t> &data) const
   {
-    mmRunTimePersistencyValues persistencyValues;
+    RunTimePersistencyValues persistencyValues;
     GetPersistencyValues(persistencyValues);
 
     size_t size = sizeof(persistencyValues.value);
@@ -57,7 +57,7 @@ namespace MadMax
     return;
   }
 
-  void mmRunTime::SetDataFromBytes(std::vector<uint8_t> &data)
+  void RunTime::SetDataFromBytes(std::vector<uint8_t> &data)
   {
   }
 }

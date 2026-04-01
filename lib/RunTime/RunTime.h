@@ -1,5 +1,5 @@
-#ifndef MMRUNTIME_H
-#define MMRUNTIME_H
+#ifndef MADMAXRUNTIME_H
+#define MADMAXRUNTIME_H
 
 #include <stdio.h>
 #include <HardwareSerial.h>
@@ -8,12 +8,12 @@
 
 namespace MadMax
 {
-  struct __attribute__((packed)) mmRunTimePersistencyValues
+  struct __attribute__((packed)) RunTimePersistencyValues
   {
     uint64_t value;
   };
 
-  class mmRunTime : public IPrimitiveTyped<mmRunTimePersistencyValues>, public IPrimitive
+  class RunTime : public IPrimitiveTyped<RunTimePersistencyValues>, public IPrimitive
   {
 
   private:
@@ -23,8 +23,8 @@ namespace MadMax
 
   public:
     // Constructors
-    mmRunTime(ExecutionEnv *_executionEnv, mmRunTimePersistencyValues data = {.value = 0});
-    ~mmRunTime();
+    RunTime(ExecutionEnv *_executionEnv, RunTimePersistencyValues data = {.value = 0});
+    ~RunTime();
 
     uint64_t Evaluate(bool in);
     void Reset();
@@ -35,10 +35,10 @@ namespace MadMax
     /// @return Size in bytes of the serialized data of the object
     static size_t GetSerializedSize()
     {
-      return sizeof(mmRunTimePersistencyValues);
+      return sizeof(RunTimePersistencyValues);
     }
 
-    void GetPersistencyValues(mmRunTimePersistencyValues &persistencyValues) const;
+    void GetPersistencyValues(RunTimePersistencyValues &persistencyValues) const;
     void GetBytesFromData(std::vector<uint8_t> &data) const override;
     void SetDataFromBytes(std::vector<uint8_t> &data) override;
   };

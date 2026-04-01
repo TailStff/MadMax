@@ -5,7 +5,7 @@
 #include "IPrimitive.h"
 #include "FeedbackError.h"
 #include "structFaults.h"
-#include "mmRunTime.h"
+#include "RunTime.h"
 #include "Accum.h"
 
 namespace MadMax
@@ -21,7 +21,7 @@ namespace MadMax
     private:
         ExecutionEnv *executionEnv;
         FeedbackError *feedbackErrorObj;
-        mmRunTime *runTimeObj;
+        RunTime *runTimeObj;
         Accum<uint64_t> *accumObj;
 
         DigitalEquipmentStatus status;

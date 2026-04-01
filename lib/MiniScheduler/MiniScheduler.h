@@ -1,5 +1,5 @@
-#ifndef MMMINISCHEDULER_H
-#define MMMINISCHEDULER_H
+#ifndef MADMAXMINISCHEDULER_H
+#define MADMAXMINISCHEDULER_H
 
 #include <stdio.h>
 #include "ExecutionEnv.h"
@@ -19,7 +19,7 @@ namespace MadMax
         int8_t Second;
     };
 
-    class mmMiniScheduler
+    class MiniScheduler
     {
     private:
         ExecutionEnv *executionEnv;
@@ -29,8 +29,8 @@ namespace MadMax
 
     public:
         // Constructors
-        mmMiniScheduler(ExecutionEnv *_executionEnv);
-        ~mmMiniScheduler();
+        MiniScheduler(ExecutionEnv *_executionEnv);
+        ~MiniScheduler();
 
         bool Evaluate(DateTimeDefinition &dateTime);
     };

@@ -9,7 +9,7 @@
 #include "mmPIDProvider.h"
 #include "mmMinOnOffProvider.h"
 #include "DelayOnOffProvider.h"
-#include "mmRunTimeProvider.h"
+#include "RunTimeProvider.h"
 #include "TPulseProvider.h"
 #include "mmLinearProvider.h"
 #include "FeedbackErrorProvider.h"
@@ -56,7 +56,7 @@ private:
     MadMax::mmPIDProvider *mmPIDs;
     MadMax::mmMinOnOffProvider *mmMinOnOffs;
     MadMax::DelayOnOffProvider *mmDelayOnOffs;
-    MadMax::mmRunTimeProvider *mmRunTimes;
+    MadMax::RunTimeProvider *mmRunTimes;
     MadMax::TPulseProvider *mmTPulses;
     MadMax::mmLinearProvider *mmLinears;
     MadMax::FeedbackErrorProvider *mmFeedbackErrors;

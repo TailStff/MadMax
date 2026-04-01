@@ -1,17 +1,17 @@
-#include "mmMiniScheduler.h"
+#include "MiniScheduler.h"
 
 namespace MadMax
 {
-    mmMiniScheduler::mmMiniScheduler(ExecutionEnv *_executionEnv)
+    MiniScheduler::MiniScheduler(ExecutionEnv *_executionEnv)
     {
         executionEnv = _executionEnv;
     }
 
-    mmMiniScheduler::~mmMiniScheduler()
+    MiniScheduler::~MiniScheduler()
     {
     }
 
-    bool mmMiniScheduler::Evaluate(DateTimeDefinition &dateTime)
+    bool MiniScheduler::Evaluate(DateTimeDefinition &dateTime)
     {
         // Flag that indicate if we reach our target DateTime
         bool match = false;
