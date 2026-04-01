@@ -1,13 +1,13 @@
 // Based on BanaanKiamanesh PID anti windup : https://github.com/BanaanKiamanesh/Anti-Windup-PID-Controller/blob/main/PID.h
 
-#include "mmPID.h"
+#include "PID.h"
 
 namespace MadMax
 {
   
 #define constrain(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
 
-  mmPID::mmPID(ExecutionEnv *_executionEnv)
+  PID::PID(ExecutionEnv *_executionEnv)
   {
     executionEnv = _executionEnv;
 
@@ -27,13 +27,13 @@ namespace MadMax
     value = 0.0;
   }
 
-  mmPID::~mmPID()
+  PID::~PID()
   {
   }
 
   /** madmax PID */
   // Mode : 0 : Stop/Manual, 1 : Automatic, 2 : Pause
-  double mmPID::Evaluate(unsigned char mode, double setpoint, double measure, double kp, double ki, double kd, double minOutput, double maxOutput, double stopValue)
+  double PID::Evaluate(unsigned char mode, double setpoint, double measure, double kp, double ki, double kd, double minOutput, double maxOutput, double stopValue)
   {
 
     switch (mode)

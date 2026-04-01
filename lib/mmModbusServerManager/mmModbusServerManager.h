@@ -1,7 +1,7 @@
 #ifndef MODBUSSERVERMANAGER_H
 #define MODBUSSERVERMANAGER_H
 
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
 #include <functional>
 #include <stdint.h>

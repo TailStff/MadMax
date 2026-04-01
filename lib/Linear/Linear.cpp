@@ -1,17 +1,17 @@
-#include "mmLinear.h"
+#include "Linear.h"
 
 namespace MadMax
 {
-    mmLinear::mmLinear(ExecutionEnv *_executionEnv)
+    Linear::Linear(ExecutionEnv *_executionEnv)
     {
         executionEnv = _executionEnv;
     }
 
-    mmLinear::~mmLinear()
+    Linear::~Linear()
     {
     }
 
-    float mmLinear::Evaluate(const vector<PointXY> table, float x, bool clamp)
+    float Linear::Evaluate(const vector<PointXY> table, float x, bool clamp)
     {
         // Cas particulier : table vide
         if (table.size() == 0)
@@ -80,7 +80,7 @@ namespace MadMax
         return table[table.size() - 1].y;
     }
 
-    float mmLinear::Evaluate(const PointXY *table, size_t size, float x, bool clamp)
+    float Linear::Evaluate(const PointXY *table, size_t size, float x, bool clamp)
     {
         // Cas particulier : table vide
         if (size == 0)

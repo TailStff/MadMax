@@ -1,15 +1,14 @@
-#ifndef MINONOFF
-#define MINONOFF
+#ifndef MADMAXMINONOFF
+#define MADMAXMINONOFF
 
 #include <cstdint>
 #include "IPrimitive.h"
 #include "ExecutionEnv.h"
-#include "mmMinOnOffStatus.h"
-// #include "structDelayStatus.h"
+#include "MinOnOffStatus.h"
 
 namespace MadMax
 {
-  class mmMinOnOff : public IPrimitive
+  class MinOnOff : public IPrimitive
   {
 
   private:
@@ -22,8 +21,8 @@ namespace MadMax
 
   public:
     // Constructors
-    mmMinOnOff(ExecutionEnv *_executionEnv, bool initialValue);
-    ~mmMinOnOff();
+    MinOnOff(ExecutionEnv *_executionEnv, bool initialValue);
+    ~MinOnOff();
 
     bool Evaluate(bool in, uint32_t minOnTime, uint32_t minOffTime, MinOnOffStatus *status = nullptr);
     void EmergencyOn();

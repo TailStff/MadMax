@@ -1,8 +1,8 @@
-#include "mmMinOnOff.h"
+#include "MinOnOff.h"
 
 namespace MadMax
 {
-  mmMinOnOff::mmMinOnOff(ExecutionEnv *_executionEnv, bool initialValue)
+  MinOnOff::MinOnOff(ExecutionEnv *_executionEnv, bool initialValue)
   {
     this->executionEnv = _executionEnv;
     this->cycle = executionEnv->GetCycle();
@@ -13,11 +13,11 @@ namespace MadMax
     this->lastOfftickNumber = 0;
   }
 
-  mmMinOnOff::~mmMinOnOff()
+  MinOnOff::~MinOnOff()
   {
   }
 
-  bool mmMinOnOff::Evaluate(bool in, uint32_t minOnTime, uint32_t minOffTime, MinOnOffStatus *status)
+  bool MinOnOff::Evaluate(bool in, uint32_t minOnTime, uint32_t minOffTime, MinOnOffStatus *status)
   {
     this->status.input = in;
     this->status.minOnTime = minOnTime;
@@ -70,7 +70,7 @@ namespace MadMax
     return this->status.output;
   }
 
-  void mmMinOnOff::EmergencyOn()
+  void MinOnOff::EmergencyOn()
   {
     signed long long int _tickNumber = executionEnv->GetTicks();
 
@@ -78,7 +78,7 @@ namespace MadMax
     lastOntickNumber = _tickNumber;
   }
 
-  void mmMinOnOff::EmergencyOff()
+  void MinOnOff::EmergencyOff()
   {
     signed long long int _tickNumber = executionEnv->GetTicks();
 
@@ -89,11 +89,11 @@ namespace MadMax
 #pragma region IPersistable
   /// @brief Get the bytes vector that represent the object persistency values, here we just serialize all pumps runtimes and start counts in a byte vector
   /// @param data Reference to the vector that will receive the bytes that represent the object persistency values
-  void mmMinOnOff::GetBytesFromData(std::vector<uint8_t> &data) const
+  void MinOnOff::GetBytesFromData(std::vector<uint8_t> &data) const
   {
   }
 
-  void mmMinOnOff::SetDataFromBytes(std::vector<uint8_t> &data)
+  void MinOnOff::SetDataFromBytes(std::vector<uint8_t> &data)
   {
   }
 #pragma endregion IPersistable

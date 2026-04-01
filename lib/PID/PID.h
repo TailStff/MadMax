@@ -1,19 +1,17 @@
-#ifndef MMPID_H
-#define MMPID_H
+#ifndef MADMAXPID_H
+#define MADMAXPID_H
 
-#define PID_STOP 0
-#define PID_AUTO 1
-#define PID_PAUSE 2
-
-#include <stdio.h>
-#include <HardwareSerial.h>
+#include <cstdio>
 
 #include "ExecutionEnv.h"
 
 namespace MadMax
 {
+#define PID_STOP 0
+#define PID_AUTO 1
+#define PID_PAUSE 2
 
-  class mmPID
+  class PID
   {
 
   private:
@@ -32,8 +30,8 @@ namespace MadMax
 
   public:
     // Constructors
-    mmPID(ExecutionEnv *_executionEnv);
-    ~mmPID();
+    PID(ExecutionEnv *_executionEnv);
+    ~PID();
 
     double Evaluate(unsigned char mode, double setpoint, double measure, double kp, double ki, double kd, double minOutput, double maxOutput, double stopValue);
   };

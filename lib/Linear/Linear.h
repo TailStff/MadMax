@@ -1,5 +1,5 @@
-#ifndef MMLINEAR_H
-#define MMLINEAR_H
+#ifndef MADMAXLINEAR_H
+#define MADMAXLINEAR_H
 
 #include <stdio.h>
 #include <HardwareSerial.h>
@@ -13,15 +13,15 @@ namespace MadMax
         float y;
     };
 
-    class mmLinear
+    class Linear
     {
     private:
         ExecutionEnv *executionEnv;
 
     public:
         // Constructors
-        mmLinear(ExecutionEnv *_executionEnv);
-        ~mmLinear();
+        Linear(ExecutionEnv *_executionEnv);
+        ~Linear();
 
         float Evaluate(const PointXY *table, size_t size, float x, bool clamp);
         float Evaluate(const vector<PointXY> table, float x, bool clamp);

@@ -1,14 +1,14 @@
 #include "IDTOMapperBase.h"
-#include "mmMinOnOff.h"
+#include "MinOnOff.h"
 
 namespace MadMax
 {
-    class mmMinOnOffDTOMapper : public IDTOMapperBase
+    class MinOnOffDTOMapper : public IDTOMapperBase
     {
     public:
         bool ToDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override
         {
-            const auto *primitive = static_cast<const mmMinOnOff *>(&obj);
+            const auto *primitive = static_cast<const MinOnOff *>(&obj);
 
             dto.objectName = name;
             dto.fields.push_back({"value", primitive->GetValue()});
@@ -17,7 +17,7 @@ namespace MadMax
 
         bool ToDetailDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override
         {
-            const auto *primitive = static_cast<const mmMinOnOff *>(&obj);
+            const auto *primitive = static_cast<const MinOnOff *>(&obj);
 
             if (ToDTO(obj, dto, name))
             {

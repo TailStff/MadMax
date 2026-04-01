@@ -6,12 +6,12 @@
 
 #include "mmScreenPages.h"
 
-#include "mmPIDProvider.h"
-#include "mmMinOnOffProvider.h"
+#include "PIDProvider.h"
+#include "MinOnOffProvider.h"
 #include "DelayOnOffProvider.h"
 #include "RunTimeProvider.h"
 #include "TPulseProvider.h"
-#include "mmLinearProvider.h"
+#include "LinearProvider.h"
 #include "FeedbackErrorProvider.h"
 #include "FeedbackError.h"
 #include "DigitalEquipmentProvider.h"
@@ -53,12 +53,12 @@ private:
     double pidValue;
     */
 
-    MadMax::mmPIDProvider *mmPIDs;
-    MadMax::mmMinOnOffProvider *mmMinOnOffs;
+    MadMax::PIDProvider *mmPIDs;
+    MadMax::MinOnOffProvider *mmMinOnOffs;
     MadMax::DelayOnOffProvider *mmDelayOnOffs;
     MadMax::RunTimeProvider *mmRunTimes;
     MadMax::TPulseProvider *mmTPulses;
-    MadMax::mmLinearProvider *mmLinears;
+    MadMax::LinearProvider *mmLinears;
     MadMax::FeedbackErrorProvider *mmFeedbackErrors;
     MadMax::DigitalEquipmentProvider *mmDigitalEquipments;
     MadMax::PumpSwapProvider *mmPumpSwaps;

@@ -47,12 +47,12 @@ MyApp::MyApp(ExecutionEnv *executionEnv, ModbusClientRTU &MBRTU, mmModbusServerM
 
     lastMilliDisplay = 0;
 
-    mmPIDs = new MadMax::mmPIDProvider(executionEnv);
-    mmMinOnOffs = new MadMax::mmMinOnOffProvider(executionEnv);
+    mmPIDs = new MadMax::PIDProvider(executionEnv);
+    mmMinOnOffs = new MadMax::MinOnOffProvider(executionEnv);
     mmDelayOnOffs = new MadMax::DelayOnOffProvider(executionEnv);
     mmRunTimes = new MadMax::RunTimeProvider(executionEnv);
     mmTPulses = new MadMax::TPulseProvider(executionEnv);
-    mmLinears = new MadMax::mmLinearProvider(executionEnv);
+    mmLinears = new MadMax::LinearProvider(executionEnv);
     mmFeedbackErrors = new MadMax::FeedbackErrorProvider(executionEnv);
     mmDigitalEquipments = new MadMax::DigitalEquipmentProvider(executionEnv);
     mmPumpSwaps = new MadMax::PumpSwapProvider(executionEnv);
