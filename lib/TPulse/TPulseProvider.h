@@ -1,24 +1,24 @@
 #include "ObjectProvider.h"
-#include "mmMinOnOff.h"
-#include "mmMinOnOffDTOMapper.h"
+#include "TPulse.h"
+#include "TPulseDTOMapper.h"
 
 namespace MadMax
 {
-    class mmMinOnOffProvider : public ObjectProvider<mmMinOnOff>, public IProviderDTO
+    class TPulseProvider : public ObjectProvider<TPulse>, public IProviderDTO
     {
     private:
         std::unique_ptr<IDTOMapperBase> dtoMappers;
 
     public:
-        mmMinOnOffProvider(ExecutionEnv *executionEnv)
+        TPulseProvider(ExecutionEnv *executionEnv)
         {
             this->executionEnv = executionEnv;
-            dtoMappers = std::make_unique<mmMinOnOffDTOMapper>();
+            dtoMappers = std::make_unique<TPulseDTOMapper>();
         }
 
-        mmMinOnOff *Create(const std::string &name, uint32_t address, bool initialValue = false)
+        TPulse *Create(const std::string &name, uint32_t address, bool initialValue = false)
         {
-            return ObjectProvider<mmMinOnOff>::Create(name, address, executionEnv, initialValue);
+            return ObjectProvider<TPulse>::Create(name, address, executionEnv, initialValue);
         }
 
 #pragma region IProviderDTO
@@ -28,7 +28,7 @@ namespace MadMax
             result.reserve(this->size());
 
             this->ForEach(
-                [&](const std::string &name, mmMinOnOff *base)
+                [&](const std::string &name, TPulse *base)
                 {
                     DTOBase dto;
                     if (dtoMappers && dtoMappers->ToDTO(*base, dto, name))
@@ -40,7 +40,7 @@ namespace MadMax
 
         bool GetDTO(const std::string &name, DTOBase &dto) const override
         {
-            auto *obj = ObjectProvider<mmMinOnOff>::Get(name);
+            auto *obj = ObjectProvider<TPulse>::Get(name);
 
             if (!obj)
                 return false;
@@ -53,7 +53,7 @@ namespace MadMax
 
         bool GetDetailDTO(const std::string &name, DTOBase &dto) const override
         {
-            auto *obj = ObjectProvider<mmMinOnOff>::Get(name);
+            auto *obj = ObjectProvider<TPulse>::Get(name);
 
             if (!obj)
                 return false;

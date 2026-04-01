@@ -3,11 +3,13 @@
 
 #include <stdio.h>
 
-struct Faults
+namespace MadMax
 {
-  bool fault;
-  bool ackFault;
-  bool criticalFault;
-};
-
+  struct Faults
+  {
+    bool fault;
+    bool ackFault;
+    bool criticalFault;
+  };
+}
 #endif

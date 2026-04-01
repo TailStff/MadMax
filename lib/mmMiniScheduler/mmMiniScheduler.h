@@ -6,31 +6,34 @@
 
 #define ANY -1
 
-struct DateTimeDefinition
+namespace MadMax
 {
-    int16_t Year;
-    int8_t Month;
-    int8_t Day;
-    int8_t DayOfWeek;
-    int8_t Hour;
-    int8_t Minute;
-    int8_t Second;
-};
+    struct DateTimeDefinition
+    {
+        int16_t Year;
+        int8_t Month;
+        int8_t Day;
+        int8_t DayOfWeek;
+        int8_t Hour;
+        int8_t Minute;
+        int8_t Second;
+    };
 
-class mmMiniScheduler
-{
-private:
-    ExecutionEnv *executionEnv;
+    class mmMiniScheduler
+    {
+    private:
+        ExecutionEnv *executionEnv;
 
-    DateTime lastExecution;
-    bool memMatch;
+        DateTime lastExecution;
+        bool memMatch;
 
-public:
-    // Constructors
-    mmMiniScheduler(ExecutionEnv *_executionEnv);
-    ~mmMiniScheduler();
+    public:
+        // Constructors
+        mmMiniScheduler(ExecutionEnv *_executionEnv);
+        ~mmMiniScheduler();
 
-    bool Evaluate(DateTimeDefinition &dateTime);
-};
+        bool Evaluate(DateTimeDefinition &dateTime);
+    };
+}
 
 #endif

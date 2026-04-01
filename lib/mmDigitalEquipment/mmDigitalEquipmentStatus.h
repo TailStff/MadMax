@@ -3,15 +3,18 @@
 
 #include <stdio.h>
 
-struct DigitalEquipmentStatus
+namespace MadMax
 {
-    bool command;
-    bool feedback;
-    bool fault;
-    bool feedbackFault;
-    bool output;
-    uint64_t runTimeValue;
-    uint64_t startCountValue;
-};
+    struct DigitalEquipmentStatus
+    {
+        bool command;
+        bool feedback;
+        bool fault;
+        bool feedbackFault;
+        bool output;
+        uint64_t runTimeValue;
+        uint64_t startCountValue;
+    };
+}
 
 #endif

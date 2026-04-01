@@ -10,29 +10,33 @@
 
 #include "ExecutionEnv.h"
 
-class mmPID
+namespace MadMax
 {
 
-private:
-  // private value of cycle time (in s)
-  double cycle;
+  class mmPID
+  {
 
-  double err, prev_err, prop, integ, diff, prev_meas;
-  double lim_min_integ, lim_max_integ;
-  double tau;
+  private:
+    // private value of cycle time (in s)
+    double cycle;
 
-  double coefI, coefD;
+    double err, prev_err, prop, integ, diff, prev_meas;
+    double lim_min_integ, lim_max_integ;
+    double tau;
 
-  double value;
+    double coefI, coefD;
 
-  ExecutionEnv *executionEnv;
+    double value;
 
-public:
-  // Constructors
-  mmPID(ExecutionEnv *_executionEnv);
-  ~mmPID();
+    ExecutionEnv *executionEnv;
 
-  double Evaluate(unsigned char mode, double setpoint, double measure, double kp, double ki, double kd, double minOutput, double maxOutput, double stopValue);
-};
+  public:
+    // Constructors
+    mmPID(ExecutionEnv *_executionEnv);
+    ~mmPID();
+
+    double Evaluate(unsigned char mode, double setpoint, double measure, double kp, double ki, double kd, double minOutput, double maxOutput, double stopValue);
+  };
+}
 
 #endif

@@ -6,32 +6,34 @@
 #include "ExecutionEnv.h"
 #include "mmDelayOnOffStatus.h"
 
-class mmDelayOnOff : public IPrimitive
+namespace MadMax
 {
+  class mmDelayOnOff : public IPrimitive
+  {
+  private:
+    int64_t tickNumber;
+    uint16_t cycle;
 
-private:
-  int64_t tickNumber;
-  uint16_t cycle;
+    ExecutionEnv *executionEnv;
 
-  ExecutionEnv *executionEnv;
+    DelayOnOffStatus status;
 
-  DelayOnOffStatus status;
+  public:
+    // Constructors
+    mmDelayOnOff(ExecutionEnv *_executionEnv, bool initialValue = false);
+    ~mmDelayOnOff();
 
-public:
-  // Constructors
-  mmDelayOnOff(ExecutionEnv *_executionEnv, bool initialValue = false);
-  ~mmDelayOnOff();
+    bool Evaluate(bool input, uint32_t delayOn, uint32_t delayOff, DelayOnOffStatus *status = nullptr);
+    void EmergencyOn();
+    void EmergencyOff();
 
-  bool Evaluate(bool input, uint32_t delayOn, uint32_t delayOff, DelayOnOffStatus *status = nullptr);
-  void EmergencyOn();
-  void EmergencyOff();
+    const int64_t GetRemainingTime() const { return this->status.remainingTime; };
+    const bool GetValue() const { return this->status.output; };
+    const DelayOnOffStatus GetStatus() const { return this->status; }
 
-  const int64_t GetRemainingTime() const { return this->status.remainingTime; };
-  const bool GetValue() const { return this->status.output; };
-  const DelayOnOffStatus GetStatus() const { return this->status; }
-
-  void GetBytesFromData(std::vector<uint8_t> &data) const override;
-  void SetDataFromBytes(std::vector<uint8_t> &data) override;
-};
+    void GetBytesFromData(std::vector<uint8_t> &data) const override;
+    void SetDataFromBytes(std::vector<uint8_t> &data) override;
+  };
+}
 
 #endif

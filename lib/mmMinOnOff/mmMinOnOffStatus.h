@@ -3,13 +3,16 @@
 
 #include <cstdint>
 
-struct MinOnOffStatus
+namespace MadMax
 {
-    bool input;
-    bool output;
-    uint32_t minOnTime;
-    uint32_t minOffTime;
-    int64_t remainingTime;
-};
+    struct MinOnOffStatus
+    {
+        bool input;
+        bool output;
+        uint32_t minOnTime;
+        uint32_t minOffTime;
+        int64_t remainingTime;
+    };
+}
 
 #endif

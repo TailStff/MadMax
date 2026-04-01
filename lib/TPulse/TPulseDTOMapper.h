@@ -1,17 +1,16 @@
 #include "IDTOMapperBase.h"
-#include "IVariableValue.h"
-#include "mmVariable.h"
+#include "TPulse.h"
 
 namespace MadMax
 {
-    class mmAccumDTOMapper : public IDTOMapperBase
+    class TPulseDTOMapper : public IDTOMapperBase
     {
     public:
         bool ToDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override
         {
-            const IVariableValue *primitive = static_cast<const IVariableValue *>(&obj);
+            const TPulse *primitive = static_cast<const TPulse *>(&obj);
 
-            dto.fields.push_back({"value", primitive->GetVariantValue()});
+            dto.fields.push_back({"value", primitive->GetValue()});
             dto.objectName = name;
 
             return true;
@@ -19,13 +18,17 @@ namespace MadMax
 
         bool ToDetailDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override
         {
-            const IVariableValue *primitive = static_cast<const IVariableValue *>(&obj);
+            const TPulse *primitive = static_cast<const TPulse *>(&obj);
 
             if (ToDTO(obj, dto, name))
             {
-                dto.fields.push_back({"type", GetDataType(primitive->GetVariantValue())});
+                auto status = primitive->GetStatus();
+
+                dto.fields.push_back({"input", status.input});
+                dto.fields.push_back({"delay", status.delay});
                 return true;
             }
+
             return false;
         }
     };

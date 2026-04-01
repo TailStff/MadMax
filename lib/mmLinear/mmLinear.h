@@ -5,23 +5,27 @@
 #include <HardwareSerial.h>
 #include "ExecutionEnv.h"
 
-struct PointXY
+namespace MadMax
 {
-    float x;
-    float y;
-};
+    struct PointXY
+    {
+        float x;
+        float y;
+    };
 
-class mmLinear
-{
-private:
-    ExecutionEnv *executionEnv;
+    class mmLinear
+    {
+    private:
+        ExecutionEnv *executionEnv;
 
-public:
-    // Constructors
-    mmLinear(ExecutionEnv *_executionEnv);
-    ~mmLinear();
+    public:
+        // Constructors
+        mmLinear(ExecutionEnv *_executionEnv);
+        ~mmLinear();
 
-    float Evaluate(const PointXY *table, size_t size, float x, bool clamp);
-};
+        float Evaluate(const PointXY *table, size_t size, float x, bool clamp);
+        float Evaluate(const vector<PointXY> table, float x, bool clamp);
+    };
+}
 
 #endif

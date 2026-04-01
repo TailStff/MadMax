@@ -5,15 +5,18 @@
 #include "IPersistency.h"
 #include "IObjectDTO.h"
 
-class IPrimitive : public ISerializableBase
+namespace MadMax
 {
-public:
-    virtual ~IPrimitive() = default;
-};
+    class IPrimitive : public ISerializableBase
+    {
+    public:
+        virtual ~IPrimitive() = default;
+    };
 
-template <typename T>
-class IPrimitiveTyped
-{
-public:
-    virtual ~IPrimitiveTyped() = default;
-};
+    template <typename T>
+    class IPrimitiveTyped
+    {
+    public:
+        virtual ~IPrimitiveTyped() = default;
+    };
+}

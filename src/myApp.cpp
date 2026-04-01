@@ -47,17 +47,17 @@ MyApp::MyApp(ExecutionEnv *executionEnv, ModbusClientRTU &MBRTU, mmModbusServerM
 
     lastMilliDisplay = 0;
 
-    mmPIDs = new mmPIDProvider(executionEnv);
-    mmMinOnOffs = new mmMinOnOffProvider(executionEnv);
-    mmDelayOnOffs = new mmDelayOnOffProvider(executionEnv);
-    mmRunTimes = new mmRunTimeProvider(executionEnv);
-    mmTPulses = new mmTPulseProvider(executionEnv);
-    mmLinears = new mmLinearProvider(executionEnv);
-    mmFeedbackErrors = new mmFeedbackErrorProvider(executionEnv);
-    mmDigitalEquipments = new mmDigitalEquipmentProvider(executionEnv);
-    mmPumpSwaps = new mmPumpSwapProvider(executionEnv);
-    mmVariables = new mmVariableProvider(executionEnv);
-    mmAccums = new mmAccumProvider(executionEnv);
+    mmPIDs = new MadMax::mmPIDProvider(executionEnv);
+    mmMinOnOffs = new MadMax::mmMinOnOffProvider(executionEnv);
+    mmDelayOnOffs = new MadMax::mmDelayOnOffProvider(executionEnv);
+    mmRunTimes = new MadMax::mmRunTimeProvider(executionEnv);
+    mmTPulses = new MadMax::TPulseProvider(executionEnv);
+    mmLinears = new MadMax::mmLinearProvider(executionEnv);
+    mmFeedbackErrors = new MadMax::mmFeedbackErrorProvider(executionEnv);
+    mmDigitalEquipments = new MadMax::mmDigitalEquipmentProvider(executionEnv);
+    mmPumpSwaps = new MadMax::mmPumpSwapProvider(executionEnv);
+    mmVariables = new MadMax::mmVariableProvider(executionEnv);
+    mmAccums = new MadMax::mmAccumProvider(executionEnv);
 }
 
 MyApp::~MyApp()
@@ -160,7 +160,7 @@ void MyApp::Init()
     */
 }
 
-DigitalEquipmentStatus status;
+MadMax::DigitalEquipmentStatus status;
 uint8_t memMinute;
 
 void MyApp::Loop()
@@ -189,7 +189,7 @@ void MyApp::Loop()
 
     auto permut4 = mmPumpSwaps->Get("4pmp");
 
-    PumpSwapResult result = permut4->Evaluate([this](const std::vector<SetPumpValue *> &pumps)
+    MadMax::PumpSwapResult result = permut4->Evaluate([this](const std::vector<MadMax::SetPumpValue *> &pumps)
                                               {
                         pumps[0]->Fault = this->digitalInputs->Get(8);
                         pumps[0]->Feedback = this->digitalInputs->Get(9);
@@ -228,7 +228,7 @@ void MyApp::Loop()
     *Rt3 = result.PumpsStatus[2]->runTimeValue;
     *Rt4 = result.PumpsStatus[3]->runTimeValue;
 
-    auto fe0 = mmFeedbackErrors->Get("fe0")->Evaluate(false, false, 5000, 6000, false, FeedbackErrorOption::Both);
+    auto fe0 = mmFeedbackErrors->Get("fe0")->Evaluate(false, false, 5000, 6000, false, MadMax::FeedbackErrorOption::Both);
 
     auto delay0 = mmDelayOnOffs->Get("delay0")->Evaluate(true, 60000, 0);
 

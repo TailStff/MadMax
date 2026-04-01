@@ -1,66 +1,68 @@
-template <class T>
-mmVariable<T>::mmVariable(ExecutionEnv *_executionEnv, mmVariablePersistencyValues<T> data)
+namespace MadMax
 {
-    this->executionEnv = _executionEnv;
-    this->value = data.value;
-}
-
-template <class T>
-bool mmVariable<T>::SetValue(T value)
-{
-    if (this->value != value)
+    template <class T>
+    mmVariable<T>::mmVariable(ExecutionEnv *_executionEnv, mmVariablePersistencyValues<T> data)
     {
-        this->value = value;
-        return true;
+        this->executionEnv = _executionEnv;
+        this->value = data.value;
     }
-    return false;
-}
 
-template <class T>
-void mmVariable<T>::GetPersistencyValues(mmVariablePersistencyValues<T> &persistencyValues) const
-{
-    persistencyValues.value = this->value;
-}
+    template <class T>
+    bool mmVariable<T>::SetValue(T value)
+    {
+        if (this->value != value)
+        {
+            this->value = value;
+            return true;
+        }
+        return false;
+    }
 
-/// @brief Serialize persistency values into a byte vector
-/// @param data Output vector that will receive the serialized bytes
-template <class T>
-void mmVariable<T>::GetBytesFromData(std::vector<uint8_t> &data) const
-{
-    mmVariablePersistencyValues<T> persistencyValues;
-    GetPersistencyValues(persistencyValues);
+    template <class T>
+    void mmVariable<T>::GetPersistencyValues(mmVariablePersistencyValues<T> &persistencyValues) const
+    {
+        persistencyValues.value = this->value;
+    }
 
-    size_t size = sizeof(mmVariablePersistencyValues<T>);
-    data.resize(size);
+    /// @brief Serialize persistency values into a byte vector
+    /// @param data Output vector that will receive the serialized bytes
+    template <class T>
+    void mmVariable<T>::GetBytesFromData(std::vector<uint8_t> &data) const
+    {
+        mmVariablePersistencyValues<T> persistencyValues;
+        GetPersistencyValues(persistencyValues);
 
-    memcpy(data.data(), &persistencyValues, size);
-}
+        size_t size = sizeof(mmVariablePersistencyValues<T>);
+        data.resize(size);
 
-template <class T>
-void mmVariable<T>::SetDataFromBytes(std::vector<uint8_t> &data)
-{
-    if (data.size() != sizeof(mmVariablePersistencyValues<T>))
-        return;
+        memcpy(data.data(), &persistencyValues, size);
+    }
 
-    mmVariablePersistencyValues<T> persistencyValues;
-    memcpy(&persistencyValues, data.data(), sizeof(mmVariablePersistencyValues<T>));
+    template <class T>
+    void mmVariable<T>::SetDataFromBytes(std::vector<uint8_t> &data)
+    {
+        if (data.size() != sizeof(mmVariablePersistencyValues<T>))
+            return;
 
-    this->value = persistencyValues.value;
-}
+        mmVariablePersistencyValues<T> persistencyValues;
+        memcpy(&persistencyValues, data.data(), sizeof(mmVariablePersistencyValues<T>));
+
+        this->value = persistencyValues.value;
+    }
 
 #pragma region mmVariableValue
-template <class T>
-mmVariableValue mmVariable<T>::GetVariantValue() const
-{
-    // We return the value as a mmVariableValue variant, this will allow to access to the variable value without knowing its type, it will be used for example in the web interface to display variable values in a generic way
-    return mmVariableValue{value};
-}
+    template <class T>
+    mmVariableValue mmVariable<T>::GetVariantValue() const
+    {
+        // We return the value as a mmVariableValue variant, this will allow to access to the variable value without knowing its type, it will be used for example in the web interface to display variable values in a generic way
+        return mmVariableValue{value};
+    }
 
-template <class T>
-bool mmVariable<T>::SetVariantValue(const mmVariableValue &v)
-{
-    return std::visit([this](const auto &val) -> bool
-                      {
+    template <class T>
+    bool mmVariable<T>::SetVariantValue(const mmVariableValue &v)
+    {
+        return std::visit([this](const auto &val) -> bool
+                          {
         using V = std::decay_t<decltype(val)>;
 
         if constexpr (std::is_same_v<V, T>) {
@@ -75,26 +77,6 @@ bool mmVariable<T>::SetVariantValue(const mmVariableValue &v)
             // Types incompatibles (ex: mmByteArray -> float)
             return false;
         } }, v);
-}
-#pragma endregion mmVariableValue
-
-/*#pragma region IObjectDTO
-template <class T>
-bool mmVariable<T>::GetDTO(DTOBase &dto) const
-{
-    dto.objectName = "mmVariable"; // Generic name here as the Object didn't know its name
-    dto.fields.push_back({"value", GetVariantValue()});
-    return true;
-}
-
-template <class T>
-bool mmVariable<T>::GetDetailDTO(DTOBase &dto) const
-{
-    if (GetDTO(dto))
-    {
-        dto.fields.push_back({"type", GetDataType(value)});
-        return true;
     }
-    return false;
+#pragma endregion mmVariableValue
 }
-#pragma endregion IObjectDTO*/

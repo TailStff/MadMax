@@ -114,7 +114,7 @@ void WebAPI::styles(AsyncWebServerRequest *request)
     request->send_P(200, "text/css", Styles);
 }
 
-void WriteJson(JsonObject obj, const FieldValue &field)
+void WriteJson(JsonObject obj, const MadMax::FieldValue &field)
 {
     std::visit(
         [&](auto &&val)
@@ -135,7 +135,7 @@ void WriteJson(JsonObject obj, const FieldValue &field)
         field.value);
 }
 
-void WriteJson(JsonObject obj, const DTOBase &dto)
+void WriteJson(JsonObject obj, const MadMax::DTOBase &dto)
 {
     // JsonObject child = obj.createNestedObject(dto.objectName);
 
@@ -179,7 +179,7 @@ void WebAPI::getVariablesList(AsyncWebServerRequest *request)
 
 void WebAPI::getVariableDetail(const String &name, AsyncWebServerRequest *request)
 {
-    DTOBase dto;
+    MadMax::DTOBase dto;
     if (myApp->GetVariableProvider()->GetDetailDTO(name.c_str(), dto))
     {
         JsonDocument doc;
@@ -204,7 +204,7 @@ void WebAPI::getVariableDetail(const String &name, AsyncWebServerRequest *reques
 
 void WebAPI::getVariableProperty(const std::string &name, const std::string &property, AsyncWebServerRequest *request)
 {
-    DTOBase dto;
+    MadMax::DTOBase dto;
     if (!myApp->GetVariableProvider()->GetDetailDTO(name.c_str(), dto))
     {
         request->send(404, "text/plain", "Object not found");
@@ -213,7 +213,7 @@ void WebAPI::getVariableProperty(const std::string &name, const std::string &pro
 
     JsonDocument doc;
 
-    auto it = std::find_if(dto.fields.begin(), dto.fields.end(), [&](const FieldValue &f)
+    auto it = std::find_if(dto.fields.begin(), dto.fields.end(), [&](const MadMax::FieldValue &f)
                            { return f.key == property; });
 
     JsonObject obj = doc.as<JsonObject>();
@@ -260,7 +260,7 @@ void WebAPI::getAccumsList(AsyncWebServerRequest *request)
 
 void WebAPI::getAccumDetail(const String &name, AsyncWebServerRequest *request)
 {
-    DTOBase dto;
+    MadMax::DTOBase dto;
     if (myApp->GetAccumsProvider()->GetDetailDTO(name.c_str(), dto))
     {
         AsyncResponseStream *response = request->beginResponseStream("application/json");
@@ -311,7 +311,7 @@ void WebAPI::getDigitalEquipmentsList(AsyncWebServerRequest *request)
 
 void WebAPI::getDigitalEquipmentDetail(const String &name, AsyncWebServerRequest *request)
 {
-    DTOBase dto;
+    MadMax::DTOBase dto;
     if (myApp->GetDigitalEquipmentProvider()->GetDetailDTO(name.c_str(), dto))
     {
         JsonDocument doc;
@@ -357,7 +357,7 @@ void WebAPI::getPumpSwapsList(AsyncWebServerRequest *request)
 
 void WebAPI::getPumpSwapDetail(const String &name, AsyncWebServerRequest *request)
 {
-    DTOBase dto;
+    MadMax::DTOBase dto;
     if (myApp->GetPumpSwapProvider()->GetDetailDTO(name.c_str(), dto))
     {
         JsonDocument doc;
@@ -403,7 +403,7 @@ void WebAPI::getTPulsesList(AsyncWebServerRequest *request)
 
 void WebAPI::getTPulseDetail(const String &name, AsyncWebServerRequest *request)
 {
-    DTOBase dto;
+    MadMax::DTOBase dto;
     if (myApp->GetTPulseProvider()->GetDetailDTO(name.c_str(), dto))
     {
         JsonDocument doc;
@@ -449,7 +449,7 @@ void WebAPI::getFeedbackErrorsList(AsyncWebServerRequest *request)
 
 void WebAPI::getFeedbackErrorDetail(const String &name, AsyncWebServerRequest *request)
 {
-    DTOBase dto;
+    MadMax::DTOBase dto;
     if (myApp->GetFeedbackErrorProvider()->GetDetailDTO(name.c_str(), dto))
     {
         JsonDocument doc;
@@ -495,7 +495,7 @@ void WebAPI::getDelayOnOffsList(AsyncWebServerRequest *request)
 
 void WebAPI::getDelayOnOffDetail(const String &name, AsyncWebServerRequest *request)
 {
-    DTOBase dto;
+    MadMax::DTOBase dto;
     if (myApp->GetDelayOnOffProvider()->GetDetailDTO(name.c_str(), dto))
     {
         JsonDocument doc;

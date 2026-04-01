@@ -1,36 +1,39 @@
 #include "IDTOMapperBase.h"
 #include "mmFeedbackError.h"
 
-class mmFeedbackErrorDTOMapper : public IDTOMapperBase
+namespace MadMax
 {
-public:
-    bool ToDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override
+    class mmFeedbackErrorDTOMapper : public IDTOMapperBase
     {
-        const auto *primitive = static_cast<const mmFeedbackError *>(&obj);
-
-        dto.objectName = name;
-        dto.fields.push_back({"value", primitive->GetValue()});
-        return true;
-    }
-
-    bool ToDetailDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override
-    {
-        const auto *primitive = static_cast<const mmFeedbackError *>(&obj);
-
-        if (ToDTO(obj, dto, name))
+    public:
+        bool ToDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override
         {
-            auto &statusObj = primitive->GetStatus();
+            const auto *primitive = static_cast<const mmFeedbackError *>(&obj);
 
-            dto.fields.push_back({"command", statusObj.command});
-            dto.fields.push_back({"feedback", statusObj.feedback});
-            dto.fields.push_back({"offDelayFeedbackError", statusObj.offDelayFeedbackError});
-            dto.fields.push_back({"onDelayFeedbackError", statusObj.onDelayFeedbackError});
-            dto.fields.push_back({"option", (int)statusObj.option});
-            dto.fields.push_back({"remainingTime", statusObj.remainingTime});
-            dto.fields.push_back({"state", (int)statusObj.state});
-
+            dto.objectName = name;
+            dto.fields.push_back({"value", primitive->GetValue()});
             return true;
         }
-        return false;
-    }
-};
+
+        bool ToDetailDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override
+        {
+            const auto *primitive = static_cast<const mmFeedbackError *>(&obj);
+
+            if (ToDTO(obj, dto, name))
+            {
+                auto &statusObj = primitive->GetStatus();
+
+                dto.fields.push_back({"command", statusObj.command});
+                dto.fields.push_back({"feedback", statusObj.feedback});
+                dto.fields.push_back({"offDelayFeedbackError", statusObj.offDelayFeedbackError});
+                dto.fields.push_back({"onDelayFeedbackError", statusObj.onDelayFeedbackError});
+                dto.fields.push_back({"option", (int)statusObj.option});
+                dto.fields.push_back({"remainingTime", statusObj.remainingTime});
+                dto.fields.push_back({"state", (int)statusObj.state});
+
+                return true;
+            }
+            return false;
+        }
+    };
+}

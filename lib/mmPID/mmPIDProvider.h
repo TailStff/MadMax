@@ -1,18 +1,20 @@
 #include "ObjectProvider.h"
 #include "mmPID.h"
 
-class mmPIDProvider : public ObjectProvider<mmPID>
+namespace MadMax
 {
-private:
-
-public:
-    mmPIDProvider(ExecutionEnv *executionEnv)
+    class mmPIDProvider : public ObjectProvider<mmPID>
     {
-        this->executionEnv = executionEnv;
-    }
+    private:
+    public:
+        mmPIDProvider(ExecutionEnv *executionEnv)
+        {
+            this->executionEnv = executionEnv;
+        }
 
-    mmPID* Create(const std::string& name, uint32_t address)
-    {
-        return ObjectProvider<mmPID>::Create(name, address, executionEnv);
-    }
-};
+        mmPID *Create(const std::string &name, uint32_t address)
+        {
+            return ObjectProvider<mmPID>::Create(name, address, executionEnv);
+        }
+    };
+}
