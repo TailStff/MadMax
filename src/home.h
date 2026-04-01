@@ -1,0 +1,147 @@
+const char Home[] PROGMEM = R"=====(
+
+<html>
+	<head>
+	  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	  <meta http-equiv="Content-Language" content="fr" />
+	  <meta name="author" content="Jannic ANDREIS" />
+	  <title>
+		  A2imp LoRaWAN multi-device
+	  </title>
+	  <link rel="stylesheet" href="styles.css">
+	  <script src="app.js"></script>
+	  <script type="text/javascript">
+	  
+		let timeTimeOut;
+	  
+		let app = new App (
+			{
+				DI: {
+					number: 4,
+					datarefs: [
+						{ name: "Digital input 1", jsonProperty: "DI1" },
+						{ name: "Digital input 2", jsonProperty: "DI2" },
+						{ name: "Digital input 3", jsonProperty: "DI3" },
+						{ name: "Digital input 4", jsonProperty: "DI4" }
+					]
+				},
+				AV: {
+					number: 1,
+					datarefs: [
+						{ name: "Battery voltage", jsonProperty: "VBAT", decimal: '0', unit: "mV" }
+					]
+				}
+			}
+		);
+	  
+		document.addEventListener("DOMContentLoaded", function () {
+		    setTimeout(() => {
+
+		        app.PrepareDOM();
+		        app.ReplaceInfos();
+				app.AddHelps();
+
+		    }, 500);
+
+		    setInterval(() => {
+		        app.getData();
+		    }, 1000);
+			
+			timeTimeOut = setInterval(() => {
+		        app.refreshDateTime();
+		    }, 1000);
+		});
+		
+		document.addEventListener("visibilitychange", () => {
+		
+			if (document.visibilityState === "visible") {
+			
+				// Restart
+				location.reload();
+			} else {
+			
+				// Stop
+			}
+		});
+		
+	  </script>
+	  <style>
+
+	  </style>
+	</head>
+	<body>
+	  <div class='title-container'><div class='logo'></div> <div class='title'>LoRaWAN multi-device</div><div class='version'>Version 0.2a</div></div>
+	  <form id='time' onsubmit="app.SendDateTime(); return false;">
+	  <table class='time-info'>
+		<tr>
+		  <td rowspan='9' class='col1'><div class='time'></div></td><td class='col2'>Current Date/Time</td><td class='col3'><div id="currentDateTime">-</div></td>
+		</tr>
+		<tr>
+			 <td class='col2'>Set Date/Time</td><td class='col3'><input type="date" id="Date" value="-" /><input type="time" id="Time" step="1" value="-" /><button type='submit' style='height: 24px;' form='time'>Set</button></td>
+		</tr>
+	  </table>
+	  </form>
+	  <table class='lora-info'>
+		<tr>
+		  <td rowspan='3' class='col1'><div class='lorawan'></div></td><td class='col2'>DevEUI</td><td class='col3'><div id="DevEUI">-</div></td>
+		</tr>
+		<tr>
+		  <td class='col2'>AppKEY</td><td class='col3'><div id="AppKEY">-</div></td>
+		</tr>
+		<tr>
+		  <td class='col2'>AppEUI / JoinEUI</td><td class='col3'><div id="AppEUI">-</div></td>
+		</tr>
+	  </table>
+	  <form id='network' onsubmit="app.SendIPAddresses(); return false;">
+		<table class='network'>
+			<tr>
+				<td rowspan='9' class='col1'><div class='wifi'></div></div></td>
+				<td class='col2'>Multicast DNS</td><td class='col3'><input style='text-align: center;' id='mDNS' value='' placeholder='a2imp-dev' /><button type="button" class='buttonHelpPopup' title='Multicast DNS' text="mDNS (Multicast DNS) allows a device to be discovered on a local network without requiring a DNS server.<br/>It enables hostname-based access using the .local domain (e.g. http://device.local).">?</button></td>
+			</tr>
+			<tr>
+				<td colspan='2'><hr/></td>
+			</tr>
+			<tr>
+				<td class='col2'>WiFi Station SSID</td><td class='col3'><input style='text-align: center;' id='WSTA_SSID' value='' placeholder='SSID' /><button type="button" class='buttonHelpPopup' title='WiFi Station SSID' text="A WiFi Station SSID refers to the name of the wireless network that a device connects to when operating in station (STA) mode.<br/>The device obtains network parameters (IP address, gateway, DNS) from the access point, typically via DHCP.">?</button></td>
+			</tr>
+			<tr>
+				<td class='col2'>WiFi Station Password</td><td class='col3'><input style='text-align: center;' type='password' id='WSTA_pwd' value='' placeholder='*******' /><button type="button" class='buttonHelpPopup' title='WiFi Station password' text="The WiFi Station password is the security key used by a device to authenticate when connecting to a wireless network in station (STA) mode.">?</button></td>
+			</tr>
+			<tr>
+				<td colspan='2'><hr/></td>
+			</tr>
+			<tr>
+				<td class='col2'>WiFi AP IP Address</td><td class='col3'><input style='text-align: center;' id='WAP_ipAddress' value='' placeholder='192.168.0.1' /><button type="button" class='buttonHelpPopup' title='WiFi AP IP Address' text="The WiFi AP IP Address defines the local IP address assigned to the current device when it operates in WiFi Access Point (AP) mode.<br/>All clients connected to the AP communicate with the device through this address.">?</button></td>
+			</tr>
+			<tr>
+				<td class='col2'>WiFi AP Gateway Address</td><td class='col3'><input style='text-align: center;' id='WAP_ipGateway' value='' placeholder='192.168.0.1' /><button type="button" class='buttonHelpPopup' title='WiFi AP Gateway Address' text="The WiFi AP Gateway Address defines the IP address used as the default gateway for devices connected to a WiFi Access Point (AP).<br/>In most embedded AP configurations, the gateway address is the same as the AP IP address.">?</button></td>
+			</tr>
+			<tr>
+				<td class='col2'>WiFi AP Netmask Address</td><td class='col3'><input style='text-align: center;' id='WAP_ipMask' value='' placeholder='255.255.255.0' /><button type="button" class='buttonHelpPopup' title='WiFi AP Netmask Address' text="The WiFi AP Netmask Address (also called Subnet Mask) defines the size of the local network when a device operates in WiFi Access Point (AP) mode.<br/>The most common value is 255.255.255.0 (/24), allowing up to 254 clients.">?</button></td>
+			</tr>
+			<tr>
+				<td class='col2'></td><td class='col3'><button type='submit' form='network'>Set</button></td>
+			</tr>
+		</table>
+	  </form>
+		<form id='settings' onsubmit="app.SendSettings(); return false;">
+			<table class='settings'>
+				<tr>
+					<td rowspan='1' class='col1'></div></td>
+					<td class='col2'>LoRa send period (ms)</td><td class='col3'><input type='number' step='1000' min='60000' max='3600000' style='text-align: center;' id='sendPeriod' value='' placeholder='300000' /><button type="button" class='buttonHelpPopup' title='LoRa send period' text="The LoRa Send Period defines the time interval between two consecutive LoRaWAN uplink transmissions.<br/> Default value is 300000 ms (5 minutes).">?</button><button type='submit' form='settings'>Set</button></td>
+				</tr>
+			</table>
+	  </form>
+	  <table id='data'>
+		<tr>
+			<td rowspan='20' class='col1'><div class=''></div></td><td class='col2'></td><td class='col3'><div ></div></td>
+		</tr>
+	  </table>
+
+		<form id='formReset' action="/RESET">
+			<input type="submit" value="Reset device" />
+		</form>
+	</body>
+</html>
+
+  )=====";
