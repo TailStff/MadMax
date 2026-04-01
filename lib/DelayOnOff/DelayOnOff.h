@@ -1,14 +1,14 @@
-#ifndef MMDELAYONOFF_H
-#define MMDELAYONOFF_H
+#ifndef MADMAXDELAYONOFF_H
+#define MADMAXDELAYONOFF_H
 
 #include <cstdint>
 #include "IPrimitive.h"
 #include "ExecutionEnv.h"
-#include "mmDelayOnOffStatus.h"
+#include "DelayOnOffStatus.h"
 
 namespace MadMax
 {
-  class mmDelayOnOff : public IPrimitive
+  class DelayOnOff : public IPrimitive
   {
   private:
     int64_t tickNumber;
@@ -20,8 +20,8 @@ namespace MadMax
 
   public:
     // Constructors
-    mmDelayOnOff(ExecutionEnv *_executionEnv, bool initialValue = false);
-    ~mmDelayOnOff();
+    DelayOnOff(ExecutionEnv *_executionEnv, bool initialValue = false);
+    ~DelayOnOff();
 
     bool Evaluate(bool input, uint32_t delayOn, uint32_t delayOff, DelayOnOffStatus *status = nullptr);
     void EmergencyOn();

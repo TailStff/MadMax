@@ -4,7 +4,7 @@
 
 namespace MadMax
 {
-    class mmAccumDTOMapper : public IDTOMapperBase
+    class AccumDTOMapper : public IDTOMapperBase
     {
     public:
         bool ToDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override

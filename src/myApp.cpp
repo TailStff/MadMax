@@ -49,15 +49,15 @@ MyApp::MyApp(ExecutionEnv *executionEnv, ModbusClientRTU &MBRTU, mmModbusServerM
 
     mmPIDs = new MadMax::mmPIDProvider(executionEnv);
     mmMinOnOffs = new MadMax::mmMinOnOffProvider(executionEnv);
-    mmDelayOnOffs = new MadMax::mmDelayOnOffProvider(executionEnv);
+    mmDelayOnOffs = new MadMax::DelayOnOffProvider(executionEnv);
     mmRunTimes = new MadMax::mmRunTimeProvider(executionEnv);
     mmTPulses = new MadMax::TPulseProvider(executionEnv);
     mmLinears = new MadMax::mmLinearProvider(executionEnv);
-    mmFeedbackErrors = new MadMax::mmFeedbackErrorProvider(executionEnv);
+    mmFeedbackErrors = new MadMax::FeedbackErrorProvider(executionEnv);
     mmDigitalEquipments = new MadMax::DigitalEquipmentProvider(executionEnv);
-    mmPumpSwaps = new MadMax::mmPumpSwapProvider(executionEnv);
+    mmPumpSwaps = new MadMax::PumpSwapProvider(executionEnv);
     mmVariables = new MadMax::VariableProvider(executionEnv);
-    mmAccums = new MadMax::mmAccumProvider(executionEnv);
+    mmAccums = new MadMax::AccumProvider(executionEnv);
 }
 
 MyApp::~MyApp()
@@ -190,7 +190,7 @@ void MyApp::Loop()
     auto permut4 = mmPumpSwaps->Get("4pmp");
 
     MadMax::PumpSwapResult result = permut4->Evaluate([this](const std::vector<MadMax::SetPumpValue *> &pumps)
-                                              {
+                                                      {
                         pumps[0]->Fault = this->digitalInputs->Get(8);
                         pumps[0]->Feedback = this->digitalInputs->Get(9);
                         pumps[1]->Fault = this->digitalInputs->Get(10);

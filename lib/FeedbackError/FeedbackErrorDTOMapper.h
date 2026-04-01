@@ -1,14 +1,14 @@
 #include "IDTOMapperBase.h"
-#include "mmFeedbackError.h"
+#include "FeedbackError.h"
 
 namespace MadMax
 {
-    class mmFeedbackErrorDTOMapper : public IDTOMapperBase
+    class FeedbackErrorDTOMapper : public IDTOMapperBase
     {
     public:
         bool ToDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override
         {
-            const auto *primitive = static_cast<const mmFeedbackError *>(&obj);
+            const auto *primitive = static_cast<const FeedbackError *>(&obj);
 
             dto.objectName = name;
             dto.fields.push_back({"value", primitive->GetValue()});
@@ -17,7 +17,7 @@ namespace MadMax
 
         bool ToDetailDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override
         {
-            const auto *primitive = static_cast<const mmFeedbackError *>(&obj);
+            const auto *primitive = static_cast<const FeedbackError *>(&obj);
 
             if (ToDTO(obj, dto, name))
             {

@@ -1,28 +1,29 @@
-#ifndef PUMPSWAP_H
-#define PUMPSWAP_H
+#ifndef MADMAXPUMPSWAP_H
+#define MADMAXPUMPSWAP_H
 
-#include "IPrimitive.h"
-#include "mmFeedbackError.h"
-#include "structFaults.h"
-#include "mmRunTime.h"
-#include "mmAccum.h"
-#include "DigitalEquipment.h"
-#include "helpersVector.h"
 #include <vector>
 #include <array>
+
+#include "IPrimitive.h"
+#include "FeedbackError.h"
+#include "structFaults.h"
+#include "mmRunTime.h"
+#include "Accum.h"
+#include "DigitalEquipment.h"
+#include "helpersVector.h"
 #include "mmMiniScheduler.h"
 
 namespace MadMax
 {
-    struct __attribute__((packed)) mmPumpSwapPersistencyValue
+    struct __attribute__((packed)) PumpSwapPersistencyValue
     {
         uint64_t runTime;
         uint64_t startCount;
     };
 
-    struct mmPumpSwapPersistencyValues
+    struct PumpSwapPersistencyValues
     {
-        std::vector<mmPumpSwapPersistencyValue> data;
+        std::vector<PumpSwapPersistencyValue> data;
     };
 
     // Enums value that indicate actual state of the system
@@ -53,7 +54,7 @@ namespace MadMax
         std::vector<DigitalEquipmentStatus *> PumpsStatus;
     };
 
-    class mmPumpSwap : public IPrimitiveTyped<mmPumpSwapPersistencyValues>, public IPrimitive
+    class PumpSwap : public IPrimitiveTyped<PumpSwapPersistencyValues>, public IPrimitive
     {
     private:
         ExecutionEnv *executionEnv;
@@ -89,8 +90,8 @@ namespace MadMax
 
     public:
         // Constructors
-        mmPumpSwap(ExecutionEnv *_executionEnv, uint8_t count, uint32_t feedbackDelay, mmPumpSwapPersistencyValues &persistancyValues);
-        ~mmPumpSwap();
+        PumpSwap(ExecutionEnv *_executionEnv, uint8_t count, uint32_t feedbackDelay, PumpSwapPersistencyValues &persistancyValues);
+        ~PumpSwap();
 
         void ComputePhysicalValues(std::initializer_list<bool> logicalValues);
 
@@ -106,13 +107,13 @@ namespace MadMax
         /// @return Size in bytes of the serialized data of the object
         static size_t GetSerializedSize(uint8_t count)
         {
-            return sizeof(mmPumpSwapPersistencyValue) * count;
+            return sizeof(PumpSwapPersistencyValue) * count;
         }
 
         void ResetAllRuntimes();
         void ResetAllStartCounts();
 
-        void GetPersistencyValues(mmPumpSwapPersistencyValues &persistencyValues) const; // override;
+        void GetPersistencyValues(PumpSwapPersistencyValues &persistencyValues) const; // override;
         void GetBytesFromData(std::vector<uint8_t> &data) const override;
         void SetDataFromBytes(std::vector<uint8_t> &data) override;
     };

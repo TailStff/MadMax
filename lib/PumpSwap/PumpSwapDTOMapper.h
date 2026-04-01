@@ -4,12 +4,12 @@
 
 namespace MadMax
 {
-    class mmPumpSwapDTOMapper : public IDTOMapperBase
+    class PumpSwapDTOMapper : public IDTOMapperBase
     {
     public:
         bool ToDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override
         {
-            const mmPumpSwap *primitive = static_cast<const mmPumpSwap *>(&obj);
+            const PumpSwap *primitive = static_cast<const PumpSwap *>(&obj);
 
             dto.objectName = name;
             dto.fields.push_back({"values", primitive->GetPhysicalValues()});
@@ -18,7 +18,7 @@ namespace MadMax
 
         bool ToDetailDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override
         {
-            const mmPumpSwap *primitive = static_cast<const mmPumpSwap *>(&obj);
+            const PumpSwap *primitive = static_cast<const PumpSwap *>(&obj);
 
             if (ToDTO(obj, dto, name))
             {

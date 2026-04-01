@@ -1,9 +1,9 @@
-#ifndef FEEDBACKERRORSTATUS_H
-#define FEEDBACKERRORSTATUS_H
+#ifndef MADMAXFEEDBACKERRORSTATUS_H
+#define MADMAXFEEDBACKERRORSTATUS_H
 
-#include <stdio.h>
-#include "mmFeedbackErrorOption.h"
-#include "mmFeedbackErrorState.h"
+#include <cstdio>
+#include "FeedbackErrorOption.h"
+#include "FeedbackErrorState.h"
 
 namespace MadMax
 {

@@ -1,19 +1,19 @@
-#include "mmFeedbackError.h"
+#include "FeedbackError.h"
 
 namespace MadMax
 {
-  mmFeedbackError::mmFeedbackError(ExecutionEnv *_executionEnv) : executionEnv(_executionEnv), memInput(false), memFeedback(false), memReset(false)
+  FeedbackError::FeedbackError(ExecutionEnv *_executionEnv) : executionEnv(_executionEnv), memInput(false), memFeedback(false), memReset(false)
   {
-    delayOnOff = new mmDelayOnOff(executionEnv, false);
+    delayOnOff = new DelayOnOff(executionEnv, false);
     status.value = false;
   }
 
-  mmFeedbackError::~mmFeedbackError()
+  FeedbackError::~FeedbackError()
   {
     delete delayOnOff;
   }
 
-  bool mmFeedbackError::Evaluate(bool input, bool feedback, uint32_t onDelayFeedbackError, uint32_t offDelayFeedbackError, bool reset, FeedbackErrorOption option, FeedbackErrorStatus *status)
+  bool FeedbackError::Evaluate(bool input, bool feedback, uint32_t onDelayFeedbackError, uint32_t offDelayFeedbackError, bool reset, FeedbackErrorOption option, FeedbackErrorStatus *status)
   {
     this->status.command = input;
     this->status.feedback = feedback;
@@ -68,7 +68,7 @@ namespace MadMax
     return this->status.value;
   }
 
-  void mmFeedbackError::Reset()
+  void FeedbackError::Reset()
   {
     delayOnOff->EmergencyOff();
     this->status.value = false;
@@ -76,12 +76,12 @@ namespace MadMax
     this->status.remainingTime = -1;
   }
 
-  bool mmFeedbackError::GetValue() const
+  bool FeedbackError::GetValue() const
   {
     return this->status.value;
   }
 
-  const FeedbackErrorStatus &mmFeedbackError::GetStatus() const
+  const FeedbackErrorStatus &FeedbackError::GetStatus() const
   {
     return this->status;
   }
@@ -89,11 +89,11 @@ namespace MadMax
 #pragma region IPersistable
   /// @brief Get the bytes vector that represent the object persistency values, here we just serialize all pumps runtimes and start counts in a byte vector
   /// @param data Reference to the vector that will receive the bytes that represent the object persistency values
-  void mmFeedbackError::GetBytesFromData(std::vector<uint8_t> &data) const
+  void FeedbackError::GetBytesFromData(std::vector<uint8_t> &data) const
   {
   }
 
-  void mmFeedbackError::SetDataFromBytes(std::vector<uint8_t> &data)
+  void FeedbackError::SetDataFromBytes(std::vector<uint8_t> &data)
   {
   }
 #pragma endregion IPersistable

@@ -3,10 +3,10 @@
 
 #include "DigitalEquipmentStatus.h"
 #include "IPrimitive.h"
-#include "mmFeedbackError.h"
+#include "FeedbackError.h"
 #include "structFaults.h"
 #include "mmRunTime.h"
-#include "mmAccum.h"
+#include "Accum.h"
 
 namespace MadMax
 {
@@ -20,9 +20,9 @@ namespace MadMax
     {
     private:
         ExecutionEnv *executionEnv;
-        mmFeedbackError *feedbackErrorObj;
+        FeedbackError *feedbackErrorObj;
         mmRunTime *runTimeObj;
-        mmAccum<uint64_t> *accumObj;
+        Accum<uint64_t> *accumObj;
 
         DigitalEquipmentStatus status;
 

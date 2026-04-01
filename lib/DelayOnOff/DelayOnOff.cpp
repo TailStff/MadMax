@@ -1,8 +1,8 @@
-#include "mmDelayOnOff.h"
+#include "DelayOnOff.h"
 
 namespace MadMax
 {
-  mmDelayOnOff::mmDelayOnOff(ExecutionEnv *executionEnv, bool initialValue)
+  DelayOnOff::DelayOnOff(ExecutionEnv *executionEnv, bool initialValue)
   {
     this->executionEnv = executionEnv;
     this->cycle = executionEnv->GetCycle();
@@ -16,11 +16,11 @@ namespace MadMax
     tickNumber = executionEnv->GetTicks();
   }
 
-  mmDelayOnOff::~mmDelayOnOff()
+  DelayOnOff::~DelayOnOff()
   {
   }
 
-  bool mmDelayOnOff::Evaluate(bool input, uint32_t delayOn, uint32_t delayOff, DelayOnOffStatus *status)
+  bool DelayOnOff::Evaluate(bool input, uint32_t delayOn, uint32_t delayOff, DelayOnOffStatus *status)
   {
     this->status.input = input;
     this->status.delayOn = delayOn;
@@ -63,14 +63,14 @@ namespace MadMax
     return this->status.output;
   }
 
-  void mmDelayOnOff::EmergencyOn()
+  void DelayOnOff::EmergencyOn()
   {
     this->status.output = true;
     this->tickNumber = executionEnv->GetTicks();
     this->status.remainingTime = -1;
   }
 
-  void mmDelayOnOff::EmergencyOff()
+  void DelayOnOff::EmergencyOff()
   {
     this->status.output = false;
     this->tickNumber = executionEnv->GetTicks();
@@ -80,11 +80,11 @@ namespace MadMax
 #pragma region IPersistable
   /// @brief Get the bytes vector that represent the object persistency values, here we just serialize all pumps runtimes and start counts in a byte vector
   /// @param data Reference to the vector that will receive the bytes that represent the object persistency values
-  void mmDelayOnOff::GetBytesFromData(std::vector<uint8_t> &data) const
+  void DelayOnOff::GetBytesFromData(std::vector<uint8_t> &data) const
   {
   }
 
-  void mmDelayOnOff::SetDataFromBytes(std::vector<uint8_t> &data)
+  void DelayOnOff::SetDataFromBytes(std::vector<uint8_t> &data)
   {
   }
 #pragma endregion IPersistable

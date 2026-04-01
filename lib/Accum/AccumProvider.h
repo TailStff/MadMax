@@ -1,41 +1,42 @@
 #pragma once
+
 #include "ObjectProvider.h"
 #include "IObjectDTO.h"
-#include "mmAccum.h"
-#include "mmAccumDTOMapper.h"
+#include "Accum.h"
+#include "AccumDTOMapper.h"
 
 namespace MadMax
 {
-    class mmAccumProvider : public ObjectProvider<ISerializableBase>, public IPersistable, public IProviderDTO
+    class AccumProvider : public ObjectProvider<ISerializableBase>, public IPersistable, public IProviderDTO
     {
     private:
         std::unique_ptr<IDTOMapperBase> dtoMappers;
 
     public:
-        mmAccumProvider(ExecutionEnv *executionEnv)
+        AccumProvider(ExecutionEnv *executionEnv)
         {
             this->executionEnv = executionEnv;
-            dtoMappers = std::make_unique<mmAccumDTOMapper>();
+            dtoMappers = std::make_unique<AccumDTOMapper>();
         }
 
         template <class T>
-        mmAccum<T> *Create(const std::string &name, int32_t address, mmAccumPersistencyValues<T> data = {.value = static_cast<T>(0)})
+        Accum<T> *Create(const std::string &name, int32_t address, AccumPersistencyValues<T> data = {.value = static_cast<T>(0)})
         {
-            GetPersistencyValuesFromMem(name, reinterpret_cast<uint8_t *>(&data), sizeof(mmAccumPersistencyValues<T>));
+            GetPersistencyValuesFromMem(name, reinterpret_cast<uint8_t *>(&data), sizeof(AccumPersistencyValues<T>));
 
             // mmAccum<T> varies per T, so we cannot use ObjectProvider<mmAccum<T>> as base.
             // We must inject via the fixed base interface ObjectProvider<ISerializableBase>
             // to store all typed instances in a single polymorphic collection.
-            auto *obj = new mmAccum<T>(executionEnv, data);
+            auto *obj = new Accum<T>(executionEnv, data);
             ObjectProvider<ISerializableBase>::inject(name, address, obj);
             return obj;
         }
 
         template <class T>
-        mmAccum<T> *Get(const std::string &name)
+        Accum<T> *Get(const std::string &name)
         {
             int32_t address;
-            return static_cast<mmAccum<T> *>(ObjectProvider<ISerializableBase>::Get(name, address));
+            return static_cast<Accum<T> *>(ObjectProvider<ISerializableBase>::Get(name, address));
         }
 
         void GetPersistencyValuesFromMem(const std::string &name, uint8_t *data, size_t length)

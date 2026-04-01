@@ -1,20 +1,20 @@
 #include "ObjectProvider.h"
-#include "mmPumpSwap.h"
+#include "PumpSwap.h"
 #include "IPersistable.h"
-#include "mmPumpSwapDTOMapper.h"
+#include "PumpSwapDTOMapper.h"
 
 namespace MadMax
 {
-    class mmPumpSwapProvider : public ObjectProvider<mmPumpSwap>, public IPersistable, public IProviderDTO
+    class PumpSwapProvider : public ObjectProvider<PumpSwap>, public IPersistable, public IProviderDTO
     {
     private:
         std::unique_ptr<IDTOMapperBase> dtoMappers;
 
     public:
-        mmPumpSwapProvider(ExecutionEnv *executionEnv)
+        PumpSwapProvider(ExecutionEnv *executionEnv)
         {
             this->executionEnv = executionEnv;
-            dtoMappers = std::make_unique<mmPumpSwapDTOMapper>();
+            dtoMappers = std::make_unique<PumpSwapDTOMapper>();
         }
 
         void printByteBuffer(const uint8_t *buffer, size_t length)
@@ -31,16 +31,16 @@ namespace MadMax
             Serial.println("]");
         }
 
-        mmPumpSwap *Create(const std::string &name, uint32_t address, uint8_t count, uint32_t feedbackDelay, mmPumpSwapPersistencyValues data = {})
+        PumpSwap *Create(const std::string &name, uint32_t address, uint8_t count, uint32_t feedbackDelay, PumpSwapPersistencyValues data = {})
         {
             // We resize our vector to be able to receive persistency values
             data.data.resize(count);
 
             uint16_t writtenLength;
             uint16_t addr;
-            executionEnv->GetMiniPrefs()->Get(name.c_str(), reinterpret_cast<uint8_t *>(data.data.data()), mmPumpSwap::GetSerializedSize(count), addr, writtenLength);
+            executionEnv->GetMiniPrefs()->Get(name.c_str(), reinterpret_cast<uint8_t *>(data.data.data()), PumpSwap::GetSerializedSize(count), addr, writtenLength);
 
-            return ObjectProvider<mmPumpSwap>::Create(name, address, executionEnv, count, feedbackDelay, data);
+            return ObjectProvider<PumpSwap>::Create(name, address, executionEnv, count, feedbackDelay, data);
         }
 
         void SavePersistencyValuesToMem(const std::string &name) override
@@ -75,7 +75,7 @@ namespace MadMax
             result.reserve(this->size());
 
             this->ForEach(
-                [&](const std::string &name, mmPumpSwap *base)
+                [&](const std::string &name, PumpSwap *base)
                 {
                     DTOBase dto;
                     if (dtoMappers && dtoMappers->ToDTO(*base, dto, name))
@@ -87,7 +87,7 @@ namespace MadMax
 
         bool GetDTO(const std::string &name, DTOBase &dto) const override
         {
-            auto *obj = ObjectProvider<mmPumpSwap>::Get(name);
+            auto *obj = ObjectProvider<PumpSwap>::Get(name);
 
             if (!obj)
                 return false;
@@ -100,7 +100,7 @@ namespace MadMax
 
         bool GetDetailDTO(const std::string &name, DTOBase &dto) const override
         {
-            auto *obj = ObjectProvider<mmPumpSwap>::Get(name);
+            auto *obj = ObjectProvider<PumpSwap>::Get(name);
 
             if (!obj)
                 return false;

@@ -1,7 +1,7 @@
 namespace MadMax
 {
     template <class T>
-    mmAccum<T>::mmAccum(ExecutionEnv *_executionEnv, mmAccumPersistencyValues<T> data)
+    Accum<T>::Accum(ExecutionEnv *_executionEnv, AccumPersistencyValues<T> data)
     {
         this->executionEnv = _executionEnv;
         this->memInput = false;
@@ -10,7 +10,7 @@ namespace MadMax
     }
 
     template <class T>
-    bool mmAccum<T>::SetValue(T value)
+    bool Accum<T>::SetValue(T value)
     {
         if (this->value != value)
         {
@@ -28,7 +28,7 @@ namespace MadMax
     /// @param resetValue
     /// @return Internal value
     template <class T>
-    T mmAccum<T>::Evaluate(bool input, T increment, bool resetTrigger, T resetValue)
+    T Accum<T>::Evaluate(bool input, T increment, bool resetTrigger, T resetValue)
     {
         // We just reset the value, we don't want to count the increment in the same cycle even if the input is true
         if (resetTrigger && !memResetTrigger)
@@ -53,13 +53,13 @@ namespace MadMax
     /// @tparam T Any types
     /// @param resetValue Reset value
     template <class T>
-    void mmAccum<T>::Reset(T resetValue)
+    void Accum<T>::Reset(T resetValue)
     {
         value = resetValue;
     }
 
     template <class T>
-    void mmAccum<T>::GetPersistencyValues(mmAccumPersistencyValues<T> &persistencyValues) const
+    void Accum<T>::GetPersistencyValues(AccumPersistencyValues<T> &persistencyValues) const
     {
         persistencyValues.value = this->value;
     }
@@ -67,36 +67,36 @@ namespace MadMax
     /// @brief Serialize persistency values into a byte vector
     /// @param data Output vector that will receive the serialized bytes
     template <class T>
-    void mmAccum<T>::GetBytesFromData(std::vector<uint8_t> &data) const
+    void Accum<T>::GetBytesFromData(std::vector<uint8_t> &data) const
     {
-        size_t size = sizeof(mmAccumPersistencyValues<T>);
+        size_t size = sizeof(AccumPersistencyValues<T>);
         data.resize(size);
 
         memcpy(data.data(), &this->value, size);
     }
 
     template <class T>
-    void mmAccum<T>::SetDataFromBytes(std::vector<uint8_t> &data)
+    void Accum<T>::SetDataFromBytes(std::vector<uint8_t> &data)
     {
-        if (data.size() != sizeof(mmAccumPersistencyValues<T>))
+        if (data.size() != sizeof(AccumPersistencyValues<T>))
             return;
 
-        mmAccumPersistencyValues<T> persistencyValues;
-        memcpy(&persistencyValues, data.data(), sizeof(mmAccumPersistencyValues<T>));
+        AccumPersistencyValues<T> persistencyValues;
+        memcpy(&persistencyValues, data.data(), sizeof(AccumPersistencyValues<T>));
 
         this->value = persistencyValues.value;
     }
 
 #pragma region mmVariableValue
     template <class T>
-    VariableValue mmAccum<T>::GetVariantValue() const
+    VariableValue Accum<T>::GetVariantValue() const
     {
         // We return the value as a mmVariableValue variant, this will allow to access to the variable value without knowing its type, it will be used for example in the web interface to display variable values in a generic way
         return VariableValue{value};
     }
 
     template <class T>
-    bool mmAccum<T>::SetVariantValue(const VariableValue &v)
+    bool Accum<T>::SetVariantValue(const VariableValue &v)
     {
         return std::visit([this](const auto &val) -> bool
                           {

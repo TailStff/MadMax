@@ -8,17 +8,16 @@
 
 #include "mmPIDProvider.h"
 #include "mmMinOnOffProvider.h"
-#include "mmDelayOnOffProvider.h"
+#include "DelayOnOffProvider.h"
 #include "mmRunTimeProvider.h"
 #include "TPulseProvider.h"
 #include "mmLinearProvider.h"
-#include "mmFeedbackErrorProvider.h"
+#include "FeedbackErrorProvider.h"
+#include "FeedbackError.h"
 #include "DigitalEquipmentProvider.h"
-#include "mmPumpSwapProvider.h"
+#include "PumpSwapProvider.h"
 #include "VariableProvider.h"
-#include "mmAccumProvider.h"
-
-#include "mmFeedbackError.h"
+#include "AccumProvider.h"
 
 #include "ModbusScheduler.h"
 #include "mmModbusServerManager.h"
@@ -56,15 +55,15 @@ private:
 
     MadMax::mmPIDProvider *mmPIDs;
     MadMax::mmMinOnOffProvider *mmMinOnOffs;
-    MadMax::mmDelayOnOffProvider *mmDelayOnOffs;
+    MadMax::DelayOnOffProvider *mmDelayOnOffs;
     MadMax::mmRunTimeProvider *mmRunTimes;
     MadMax::TPulseProvider *mmTPulses;
     MadMax::mmLinearProvider *mmLinears;
-    MadMax::mmFeedbackErrorProvider *mmFeedbackErrors;
+    MadMax::FeedbackErrorProvider *mmFeedbackErrors;
     MadMax::DigitalEquipmentProvider *mmDigitalEquipments;
-    MadMax::mmPumpSwapProvider *mmPumpSwaps;
+    MadMax::PumpSwapProvider *mmPumpSwaps;
     MadMax::VariableProvider *mmVariables;
-    MadMax::mmAccumProvider *mmAccums;
+    MadMax::AccumProvider *mmAccums;
 
     mmScreenPages *screenPages;
 
@@ -89,12 +88,12 @@ public:
     void Loop();
 
     MadMax::VariableProvider *GetVariableProvider() { return mmVariables; }
-    MadMax::mmAccumProvider *GetAccumsProvider() { return mmAccums; }
+    MadMax::AccumProvider *GetAccumsProvider() { return mmAccums; }
     MadMax::DigitalEquipmentProvider *GetDigitalEquipmentProvider() { return mmDigitalEquipments; }
-    MadMax::mmPumpSwapProvider *GetPumpSwapProvider() { return mmPumpSwaps; }
+    MadMax::PumpSwapProvider *GetPumpSwapProvider() { return mmPumpSwaps; }
     MadMax::TPulseProvider *GetTPulseProvider() { return mmTPulses; }
-    MadMax::mmFeedbackErrorProvider *GetFeedbackErrorProvider() { return mmFeedbackErrors; }
-    MadMax::mmDelayOnOffProvider *GetDelayOnOffProvider() { return mmDelayOnOffs; }
+    MadMax::FeedbackErrorProvider *GetFeedbackErrorProvider() { return mmFeedbackErrors; }
+    MadMax::DelayOnOffProvider *GetDelayOnOffProvider() { return mmDelayOnOffs; }
 
     void cbShortPress();
     void cbLongPress();

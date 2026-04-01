@@ -1,8 +1,8 @@
-#include "mmPumpSwap.h"
+#include "PumpSwap.h"
 
 namespace MadMax
 {
-    mmPumpSwap::mmPumpSwap(ExecutionEnv *_executionEnv, uint8_t count, uint32_t feedbackDelay, mmPumpSwapPersistencyValues &persistancyValues)
+    PumpSwap::PumpSwap(ExecutionEnv *_executionEnv, uint8_t count, uint32_t feedbackDelay, PumpSwapPersistencyValues &persistancyValues)
     {
         this->executionEnv = _executionEnv;
         this->count = count;
@@ -43,7 +43,7 @@ namespace MadMax
         computeIndexes();
     }
 
-    mmPumpSwap::~mmPumpSwap()
+    PumpSwap::~PumpSwap()
     {
         // memFaults is deleted by itself
         // physicalValues is deleted by itself
@@ -53,17 +53,17 @@ namespace MadMax
         // statuses is deleted by itself
     }
 
-    uint8_t mmPumpSwap::GetCount() const
+    uint8_t PumpSwap::GetCount() const
     {
         return this->count;
     }
 
-    std::vector<bool> mmPumpSwap::GetPhysicalValues() const
+    std::vector<bool> PumpSwap::GetPhysicalValues() const
     {
         return this->physicalValues;
     }
 
-    const DigitalEquipmentStatus &mmPumpSwap::GetStatus(uint8_t index) const
+    const DigitalEquipmentStatus &PumpSwap::GetStatus(uint8_t index) const
     {
         return *this->statuses.at(index);
     }
@@ -74,7 +74,7 @@ namespace MadMax
     /// @param reevaluation Flag that force to recompute indexes
     /// @param acknowledge Flag that
     /// @return mmPumpSwap value that give all pumps informations
-    PumpSwapResult mmPumpSwap::Evaluate(std::function<void(std::vector<SetPumpValue *> &)> callbackFunction, std::initializer_list<bool> logicalValues, bool reevaluation, bool acknowledge)
+    PumpSwapResult PumpSwap::Evaluate(std::function<void(std::vector<SetPumpValue *> &)> callbackFunction, std::initializer_list<bool> logicalValues, bool reevaluation, bool acknowledge)
     {
         // We compute the number of pumps that are needed for optimal operation
         uint8_t requestedPumps = HelpersVectors::countTrue(logicalValues);
@@ -146,7 +146,7 @@ namespace MadMax
 
     /// @brief Function that allow to RECOMPUTE pumps orders by their actuals states and their runtimes
     /// @param recomputeAllFlag Flag that authorize to recompute all working pumps without taking thoses that were running before
-    void mmPumpSwap::computeIndexes(bool recomputeAllFlag)
+    void PumpSwap::computeIndexes(bool recomputeAllFlag)
     {
         // Array that keep selection state, all already selected won't be selected more than once
         std::fill(selectedIndex.begin(), selectedIndex.end(), false);
@@ -199,7 +199,7 @@ namespace MadMax
         }
     }
 
-    void mmPumpSwap::ComputePhysicalValues(std::initializer_list<bool> logicalValues)
+    void PumpSwap::ComputePhysicalValues(std::initializer_list<bool> logicalValues)
     {
         // Reset all physical values
         for (uint8_t i = 0; i < count; i++)
@@ -217,7 +217,7 @@ namespace MadMax
         }
     }
 
-    enumCapacityState mmPumpSwap::GetCapacityState(uint8_t availablePumps, uint8_t requestedPumps)
+    enumCapacityState PumpSwap::GetCapacityState(uint8_t availablePumps, uint8_t requestedPumps)
     {
         if (availablePumps == count)
             return enumCapacityState::Optimal;
@@ -234,20 +234,20 @@ namespace MadMax
     /// @brief Get the persistency values of the object, here we just get all pumps runtimes and start counts and put thoses values in a vector
     /// @param persistencyValues Object that will receive persistency values
     /// @return true if we have an error during persistency values retrieval, false otherwise
-    void mmPumpSwap::GetPersistencyValues(mmPumpSwapPersistencyValues &persistencyValues) const
+    void PumpSwap::GetPersistencyValues(PumpSwapPersistencyValues &persistencyValues) const
     {
         persistencyValues.data.clear();
         for (uint8_t i = 0; i < count; i++)
             persistencyValues.data.push_back({.runTime = statuses[i]->runTimeValue, .startCount = statuses[i]->startCountValue});
     }
 
-    void mmPumpSwap::ResetAllStartCounts()
+    void PumpSwap::ResetAllStartCounts()
     {
         for (uint8_t i = 0; i < count; i++)
             nodes[i]->SetStartCount(0);
     }
 
-    void mmPumpSwap::ResetAllRuntimes()
+    void PumpSwap::ResetAllRuntimes()
     {
         for (uint8_t i = 0; i < count; i++)
             nodes[i]->SetRuntime(0);
@@ -255,25 +255,25 @@ namespace MadMax
 
     /// @brief Serialize persistency values into a byte vector
     /// @param data Output vector that will receive the serialized bytes
-    void mmPumpSwap::GetBytesFromData(std::vector<uint8_t> &data) const
+    void PumpSwap::GetBytesFromData(std::vector<uint8_t> &data) const
     {
-        mmPumpSwapPersistencyValues persistencyValues;
+        PumpSwapPersistencyValues persistencyValues;
         GetPersistencyValues(persistencyValues);
 
-        size_t size = persistencyValues.data.size() * sizeof(mmPumpSwapPersistencyValue);
+        size_t size = persistencyValues.data.size() * sizeof(PumpSwapPersistencyValue);
         data.resize(size);
 
         if (!persistencyValues.data.empty())
             memcpy(data.data(), persistencyValues.data.data(), size);
     }
 
-    void mmPumpSwap::SetDataFromBytes(std::vector<uint8_t> &data)
+    void PumpSwap::SetDataFromBytes(std::vector<uint8_t> &data)
     {
         if (data.size() != GetSerializedSize(count))
             return;
 
-        mmPumpSwapPersistencyValues persistencyValues;
-        memcpy(&persistencyValues, data.data(), sizeof(mmPumpSwapPersistencyValues));
+        PumpSwapPersistencyValues persistencyValues;
+        memcpy(&persistencyValues, data.data(), sizeof(PumpSwapPersistencyValues));
 
         for (uint8_t i = 0; i < count; i++)
         {

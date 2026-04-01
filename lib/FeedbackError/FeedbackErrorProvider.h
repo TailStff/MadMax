@@ -1,24 +1,24 @@
 #include "ObjectProvider.h"
-#include "mmDelayOnOff.h"
-#include "mmDelayOnOffDTOMapper.h"
+#include "FeedbackError.h"
+#include "FeedbackErrorDTOMapper.h"
 
 namespace MadMax
 {
-    class mmDelayOnOffProvider : public ObjectProvider<mmDelayOnOff>, public IProviderDTO
+    class FeedbackErrorProvider : public ObjectProvider<FeedbackError>, public IProviderDTO
     {
     private:
         std::unique_ptr<IDTOMapperBase> dtoMappers;
 
     public:
-        mmDelayOnOffProvider(ExecutionEnv *executionEnv)
+        FeedbackErrorProvider(ExecutionEnv *executionEnv)
         {
             this->executionEnv = executionEnv;
-            dtoMappers = std::make_unique<mmDelayOnOffDTOMapper>();
+            dtoMappers = std::make_unique<FeedbackErrorDTOMapper>();
         }
 
-        mmDelayOnOff *Create(const std::string &name, uint32_t address, bool initialValue = false)
+        FeedbackError *Create(const std::string &name, uint32_t address)
         {
-            return ObjectProvider<mmDelayOnOff>::Create(name, address, executionEnv, initialValue);
+            return ObjectProvider<FeedbackError>::Create(name, address, executionEnv);
         }
 
 #pragma region IProviderDTO
@@ -28,7 +28,7 @@ namespace MadMax
             result.reserve(this->size());
 
             this->ForEach(
-                [&](const std::string &name, mmDelayOnOff *base)
+                [&](const std::string &name, FeedbackError *base)
                 {
                     DTOBase dto;
                     if (dtoMappers && dtoMappers->ToDTO(*base, dto, name))
@@ -40,7 +40,7 @@ namespace MadMax
 
         bool GetDTO(const std::string &name, DTOBase &dto) const override
         {
-            auto *obj = ObjectProvider<mmDelayOnOff>::Get(name);
+            auto *obj = ObjectProvider<FeedbackError>::Get(name);
 
             if (!obj)
                 return false;
@@ -53,7 +53,7 @@ namespace MadMax
 
         bool GetDetailDTO(const std::string &name, DTOBase &dto) const override
         {
-            auto *obj = ObjectProvider<mmDelayOnOff>::Get(name);
+            auto *obj = ObjectProvider<FeedbackError>::Get(name);
 
             if (!obj)
                 return false;

@@ -1,5 +1,5 @@
-#ifndef MMCOUNT_H
-#define MMCOUNT_H
+#ifndef MADMAXCOUNT_H
+#define MADMAXCOUNT_H
 
 #include "IVariableValue.h"
 #include "IPrimitive.h"
@@ -9,13 +9,13 @@
 namespace MadMax
 {
   template <class T>
-  struct __attribute__((packed)) mmAccumPersistencyValues
+  struct __attribute__((packed)) AccumPersistencyValues
   {
     T value;
   };
 
   template <class T>
-  class mmAccum : public IVariableValue, public IPrimitiveTyped<mmAccumPersistencyValues<T>>
+  class Accum : public IVariableValue, public IPrimitiveTyped<AccumPersistencyValues<T>>
   {
 
   private:
@@ -26,8 +26,8 @@ namespace MadMax
 
   public:
     // Constructors
-    mmAccum(ExecutionEnv *_executionEnv, mmAccumPersistencyValues<T> data = {.value = static_cast<T>(0)});
-    ~mmAccum() = default;
+    Accum(ExecutionEnv *_executionEnv, AccumPersistencyValues<T> data = {.value = static_cast<T>(0)});
+    ~Accum() = default;
 
     /// @brief Function that SET new value to the variable
     /// @param value The new value to SET
@@ -46,7 +46,7 @@ namespace MadMax
 
     void Reset(T resetValue = static_cast<T>(0));
 
-    void GetPersistencyValues(mmAccumPersistencyValues<T> &persistencyValues) const; // override;
+    void GetPersistencyValues(AccumPersistencyValues<T> &persistencyValues) const; // override;
     void GetBytesFromData(std::vector<uint8_t> &data) const override;
     void SetDataFromBytes(std::vector<uint8_t> &data) override;
 
@@ -68,6 +68,6 @@ namespace MadMax
   };
 }
 
-#include "mmAccum.tpp"
+#include "Accum.tpp"
 
 #endif

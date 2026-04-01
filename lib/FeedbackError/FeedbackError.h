@@ -1,32 +1,32 @@
-#ifndef FEEDBACKERROR_H
-#define FEEDBACKERROR_H
+#ifndef MADMAXFEEDBACKERROR_H
+#define MADMAXFEEDBACKERROR_H
 
-#include <stdio.h>
+#include <cstdio>
 #include <unordered_map>
 #include <memory>
 #include "IPrimitive.h"
 #include "ExecutionEnv.h"
-#include "mmFeedbackErrorOption.h"
-#include "mmFeedbackErrorState.h"
-#include "mmFeedbackErrorStatus.h"
-#include "mmDelayOnOff.h"
+#include "FeedbackErrorOption.h"
+#include "FeedbackErrorState.h"
+#include "FeedbackErrorStatus.h"
+#include "DelayOnOff.h"
 
 namespace MadMax
 {
-  class mmFeedbackError : public IPrimitive
+  class FeedbackError : public IPrimitive
   {
   private:
     FeedbackErrorStatus status;
 
     ExecutionEnv *executionEnv;
 
-    mmDelayOnOff *delayOnOff;
+    DelayOnOff *delayOnOff;
     bool memInput, memFeedback, memReset;
 
   public:
     // Constructors
-    mmFeedbackError(ExecutionEnv *_executionEnv);
-    ~mmFeedbackError();
+    FeedbackError(ExecutionEnv *_executionEnv);
+    ~FeedbackError();
 
     /**
      * @brief Evaluates a feedback mismatch condition with configurable delay timers.
