@@ -15,7 +15,7 @@ mmMinOnOff::~mmMinOnOff()
 {
 }
 
-bool mmMinOnOff::Evaluate(bool in, uint32_t minOnTime, uint32_t minOffTime, DelayStatus *status)
+bool mmMinOnOff::Evaluate(bool in, uint32_t minOnTime, uint32_t minOffTime, MinOnOffStatus *status)
 {
   this->status.input = in;
   this->status.minOnTime = minOnTime;
@@ -23,7 +23,7 @@ bool mmMinOnOff::Evaluate(bool in, uint32_t minOnTime, uint32_t minOffTime, Dela
 
   int64_t _tickNumber = executionEnv->GetTicks();
 
-  remainingTime = -1;
+  this->status.remainingTime = -1;
 
   if (!this->status.output && in)
   {
@@ -33,11 +33,11 @@ bool mmMinOnOff::Evaluate(bool in, uint32_t minOnTime, uint32_t minOffTime, Dela
     {
       this->status.output = true;
       lastOntickNumber = _tickNumber;
-      remainingTime = -1;
+      this->status.remainingTime = -1;
     }
     else
     {
-      remainingTime = minOffTime - elapsedTime;
+      this->status.remainingTime = minOffTime - elapsedTime;
     }
   }
   else if (this->status.output && !in)
@@ -48,18 +48,21 @@ bool mmMinOnOff::Evaluate(bool in, uint32_t minOnTime, uint32_t minOffTime, Dela
     {
       this->status.output = false;
       lastOfftickNumber = _tickNumber;
-      remainingTime = -1;
+      this->status.remainingTime = -1;
     }
     else
     {
-      remainingTime = minOnTime - elapsedTime;
+      this->status.remainingTime = minOnTime - elapsedTime;
     }
   }
 
   if (status)
   {
-    status->remainingTime = remainingTime;
-    status->value = this->status.output;
+    status->input = this->status.input;
+    status->minOffTime = this->status.minOffTime;
+    status->minOnTime = this->status.minOnTime;
+    status->remainingTime = this->status.remainingTime;
+    status->output = this->status.output;
   }
 
   return this->status.output;

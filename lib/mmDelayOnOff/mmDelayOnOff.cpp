@@ -18,7 +18,7 @@ mmDelayOnOff::~mmDelayOnOff()
 {
 }
 
-bool mmDelayOnOff::Evaluate(bool input, uint32_t delayOn, uint32_t delayOff, DelayStatus *status)
+bool mmDelayOnOff::Evaluate(bool input, uint32_t delayOn, uint32_t delayOff, DelayOnOffStatus *status)
 {
   this->status.input = input;
   this->status.delayOn = delayOn;
@@ -51,8 +51,11 @@ bool mmDelayOnOff::Evaluate(bool input, uint32_t delayOn, uint32_t delayOff, Del
 
   if (status)
   {
+    status->input = this->status.input;
+    status->delayOff = this->status.delayOff;
+    status->delayOn = this->status.delayOn;
     status->remainingTime = this->status.remainingTime;
-    status->value = this->status.output;
+    status->output = this->status.output;
   }
 
   return this->status.output;

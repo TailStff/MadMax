@@ -5,7 +5,6 @@
 #include "IPrimitive.h"
 #include "ExecutionEnv.h"
 #include "mmDelayOnOffStatus.h"
-#include "structDelayStatus.h"
 
 class mmDelayOnOff : public IPrimitive
 {
@@ -23,7 +22,7 @@ public:
   mmDelayOnOff(ExecutionEnv *_executionEnv, bool initialValue = false);
   ~mmDelayOnOff();
 
-  bool Evaluate(bool input, uint32_t delayOn, uint32_t delayOff, DelayStatus *status = nullptr);
+  bool Evaluate(bool input, uint32_t delayOn, uint32_t delayOff, DelayOnOffStatus *status = nullptr);
   void EmergencyOn();
   void EmergencyOff();
 

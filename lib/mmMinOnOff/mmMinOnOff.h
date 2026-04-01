@@ -5,7 +5,7 @@
 #include "IPrimitive.h"
 #include "ExecutionEnv.h"
 #include "mmMinOnOffStatus.h"
-#include "structDelayStatus.h"
+// #include "structDelayStatus.h"
 
 class mmMinOnOff : public IPrimitive
 {
@@ -18,18 +18,12 @@ private:
   signed long long int lastOntickNumber, lastOfftickNumber;
   unsigned int cycle;
 
-  //uint32_t minOnTime;
-  //uint32_t minOffTime;
-  //bool value;
-
-  int64_t remainingTime;
-
 public:
   // Constructors
   mmMinOnOff(ExecutionEnv *_executionEnv, bool initialValue);
   ~mmMinOnOff();
 
-  bool Evaluate(bool in, uint32_t minOnTime, uint32_t minOffTime, DelayStatus *status = nullptr);
+  bool Evaluate(bool in, uint32_t minOnTime, uint32_t minOffTime, MinOnOffStatus *status = nullptr);
   void EmergencyOn();
   void EmergencyOff();
 
