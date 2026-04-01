@@ -6,7 +6,7 @@
 #include "structFaults.h"
 #include "mmRunTime.h"
 #include "mmAccum.h"
-#include "mmDigitalEquipment.h"
+#include "DigitalEquipment.h"
 #include "helpersVector.h"
 #include <vector>
 #include <array>
@@ -64,7 +64,7 @@ namespace MadMax
         // Delay before mark equipment in fault
         uint32_t feedbackDelay;
 
-        std::vector<std::unique_ptr<mmDigitalEquipment>> nodes;
+        std::vector<std::unique_ptr<DigitalEquipment>> nodes;
         std::vector<std::unique_ptr<SetPumpValue>> inputsValues;
         std::vector<std::unique_ptr<DigitalEquipmentStatus>> statuses;
 

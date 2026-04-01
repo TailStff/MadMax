@@ -1,28 +1,28 @@
 #include "ObjectProvider.h"
-#include "mmDigitalEquipment.h"
+#include "DigitalEquipment.h"
 #include "IPersistable.h"
-#include "mmDigitalEquipmentDTOMapper.h"
+#include "DigitalEquipmentDTOMapper.h"
 
 namespace MadMax
 {
-    class mmDigitalEquipmentProvider : public ObjectProvider<mmDigitalEquipment>, public IPersistable, public IProviderDTO
+    class DigitalEquipmentProvider : public ObjectProvider<DigitalEquipment>, public IPersistable, public IProviderDTO
     {
     private:
         std::unique_ptr<IDTOMapperBase> dtoMappers;
 
     public:
-        mmDigitalEquipmentProvider(ExecutionEnv *executionEnv)
+        DigitalEquipmentProvider(ExecutionEnv *executionEnv)
         {
             this->executionEnv = executionEnv;
-            dtoMappers = std::make_unique<mmDigitalEquipmentDTOMapper>();
+            dtoMappers = std::make_unique<DigitalEquipmentDTOMapper>();
         }
 
-        mmDigitalEquipment *Create(const std::string &name, uint32_t address, mmDigitalEquipementPersistencyValues data = {})
+        DigitalEquipment *Create(const std::string &name, uint32_t address, DigitalEquipementPersistencyValues data = {})
         {
             // Mini prefs method
             // executionEnv->GetMiniPrefs()->read(address, reinterpret_cast<uint8_t *>(&data), mmDigitalEquipment::GetSerializedSize());
 
-            return ObjectProvider<mmDigitalEquipment>::Create(name, address, executionEnv, data);
+            return ObjectProvider<DigitalEquipment>::Create(name, address, executionEnv, data);
         }
 
         void SavePersistencyValuesToMem(const std::string &name) override
@@ -57,7 +57,7 @@ namespace MadMax
             result.reserve(this->size());
 
             this->ForEach(
-                [&](const std::string &name, mmDigitalEquipment *base)
+                [&](const std::string &name, DigitalEquipment *base)
                 {
                     DTOBase dto;
                     if (dtoMappers && dtoMappers->ToDTO(*base, dto, name))
@@ -69,7 +69,7 @@ namespace MadMax
 
         bool GetDTO(const std::string &name, DTOBase &dto) const override
         {
-            auto *obj = ObjectProvider<mmDigitalEquipment>::Get(name);
+            auto *obj = ObjectProvider<DigitalEquipment>::Get(name);
 
             if (!obj)
                 return false;
@@ -82,7 +82,7 @@ namespace MadMax
 
         bool GetDetailDTO(const std::string &name, DTOBase &dto) const override
         {
-            auto *obj = ObjectProvider<mmDigitalEquipment>::Get(name);
+            auto *obj = ObjectProvider<DigitalEquipment>::Get(name);
 
             if (!obj)
                 return false;

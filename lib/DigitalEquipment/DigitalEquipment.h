@@ -1,7 +1,7 @@
-#ifndef DIGITALEQUIPMENT_H
-#define DIGITALEQUIPMENT_H
+#ifndef MADMAXDIGITALEQUIPMENT_H
+#define MADMAXDIGITALEQUIPMENT_H
 
-#include "mmDigitalEquipmentStatus.h"
+#include "DigitalEquipmentStatus.h"
 #include "IPrimitive.h"
 #include "mmFeedbackError.h"
 #include "structFaults.h"
@@ -10,13 +10,13 @@
 
 namespace MadMax
 {
-    struct mmDigitalEquipementPersistencyValues
+    struct DigitalEquipementPersistencyValues
     {
         uint64_t runTime;
         uint64_t startCount;
     };
 
-    class mmDigitalEquipment : public IPrimitiveTyped<mmDigitalEquipementPersistencyValues>, public IPrimitive
+    class DigitalEquipment : public IPrimitiveTyped<DigitalEquipementPersistencyValues>, public IPrimitive
     {
     private:
         ExecutionEnv *executionEnv;
@@ -30,8 +30,8 @@ namespace MadMax
 
     public:
         // Constructors
-        mmDigitalEquipment(ExecutionEnv *_executionEnv, mmDigitalEquipementPersistencyValues data = {.runTime = 0UL, .startCount = 0UL});
-        ~mmDigitalEquipment();
+        DigitalEquipment(ExecutionEnv *_executionEnv, DigitalEquipementPersistencyValues data = {.runTime = 0UL, .startCount = 0UL});
+        ~DigitalEquipment();
 
         bool Evaluate(bool cmd, bool feedback, bool fault, bool acknowledge, uint32_t feedbackDelay, DigitalEquipmentStatus *outStatus = nullptr);
 
@@ -45,10 +45,10 @@ namespace MadMax
         /// @return Size in bytes of the serialized data of the object
         static size_t GetSerializedSize()
         {
-            return sizeof(mmDigitalEquipementPersistencyValues);
+            return sizeof(DigitalEquipementPersistencyValues);
         }
 
-        void GetPersistencyValues(mmDigitalEquipementPersistencyValues &persistencyValues) const; // override;
+        void GetPersistencyValues(DigitalEquipementPersistencyValues &persistencyValues) const; // override;
         void GetBytesFromData(std::vector<uint8_t> &data) const override;
         void SetDataFromBytes(std::vector<uint8_t> &data) override;
     };

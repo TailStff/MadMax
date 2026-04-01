@@ -13,7 +13,7 @@
 #include "TPulseProvider.h"
 #include "mmLinearProvider.h"
 #include "mmFeedbackErrorProvider.h"
-#include "mmDigitalEquipmentProvider.h"
+#include "DigitalEquipmentProvider.h"
 #include "mmPumpSwapProvider.h"
 #include "VariableProvider.h"
 #include "mmAccumProvider.h"
@@ -61,7 +61,7 @@ private:
     MadMax::TPulseProvider *mmTPulses;
     MadMax::mmLinearProvider *mmLinears;
     MadMax::mmFeedbackErrorProvider *mmFeedbackErrors;
-    MadMax::mmDigitalEquipmentProvider *mmDigitalEquipments;
+    MadMax::DigitalEquipmentProvider *mmDigitalEquipments;
     MadMax::mmPumpSwapProvider *mmPumpSwaps;
     MadMax::VariableProvider *mmVariables;
     MadMax::mmAccumProvider *mmAccums;
@@ -90,7 +90,7 @@ public:
 
     MadMax::VariableProvider *GetVariableProvider() { return mmVariables; }
     MadMax::mmAccumProvider *GetAccumsProvider() { return mmAccums; }
-    MadMax::mmDigitalEquipmentProvider *GetDigitalEquipmentProvider() { return mmDigitalEquipments; }
+    MadMax::DigitalEquipmentProvider *GetDigitalEquipmentProvider() { return mmDigitalEquipments; }
     MadMax::mmPumpSwapProvider *GetPumpSwapProvider() { return mmPumpSwaps; }
     MadMax::TPulseProvider *GetTPulseProvider() { return mmTPulses; }
     MadMax::mmFeedbackErrorProvider *GetFeedbackErrorProvider() { return mmFeedbackErrors; }

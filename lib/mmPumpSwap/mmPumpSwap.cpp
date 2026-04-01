@@ -29,10 +29,10 @@ namespace MadMax
 
         for (uint8_t i = 0; i < count; i++)
         {
-            mmDigitalEquipementPersistencyValues tempPersistencyValue{.runTime = persistancyValues.data[i].runTime, .startCount = persistancyValues.data[i].startCount};
+            DigitalEquipementPersistencyValues tempPersistencyValue{.runTime = persistancyValues.data[i].runTime, .startCount = persistancyValues.data[i].startCount};
 
             // Create via make_unique as mmPumpSwap is taking ownership of thoses object (no need to share thoses objects via pointer)
-            nodes.push_back(std::make_unique<mmDigitalEquipment>(_executionEnv, tempPersistencyValue));
+            nodes.push_back(std::make_unique<DigitalEquipment>(_executionEnv, tempPersistencyValue));
 
             // Create unique object via make unique
             inputsValues.push_back(std::make_unique<SetPumpValue>());
