@@ -89,14 +89,14 @@ namespace MadMax
 
 #pragma region mmVariableValue
     template <class T>
-    mmVariableValue mmAccum<T>::GetVariantValue() const
+    VariableValue mmAccum<T>::GetVariantValue() const
     {
         // We return the value as a mmVariableValue variant, this will allow to access to the variable value without knowing its type, it will be used for example in the web interface to display variable values in a generic way
-        return mmVariableValue{value};
+        return VariableValue{value};
     }
 
     template <class T>
-    bool mmAccum<T>::SetVariantValue(const mmVariableValue &v)
+    bool mmAccum<T>::SetVariantValue(const VariableValue &v)
     {
         return std::visit([this](const auto &val) -> bool
                           {

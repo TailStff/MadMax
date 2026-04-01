@@ -1,9 +1,9 @@
-#ifndef MMDATATYPE_H
-#define MMDATATYPE_H
+#ifndef MADMAXDATATYPE_H
+#define MADMAXDATATYPE_H
 
 namespace MadMax
 {
-    enum mmDataType
+    enum DataType
     {
         unknownType = 0,
         doubleType = 1,

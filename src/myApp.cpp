@@ -56,7 +56,7 @@ MyApp::MyApp(ExecutionEnv *executionEnv, ModbusClientRTU &MBRTU, mmModbusServerM
     mmFeedbackErrors = new MadMax::mmFeedbackErrorProvider(executionEnv);
     mmDigitalEquipments = new MadMax::mmDigitalEquipmentProvider(executionEnv);
     mmPumpSwaps = new MadMax::mmPumpSwapProvider(executionEnv);
-    mmVariables = new MadMax::mmVariableProvider(executionEnv);
+    mmVariables = new MadMax::VariableProvider(executionEnv);
     mmAccums = new MadMax::mmAccumProvider(executionEnv);
 }
 

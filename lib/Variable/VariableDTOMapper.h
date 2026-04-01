@@ -1,10 +1,10 @@
 #include "IDTOMapperBase.h"
 #include "IVariableValue.h"
-#include "mmVariable.h"
+#include "Variable.h"
 
 namespace MadMax
 {
-    class mmVariableDTOMapper : public IDTOMapperBase
+    class VariableDTOMapper : public IDTOMapperBase
     {
     public:
         bool ToDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override

@@ -1,6 +1,8 @@
 #pragma once
+
 #include <vector>
 #include <stdio.h>
+
 #include "ISerializableBase.h"
 #include "IPersistency.h"
 #include "IObjectDTO.h"

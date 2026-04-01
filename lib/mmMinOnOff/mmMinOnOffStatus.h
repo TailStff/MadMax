@@ -1,5 +1,5 @@
-#ifndef MINONOFFSTATUS_H
-#define MINONOFFSTATUS_H
+#ifndef MADMAXMINONOFFSTATUS_H
+#define MADMAXMINONOFFSTATUS_H
 
 #include <cstdint>
 

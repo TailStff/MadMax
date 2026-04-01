@@ -53,12 +53,12 @@ namespace MadMax
 #pragma region IVariableValue
     /// @brief Function that return the current value of the variable as a mmVariableValue variant, this will be used for generic access to variable value without knowing its type
     /// @return The current value of the variable as a mmVariableValue variant
-    mmVariableValue GetVariantValue() const override;
+    VariableValue GetVariantValue() const override;
 
     /// @brief Function that SET the variable value from a mmVariableValue variant, this will be used for generic access to variable value without knowing its type
     /// @param v The new value to SET as a mmVariableValue variant
     /// @return Return true if setted value is different from the previous, false if there is no changes or if the type of the variant value is not compatible with the variable type
-    bool SetVariantValue(const mmVariableValue &v) override;
+    bool SetVariantValue(const VariableValue &v) override;
 #pragma endregion IVariableValue
 
     /*#pragma region IObjectDTO

@@ -1,6 +1,6 @@
 #include "IDTOMapperBase.h"
 #include "IVariableValue.h"
-#include "mmVariable.h"
+#include "Variable.h"
 
 namespace MadMax
 {

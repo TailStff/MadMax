@@ -1,13 +1,13 @@
 #pragma once
 #include "ObjectProvider.h"
 #include "IPersistency.h"
-#include "mmVariable.h"
-#include "mmDataType.h"
-#include "mmVariableDTOMapper.h"
+#include "Variable.h"
+#include "DataType.h"
+#include "VariableDTOMapper.h"
 
 namespace MadMax
 {
-    class mmVariableProvider : public ObjectProvider<ISerializableBase>, public IPersistable, public IProviderDTO
+    class VariableProvider : public ObjectProvider<ISerializableBase>, public IPersistable, public IProviderDTO
     {
     private:
         std::unique_ptr<IDTOMapperBase> dtoMappers;
@@ -22,18 +22,18 @@ namespace MadMax
         }
 
     public:
-        mmVariableProvider(ExecutionEnv *executionEnv)
+        VariableProvider(ExecutionEnv *executionEnv)
         {
             this->executionEnv = executionEnv;
 
-            dtoMappers = std::make_unique<mmVariableDTOMapper>();
+            dtoMappers = std::make_unique<VariableDTOMapper>();
         }
 
         template <class T>
-        mmVariable<T> *Create(const std::string &name, int32_t address, mmVariablePersistencyValues<T> data = {.value = static_cast<T>(0)})
+        Variable<T> *Create(const std::string &name, int32_t address, VariablePersistencyValues<T> data = {.value = static_cast<T>(0)})
         {
             // We get the last saved value from memory
-            GetPersistencyValuesFromMem(name, reinterpret_cast<uint8_t *>(&data), sizeof(mmVariablePersistencyValues<T>));
+            GetPersistencyValuesFromMem(name, reinterpret_cast<uint8_t *>(&data), sizeof(VariablePersistencyValues<T>));
 
             // Copy the last saved value to modbus memory space, if it's valid, we consider that an address of -1 is an invalid address that mean that the variable is not associated to any Modbus register, this allow to create variable that are not exposed through Modbus if we want to
             if (address != -1)
@@ -55,7 +55,7 @@ namespace MadMax
             // mmVariable<T> varies per T, so we cannot use ObjectProvider<mmVariable<T>> as base.
             // We must inject via the fixed base interface ObjectProvider<ISerializableBase>
             // to store all typed instances in a single polymorphic collection.
-            auto *obj = new mmVariable<T>(executionEnv, data);
+            auto *obj = new Variable<T>(executionEnv, data);
             ObjectProvider<ISerializableBase>::inject(name, address, obj);
             return obj;
         }
@@ -65,10 +65,10 @@ namespace MadMax
         /// @param name Name of the object to be retrieived
         /// @return Pointer to the retrieved object or nullptr if not found
         template <class T>
-        mmVariable<T> *Get(const std::string &name) const
+        Variable<T> *Get(const std::string &name) const
         {
             int32_t address;
-            return static_cast<mmVariable<T> *>(ObjectProvider<ISerializableBase>::Get(name, address));
+            return static_cast<Variable<T> *>(ObjectProvider<ISerializableBase>::Get(name, address));
         }
 
         /// @brief Save the persistency values of the mmVariableFloat object with the given name
@@ -103,7 +103,7 @@ namespace MadMax
             int32_t address;
 
             // Get the object to be serialized
-            mmVariable<T> *obj = static_cast<mmVariable<T> *>(ObjectProvider<ISerializableBase>::Get(name, address));
+            Variable<T> *obj = static_cast<Variable<T> *>(ObjectProvider<ISerializableBase>::Get(name, address));
 
             // If the object doesn't exist, we can't save its persistency values
             if (!obj)

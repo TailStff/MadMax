@@ -1,7 +1,7 @@
 #ifndef MADMAXTPULSESTATUS_H
 #define MADMAXTPULSESTATUS_H
 
-#include <stdio.h>
+#include <cstdio>
 
 namespace MadMax
 {

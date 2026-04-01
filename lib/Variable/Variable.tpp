@@ -1,14 +1,14 @@
 namespace MadMax
 {
     template <class T>
-    mmVariable<T>::mmVariable(ExecutionEnv *_executionEnv, mmVariablePersistencyValues<T> data)
+    Variable<T>::Variable(ExecutionEnv *_executionEnv, VariablePersistencyValues<T> data)
     {
         this->executionEnv = _executionEnv;
         this->value = data.value;
     }
 
     template <class T>
-    bool mmVariable<T>::SetValue(T value)
+    bool Variable<T>::SetValue(T value)
     {
         if (this->value != value)
         {
@@ -19,7 +19,7 @@ namespace MadMax
     }
 
     template <class T>
-    void mmVariable<T>::GetPersistencyValues(mmVariablePersistencyValues<T> &persistencyValues) const
+    void Variable<T>::GetPersistencyValues(VariablePersistencyValues<T> &persistencyValues) const
     {
         persistencyValues.value = this->value;
     }
@@ -27,39 +27,39 @@ namespace MadMax
     /// @brief Serialize persistency values into a byte vector
     /// @param data Output vector that will receive the serialized bytes
     template <class T>
-    void mmVariable<T>::GetBytesFromData(std::vector<uint8_t> &data) const
+    void Variable<T>::GetBytesFromData(std::vector<uint8_t> &data) const
     {
-        mmVariablePersistencyValues<T> persistencyValues;
+        VariablePersistencyValues<T> persistencyValues;
         GetPersistencyValues(persistencyValues);
 
-        size_t size = sizeof(mmVariablePersistencyValues<T>);
+        size_t size = sizeof(VariablePersistencyValues<T>);
         data.resize(size);
 
         memcpy(data.data(), &persistencyValues, size);
     }
 
     template <class T>
-    void mmVariable<T>::SetDataFromBytes(std::vector<uint8_t> &data)
+    void Variable<T>::SetDataFromBytes(std::vector<uint8_t> &data)
     {
-        if (data.size() != sizeof(mmVariablePersistencyValues<T>))
+        if (data.size() != sizeof(VariablePersistencyValues<T>))
             return;
 
-        mmVariablePersistencyValues<T> persistencyValues;
-        memcpy(&persistencyValues, data.data(), sizeof(mmVariablePersistencyValues<T>));
+        VariablePersistencyValues<T> persistencyValues;
+        memcpy(&persistencyValues, data.data(), sizeof(VariablePersistencyValues<T>));
 
         this->value = persistencyValues.value;
     }
 
-#pragma region mmVariableValue
+#pragma region VariableValue
     template <class T>
-    mmVariableValue mmVariable<T>::GetVariantValue() const
+    VariableValue Variable<T>::GetVariantValue() const
     {
         // We return the value as a mmVariableValue variant, this will allow to access to the variable value without knowing its type, it will be used for example in the web interface to display variable values in a generic way
-        return mmVariableValue{value};
+        return VariableValue{value};
     }
 
     template <class T>
-    bool mmVariable<T>::SetVariantValue(const mmVariableValue &v)
+    bool Variable<T>::SetVariantValue(const VariableValue &v)
     {
         return std::visit([this](const auto &val) -> bool
                           {
@@ -78,5 +78,5 @@ namespace MadMax
             return false;
         } }, v);
     }
-#pragma endregion mmVariableValue
+#pragma endregion VariableValue
 }

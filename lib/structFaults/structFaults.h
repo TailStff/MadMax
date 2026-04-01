@@ -1,7 +1,7 @@
 #ifndef STRUCTFAULTS_H
 #define STRUCTFAULTS_H
 
-#include <stdio.h>
+#include <cstdio>
 
 namespace MadMax
 {

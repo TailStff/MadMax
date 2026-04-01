@@ -15,7 +15,7 @@
 #include "mmFeedbackErrorProvider.h"
 #include "mmDigitalEquipmentProvider.h"
 #include "mmPumpSwapProvider.h"
-#include "mmVariableProvider.h"
+#include "VariableProvider.h"
 #include "mmAccumProvider.h"
 
 #include "mmFeedbackError.h"
@@ -63,7 +63,7 @@ private:
     MadMax::mmFeedbackErrorProvider *mmFeedbackErrors;
     MadMax::mmDigitalEquipmentProvider *mmDigitalEquipments;
     MadMax::mmPumpSwapProvider *mmPumpSwaps;
-    MadMax::mmVariableProvider *mmVariables;
+    MadMax::VariableProvider *mmVariables;
     MadMax::mmAccumProvider *mmAccums;
 
     mmScreenPages *screenPages;
@@ -88,7 +88,7 @@ public:
     void Init();
     void Loop();
 
-    MadMax::mmVariableProvider *GetVariableProvider() { return mmVariables; }
+    MadMax::VariableProvider *GetVariableProvider() { return mmVariables; }
     MadMax::mmAccumProvider *GetAccumsProvider() { return mmAccums; }
     MadMax::mmDigitalEquipmentProvider *GetDigitalEquipmentProvider() { return mmDigitalEquipments; }
     MadMax::mmPumpSwapProvider *GetPumpSwapProvider() { return mmPumpSwaps; }

@@ -1,6 +1,6 @@
 // IVariableValue.h
 #pragma once
-#include "mmVariableValue.h"
+#include "VariableValue.h"
 
 namespace MadMax
 {
@@ -9,7 +9,7 @@ namespace MadMax
     public:
         virtual ~IVariableValue() = default;
 
-        virtual mmVariableValue GetVariantValue() const = 0;
-        virtual bool SetVariantValue(const mmVariableValue &value) = 0;
+        virtual VariableValue GetVariantValue() const = 0;
+        virtual bool SetVariantValue(const VariableValue &value) = 0;
     };
 }

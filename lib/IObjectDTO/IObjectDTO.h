@@ -3,14 +3,14 @@
 
 #include <string>
 #include <vector>
-#include "mmVariableValue.h"
+#include "VariableValue.h"
 
 namespace MadMax
 {
     struct FieldValue
     {
         std::string key;
-        mmVariableValue value;
+        VariableValue value;
     };
 
     struct DTOBase

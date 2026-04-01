@@ -1,8 +1,7 @@
 #ifndef MADMAXTPULSE_H
 #define MADMAXTPULSE_H
 
-#include <stdio.h>
-#include <HardwareSerial.h>
+#include <cstdio>
 #include "IPrimitive.h"
 #include "ExecutionEnv.h"
 #include "TPulseStatus.h"
