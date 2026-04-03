@@ -22,7 +22,7 @@ namespace MadMax
 
     // Some functions to be called when function codes 0x01, 0x05 or 0x15 are requested
     // FC_01: act on 0x01 requests - READ_COIL
-    ModbusMessage ModbusServerManager::FC01(ModbusMessage request)
+    ModbusMessage ModbusServerManager::FC01(ModbusMessage &request)
     {
         ModbusMessage response;
         // Request parameters are first coil and number of coils to read
@@ -47,7 +47,7 @@ namespace MadMax
     }
 
     // Server function to handle FC 0x03 (FC03) - Read Holding Registers
-    ModbusMessage ModbusServerManager::FC03(ModbusMessage request)
+    ModbusMessage ModbusServerManager::FC03(ModbusMessage &request)
     {
 
         ModbusMessage response; // The Modbus message we are going to give back
@@ -73,7 +73,7 @@ namespace MadMax
     }
 
     // Server function to handle FC 0x04 (FC04) - Read Input Registers
-    ModbusMessage ModbusServerManager::FC04(ModbusMessage request)
+    ModbusMessage ModbusServerManager::FC04(ModbusMessage &request)
     {
 
         ModbusMessage response; // The Modbus message we are going to give back
@@ -99,7 +99,7 @@ namespace MadMax
     }
 
     // Server function to handle FC 0x06 (FC06) - Write Single Register
-    ModbusMessage ModbusServerManager::FC06(ModbusMessage request)
+    ModbusMessage ModbusServerManager::FC06(ModbusMessage &request)
     {
 
         ModbusMessage response; // The Modbus message we are going to give back
@@ -125,7 +125,7 @@ namespace MadMax
     }
 
     // Server function to handle FC 0x10 (FC16) - Write Multiple Registers
-    ModbusMessage ModbusServerManager::FC16(ModbusMessage request)
+    ModbusMessage ModbusServerManager::FC16(ModbusMessage &request)
     {
         ModbusMessage response; // The Modbus message we are going to give back
         uint16_t addr = 0;      // Start address

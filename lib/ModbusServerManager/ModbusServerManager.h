@@ -17,11 +17,11 @@ namespace MadMax
         ModbusServerManager(ModbusServerMemoryManager &modbusServerMemoryManager);
         ~ModbusServerManager();
 
-        ModbusMessage FC01(ModbusMessage request);
-        ModbusMessage FC03(ModbusMessage request);
-        ModbusMessage FC04(ModbusMessage request);
-        ModbusMessage FC06(ModbusMessage request);
-        ModbusMessage FC16(ModbusMessage request);
+        ModbusMessage FC01(ModbusMessage &request);
+        ModbusMessage FC03(ModbusMessage &request);
+        ModbusMessage FC04(ModbusMessage &request);
+        ModbusMessage FC06(ModbusMessage &request);
+        ModbusMessage FC16(ModbusMessage &request);
 
         void RegisterWorkers();
 
