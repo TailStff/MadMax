@@ -68,9 +68,18 @@
 
 #include "WebAPI.h"
 
-// Modbus server TCP
-#include "ModbusServerTCPasync.h"
-#include "mmModbusServerManager.h"
+#pragma region Modbus Server
+#include "ModbusServerMemoryManager.h"
+#include "ModbusServerManager.h"
+
+const uint16_t MBserver_Port = 502;      // Port number the server shall listen to
+const uint16_t MBserver_MaxClient = 2;   // Max clients connected at the same time
+const uint16_t MBserver_Timeout = 20000; // Timeout
+
+MadMax::ModbusServerMemoryManager modbusServerMemoryManager;
+MadMax::ModbusServerManager mbServerManager(modbusServerMemoryManager);
+#pragma endregion
+
 #include "main.h"
 
 ExecutionEnv *executionEnv;
@@ -132,18 +141,6 @@ MiniPrefs *myPrefs;
 // Create char buffer for JSON serialization or string concatenation
 char message[128];
 
-// Create Modbus Server
-ModbusServerTCPasync MBserver;
-
-// Port number the server shall listen to
-const uint16_t MBserver_Port(502);
-
-// Max clients
-const uint16_t MBserver_MaxClient = 2;
-
-// Timeout
-const uint16_t MBserver_Timeout = 20000;
-
 class MyModbusClientRTU : public ModbusClientRTU
 {
 public:
@@ -156,8 +153,6 @@ public:
 };
 
 MyModbusClientRTU MBRTU(Serial2);
-
-mmModbusServerManager modbusServerManager;
 
 // OLED screen global object
 #ifdef OLED_SSD1306
@@ -192,149 +187,6 @@ void onNetworkInit(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mD
 
   // Start Multicast DNS
   MDNS.begin(mDNS);
-}
-
-// Some functions to be called when function codes 0x01, 0x05 or 0x15 are requested
-// FC_01: act on 0x01 requests - READ_COIL
-ModbusMessage FC01(ModbusMessage request)
-{
-  ModbusMessage response;
-  // Request parameters are first coil and number of coils to read
-  uint16_t start = 0;
-  uint16_t numCoils = 0;
-  request.get(2, start, numCoils);
-
-  // Are the parameters valid?
-  if (modbusServerManager.CheckCoilOverFlow(start, numCoils))
-  {
-    response.setError(request.getServerID(), request.getFunctionCode(), ILLEGAL_DATA_ADDRESS);
-    return response;
-  }
-
-  // Looks like it. Get the requested coils from our storage
-  vector<uint8_t> coilset = modbusServerManager.GetCoilsPtr()->slice(start, numCoils);
-  // Set up response according to the specs: serverID, function code, number of bytes to follow, packed coils
-  response.add(request.getServerID(), request.getFunctionCode(), (uint8_t)coilset.size(), coilset);
-
-  // Return the response
-  return response;
-}
-
-// Server function to handle FC 0x03 (FC03) - Read Holding Registers
-ModbusMessage FC03(ModbusMessage request)
-{
-
-  ModbusMessage response; // The Modbus message we are going to give back
-  uint16_t addr = 0;      // Start address
-  uint16_t words = 0;     // # of words requested
-  request.get(2, addr);   // read address from request
-  request.get(4, words);  // read # of words from request
-
-  // Address overflow?
-  if (modbusServerManager.CheckHoldingRegisterOverFlow(addr, words))
-  {
-    // Yes - send respective error response
-    response.setError(request.getServerID(), request.getFunctionCode(), ILLEGAL_DATA_ADDRESS);
-    return response;
-  }
-
-  // Set up response
-  response.add(request.getServerID(), request.getFunctionCode(), (uint8_t)(words * 2));
-  modbusServerManager.addHoldingRegisters(&response, addr, words);
-
-  // Send response back
-  return response;
-}
-
-// Server function to handle FC 0x04 (FC04) - Read Input Registers
-ModbusMessage FC04(ModbusMessage request)
-{
-
-  ModbusMessage response; // The Modbus message we are going to give back
-  uint16_t addr = 0;      // Start address
-  uint16_t words = 0;     // # of words requested
-  request.get(2, addr);   // read address from request
-  request.get(4, words);  // read # of words from request
-
-  // Address overflow?
-  if (modbusServerManager.CheckInputRegisterOverFlow(addr, words))
-  {
-    // Yes - send respective error response
-    response.setError(request.getServerID(), request.getFunctionCode(), ILLEGAL_DATA_ADDRESS);
-    return response;
-  }
-
-  // Set up response
-  response.add(request.getServerID(), request.getFunctionCode(), (uint8_t)(words * 2));
-  modbusServerManager.addInputRegisters(&response, addr, words);
-
-  // Send response back
-  return response;
-}
-
-// Server function to handle FC 0x06 (FC06) - Write Single Register
-ModbusMessage FC06(ModbusMessage request)
-{
-
-  ModbusMessage response; // The Modbus message we are going to give back
-  uint16_t addr = 0;      // Start address
-  uint16_t val = 0;       // value to write
-  request.get(2, addr);   // read address from request
-  request.get(4, val);    // read value from request
-
-  // Address overflow?
-  if (modbusServerManager.CheckHoldingRegisterOverFlow(addr, 1))
-  {
-    // Yes - send respective error response
-    response.setError(request.getServerID(), request.getFunctionCode(), ILLEGAL_DATA_ADDRESS);
-    return response;
-  }
-
-  // Set up response
-  *(modbusServerManager.AssociateHoldingRegister<uint16_t>(addr)) = val;
-  response.add(request.getServerID(), request.getFunctionCode(), addr, val);
-
-  // Send response back
-  return response;
-}
-
-// Server function to handle FC 0x10 (FC16) - Write Multiple Registers
-ModbusMessage FC16(ModbusMessage request)
-{
-  ModbusMessage response; // The Modbus message we are going to give back
-  uint16_t addr = 0;      // Start address
-  uint16_t words = 0;     // total words to write
-  uint8_t bytes = 0;      // # of data bytes in request
-  uint16_t val = 0;       // value to be written
-  request.get(2, addr);   // read address from request
-  request.get(4, words);  // read # of words from request
-  request.get(6, bytes);  // read # of data bytes from request (seems redundant with # of words)
-
-  // # of registers proper?
-  if ((bytes != (words * 2)) // byte count in request must match # of words in request
-      || (words > 123))      // can't support more than this in request packet
-  {                          // Yes - send respective error response
-    response.setError(request.getServerID(), request.getFunctionCode(), ILLEGAL_DATA_VALUE);
-    return response;
-  }
-  // Address overflow?
-  if (modbusServerManager.CheckHoldingRegisterOverFlow(addr, words))
-  {
-    // Yes - send respective error response
-    response.setError(request.getServerID(), request.getFunctionCode(), ILLEGAL_DATA_ADDRESS);
-    return response;
-  }
-
-  // Do the writes
-  for (uint16_t i = 0; i < words; ++i)
-  {
-    request.get(7 + (i * 2), val); // read value from request
-    *(modbusServerManager.AssociateHoldingRegister<uint16_t>(addr + i)) = val;
-  }
-
-  // Set up response
-  response.add(request.getServerID(), request.getFunctionCode(), addr, words);
-  return response;
 }
 
 void networkOnEvent(arduino_event_id_t event, arduino_event_info_t info)
@@ -501,7 +353,7 @@ void setup()
   myPrefs = new MiniPrefs(fram, 32 * 1024);
   myPrefs->begin();
 
-  executionEnv = new ExecutionEnv(MMCYCLE, &rtcWrapper, &prefs, myPrefs, &display, &modbusServerManager, onNetworkInit);
+  executionEnv = new ExecutionEnv(MMCYCLE, &rtcWrapper, &prefs, myPrefs, &display, &modbusServerMemoryManager, onNetworkInit);
 
 #ifdef SERIALDEBUG
   Serial.println("ExecutionEnv object created");
@@ -513,19 +365,19 @@ void setup()
   Serial.println("ExecutionEnv::NetworksInitialization() executed");
 #endif
 
-  myApp = new MyApp(executionEnv, MBRTU, &modbusServerManager, &digitalInputs, &digitalOutputs);
+  myApp = new MyApp(executionEnv, MBRTU, &modbusServerMemoryManager, &digitalInputs, &digitalOutputs);
 
 #ifdef SERIALDEBUG
   Serial.println("MyApp object created");
 #endif
 
-  myTick = modbusServerManager.AssociateHoldingRegister<int64_t>(0);
-  y = modbusServerManager.AssociateHoldingRegister<uint16_t>(4);
-  m = modbusServerManager.AssociateHoldingRegister<uint16_t>(5);
-  d = modbusServerManager.AssociateHoldingRegister<uint16_t>(6);
-  h = modbusServerManager.AssociateHoldingRegister<uint16_t>(7);
-  mn = modbusServerManager.AssociateHoldingRegister<uint16_t>(8);
-  s = modbusServerManager.AssociateHoldingRegister<uint16_t>(9);
+  myTick = modbusServerMemoryManager.AssociateHoldingRegister<int64_t>(0);
+  y = modbusServerMemoryManager.AssociateHoldingRegister<uint16_t>(4);
+  m = modbusServerMemoryManager.AssociateHoldingRegister<uint16_t>(5);
+  d = modbusServerMemoryManager.AssociateHoldingRegister<uint16_t>(6);
+  h = modbusServerMemoryManager.AssociateHoldingRegister<uint16_t>(7);
+  mn = modbusServerMemoryManager.AssociateHoldingRegister<uint16_t>(8);
+  s = modbusServerMemoryManager.AssociateHoldingRegister<uint16_t>(9);
 
   RTUutils::prepareHardwareSerial(Serial2);
   Serial2.begin(RS485_BAUDRATE, RS485_PARITY, PIN_RS485_RX, PIN_RS485_TX);
@@ -592,12 +444,8 @@ void setup()
   // Prepare hardware to manage Inputs and Outputs
   SetupInputsOutputs();
 
-  MBserver.registerWorker(1, READ_COIL, FC01);            // FC=01 for serverID = 1
-  MBserver.registerWorker(1, READ_HOLD_REGISTER, FC03);   // FC=03 for serverID = 1
-  MBserver.registerWorker(1, READ_INPUT_REGISTER, FC04);  // FC=04 for serverID = 1
-  MBserver.registerWorker(1, WRITE_MULT_REGISTERS, FC16); // FC=16 for serverID = 1
-
-  MBserver.start(MBserver_Port, MBserver_MaxClient, MBserver_Timeout);
+  mbServerManager.RegisterWorkers();
+  mbServerManager.Start(MBserver_Port, MBserver_MaxClient, MBserver_Timeout);
 
 #ifdef SERIALDEBUG
   Serial.println("Modbus server successfully started");
@@ -635,7 +483,7 @@ void callbackExecution()
     // Increment execution ticks
 
     // Inputs refresh ////////////////////////////////////////////////////////////////////////////
-    digitalInputs.RefreshDigitalInputs(pcf8574_I1, pcf8574_I2, *modbusServerManager.GetCoilsPtr());
+    digitalInputs.RefreshDigitalInputs(pcf8574_I1, pcf8574_I2, *modbusServerMemoryManager.GetCoilsPtr());
 
     // Start of Application //////////////////////////////////////////////////////////////////////
 
@@ -652,7 +500,7 @@ void callbackExecution()
     SafeSet<uint16_t>(s, (uint16_t)executionEnv->getSecond());
 
     // Outputs refresh ///////////////////////////////////////////////////////////////////////////
-    digitalOutputs.RefreshDigitalOutputs(pcf8574_R1, pcf8574_R2, *modbusServerManager.GetCoilsPtr());
+    digitalOutputs.RefreshDigitalOutputs(pcf8574_R1, pcf8574_R2, *modbusServerMemoryManager.GetCoilsPtr());
   }
   catch (const std::exception &ex)
   {
@@ -665,7 +513,7 @@ void callbackExecution()
       digitalOutputs.Set(i, false);
     }
     // Outputs refresh
-    digitalOutputs.RefreshDigitalOutputs(pcf8574_R1, pcf8574_R2, *modbusServerManager.GetCoilsPtr());
+    digitalOutputs.RefreshDigitalOutputs(pcf8574_R1, pcf8574_R2, *modbusServerMemoryManager.GetCoilsPtr());
 
     // Stop the callback
     intervalCallback.Stop();

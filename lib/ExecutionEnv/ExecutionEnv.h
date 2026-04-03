@@ -5,7 +5,7 @@
 #include <HardwareSerial.h>
 #include <Preferences.h>
 #include "MiniPrefs.h"
-#include "mmModbusServerManager.h"
+#include "ModbusServerMemoryManager.h"
 
 #include "helpersIPAddress.h"
 
@@ -71,7 +71,7 @@ private:
 
   Adafruit_SH1107 *display;
 
-  mmModbusServerManager *modbusServerManager;
+  MadMax::ModbusServerMemoryManager *modbusServerManager;
 
   /// @brief Callback function for Initialize network interfaces
   std::function<void(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit;
@@ -93,7 +93,7 @@ private:
 
 public:
   // Constructor
-  ExecutionEnv(unsigned int _cycle, RTCWrapper *rtcWrapper, Preferences *prefs, MiniPrefs *miniPrefs, Adafruit_SH1107 *display, mmModbusServerManager *modbusServerManager, std::function<void(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit);
+  ExecutionEnv(unsigned int _cycle, RTCWrapper *rtcWrapper, Preferences *prefs, MiniPrefs *miniPrefs, Adafruit_SH1107 *display, MadMax::ModbusServerMemoryManager *modbusServerManager, std::function<void(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit);
 
   // Destructor
   ~ExecutionEnv();
@@ -119,7 +119,7 @@ public:
 
   MiniPrefs *GetMiniPrefs();
 
-  mmModbusServerManager *GetModbusServerManager();
+  MadMax::ModbusServerMemoryManager *GetModbusServerManager();
 
   // Get I2C mini prefs object
   // Adafruit_FRAM_I2C *GetMiniPrefs() { return this->fram; }

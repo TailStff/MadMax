@@ -71,6 +71,7 @@ namespace MadMax
             return static_cast<Variable<T> *>(ObjectProvider<ISerializableBase>::Get(name, address));
         }
 
+#pragma region IPersistable
         /// @brief Save the persistency values of the mmVariableFloat object with the given name
         /// @param name Name of the object to be serialized
         void SavePersistencyValuesToMem(const std::string &name) override
@@ -87,12 +88,13 @@ namespace MadMax
             writePersistencyData(name, obj);
         }
 
-        void GetPersistencyValuesFromMem(const std::string &name, uint8_t *data, size_t length)
+        void GetPersistencyValuesFromMem(const std::string &name, uint8_t *data, size_t length) override
         {
             uint16_t readedLength;
             uint16_t addr;
             executionEnv->GetMiniPrefs()->Get(name.c_str(), data, length, addr, readedLength);
         }
+#pragma endregion IPersistable
 
         /// @brief Function that SET new value to the variable and save persistency values if the value is different from the previous one
         /// @param name Name of the object to be updated
@@ -112,19 +114,24 @@ namespace MadMax
             if (obj->SetValue(value))
                 writePersistencyData(name, obj);
         }
-        /*
-            // API Parts
 
-            void RefreshFromModbusRegisters()
-            {
-                this->ForEach([&](const std::string &name, IVariableValue *base)
-                              {
+        // API Parts
+
+        void RefreshFromModbusRegisters()
+        {
+            this->ForEach(
+                [&](const std::string &name, ISerializableBase *base)
+                {
                 // We consider that only variables that are associated to Modbus registers need to be refreshed from Modbus registers, if the variable is not associated to any Modbus register, we consider that its value is managed internally and not updated from Modbus registers, so we skip it
                 int32_t address;
-                auto *obj = ObjectProvider<IVariableValue>::Get(name, address);
+                ISerializableBase *obj = ObjectProvider<ISerializableBase>::Get(name, address);
 
                 if (address == -1)
                     return;
+
+                    IVariableValue* variable = static_cast<IVariableValue*>(obj);
+                    if (!variable)
+                        return;
 
                 // We consider that the address is a 32 bits integer where the 16 most significant bits represent the Modbus memory space (for example, holding registers, input registers, coils, discrete inputs) and the 16 least significant bits represent the Modbus address in that memory space, this allow to associate variables to different types of Modbus registers and not only holding registers
                 uint8_t modbusMemorySpace = (address & 0x00FF0000) >> 16;
@@ -134,20 +141,19 @@ namespace MadMax
                 if (modbusMemorySpace == 4)
                 {
                     // On lit selon le type réel de la variable
-                    mmVariableValue incoming = std::visit([&](auto &&stored) -> mmVariableValue {
+                    VariableValue incoming = std::visit([&](auto &&stored) -> VariableValue {
                         using TStored = std::decay_t<decltype(stored)>;
 
-                        TStored *reg = executionEnv->GetModbusServerManager()
-                                        ->AssociateHoldingRegister<TStored>(modbusAddress);
+                        TStored *reg = executionEnv->GetModbusServerManager()->AssociateHoldingRegister<TStored>(modbusAddress);
                         if (!reg) return stored; // pas de changement si pas de registre
 
-                        return mmVariableValue{*reg};
-                    }, base->GetVariantValue());
+                        return VariableValue{*reg};
+                    }, variable->GetVariantValue());
 
-                    if (base->SetVariantValue(incoming))
+                    if (variable->SetVariantValue(incoming))
                         writePersistencyData(name, base);
                 } });
-            }*/
+        }
 
 #pragma region IProviderDTO
         std::vector<DTOBase> GetDTOs() const override
@@ -174,13 +180,7 @@ namespace MadMax
                 return false;
 
             if (dtoMappers && dtoMappers->ToDTO(*obj, dto, name))
-            {
                 dto.objectName = name;
-            }
-
-            // IPrimitive *primitive = static_cast<IPrimitive *>(obj);
-            // primitive->GetDTO(dto);
-            // dto.objectName = name;
 
             return true;
         }
@@ -197,14 +197,7 @@ namespace MadMax
                 return false;
 
             if (dtoMappers && dtoMappers->ToDetailDTO(*obj, dto, name))
-            {
                 dto.objectName = name;
-            }
-
-            /*
-        IPrimitive *primitive = static_cast<IPrimitive *>(obj);
-        primitive->GetDetailDTO(dto);
-        dto.objectName = name;*/
 
             return true;
         }

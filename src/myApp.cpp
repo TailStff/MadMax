@@ -34,7 +34,7 @@ void MyApp::cbLongPress()
     }
 }
 
-MyApp::MyApp(ExecutionEnv *executionEnv, ModbusClientRTU &MBRTU, mmModbusServerManager *modbusServerManager, DigitalInputs *digitalInputs, DigitalOutputs *digitalOutputs)
+MyApp::MyApp(ExecutionEnv *executionEnv, ModbusClientRTU &MBRTU, MadMax::ModbusServerMemoryManager *modbusServerManager, DigitalInputs *digitalInputs, DigitalOutputs *digitalOutputs)
 {
     this->executionEnv = executionEnv;
     this->digitalInputs = digitalInputs;

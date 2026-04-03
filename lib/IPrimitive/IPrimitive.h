@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <stdio.h>
+#include <cstdio>
 
 #include "ISerializableBase.h"
 #include "IPersistency.h"

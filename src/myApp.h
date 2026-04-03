@@ -20,7 +20,7 @@
 #include "AccumProvider.h"
 
 #include "ModbusScheduler.h"
-#include "mmModbusServerManager.h"
+#include "ModbusServerMemoryManager.h"
 
 class MyApp
 {
@@ -31,7 +31,7 @@ private:
     DigitalInputs *digitalInputs;
     DigitalOutputs *digitalOutputs;
 
-    mmModbusServerManager *modbusServerManager;
+    MadMax::ModbusServerMemoryManager *modbusServerManager;
 
     ModbusScheduler *scheduler;
 
@@ -81,7 +81,7 @@ private:
 
 public:
     // Constructors
-    MyApp(ExecutionEnv *executionEnv, ModbusClientRTU &MBRTU, mmModbusServerManager *modbusServerManager, DigitalInputs *digitalInputs, DigitalOutputs *digitalOutputs);
+    MyApp(ExecutionEnv *executionEnv, ModbusClientRTU &MBRTU, MadMax::ModbusServerMemoryManager *modbusServerManager, DigitalInputs *digitalInputs, DigitalOutputs *digitalOutputs);
     ~MyApp();
 
     void Init();
