@@ -1,9 +1,12 @@
+#pragma once
+
 #ifndef MADMAXRUNTIME_H
 #define MADMAXRUNTIME_H
 
 #include <stdio.h>
 #include <HardwareSerial.h>
 
+#include "IPrimitive.h"
 #include "ISerializable.h"
 #include "IPrimitiveTyped.h"
 #include "ExecutionEnv.h"

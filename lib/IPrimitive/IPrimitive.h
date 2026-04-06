@@ -11,6 +11,7 @@ namespace MadMax
     {
     public:
         virtual ~IPrimitive() = default;
+        
         const virtual ISerializable *AsSerializable() const { return nullptr; }
         const virtual IVariableValue *AsVariableValue() const { return nullptr; }
         const virtual DigitalEquipment *AsDigitalEquipment() const { return nullptr; }
