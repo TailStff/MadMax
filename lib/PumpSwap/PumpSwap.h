@@ -4,7 +4,7 @@
 #include <vector>
 #include <array>
 
-#include "IPrimitive.h"
+#include "ISerializable.h"
 #include "FeedbackError.h"
 #include "structFaults.h"
 #include "RunTime.h"
@@ -54,7 +54,7 @@ namespace MadMax
         std::vector<DigitalEquipmentStatus *> PumpsStatus;
     };
 
-    class PumpSwap : public IPrimitiveTyped<PumpSwapPersistencyValues>, public IPrimitive
+    class PumpSwap : public IPrimitiveTyped<PumpSwapPersistencyValues>, public ISerializable
     {
     private:
         ExecutionEnv *executionEnv;

@@ -6,7 +6,7 @@ namespace MadMax
     class MinOnOffDTOMapper : public IDTOMapperBase
     {
     public:
-        bool ToDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override
+        bool ToDTO(const IPrimitive &obj, DTOBase &dto, const std::string &name) const override
         {
             const auto *primitive = static_cast<const MinOnOff *>(&obj);
 
@@ -15,7 +15,7 @@ namespace MadMax
             return true;
         }
 
-        bool ToDetailDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override
+        bool ToDetailDTO(const IPrimitive &obj, DTOBase &dto, const std::string &name) const override
         {
             const auto *primitive = static_cast<const MinOnOff *>(&obj);
 

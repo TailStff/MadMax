@@ -1,8 +1,9 @@
 #ifndef MADMAXVARIABLE_H
 #define MADMAXVARIABLE_H
 
+#include "ISerializable.h"
 #include "IVariableValue.h"
-#include "IPrimitive.h"
+#include "IPrimitiveTyped.h"
 #include "ExecutionEnv.h"
 
 namespace MadMax
@@ -14,7 +15,7 @@ namespace MadMax
     };
 
     template <class T>
-    class Variable : public IVariableValue, public IPrimitiveTyped<VariablePersistencyValues<T>>
+    class Variable : public IVariableValue, public ISerializable, public IPrimitiveTyped<VariablePersistencyValues<T>>
     {
 
     private:

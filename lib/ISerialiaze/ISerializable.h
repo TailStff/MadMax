@@ -3,12 +3,14 @@
 #include <vector>
 #include <stdio.h>
 
+#include "IPrimitive.h"
+
 namespace MadMax
 {
-    class ISerializableBase
+    class ISerializable : public IPrimitive
     {
     public:
-        virtual ~ISerializableBase() = default;
+        virtual ~ISerializable() = default;
 
         /// @brief Virtual function to implement Persistency data in bytes array format
         /// @param data

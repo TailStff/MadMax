@@ -1,5 +1,6 @@
-// IVariableValue.h
 #pragma once
+
+#include "IPrimitive.h"
 #include "VariableValue.h"
 
 namespace MadMax

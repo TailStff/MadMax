@@ -2,6 +2,7 @@
 #define MADMAXTPULSE_H
 
 #include <cstdio>
+
 #include "IPrimitive.h"
 #include "ExecutionEnv.h"
 #include "TPulseStatus.h"
@@ -34,9 +35,6 @@ namespace MadMax
 
     const bool GetValue() const;
     const TPulseStatus GetStatus() const;
-
-    void GetBytesFromData(std::vector<uint8_t> &data) const override;
-    void SetDataFromBytes(std::vector<uint8_t> &data) override;
   };
 }
 

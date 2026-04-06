@@ -7,7 +7,7 @@
 
 namespace MadMax
 {
-    class AccumProvider : public ObjectProvider<ISerializableBase>, public IPersistable, public IProviderDTO
+    class AccumProvider : public ObjectProvider<ISerializable>, public IPersistable, public IProviderDTO
     {
     private:
         std::unique_ptr<IDTOMapperBase> dtoMappers;
@@ -28,7 +28,7 @@ namespace MadMax
             // We must inject via the fixed base interface ObjectProvider<ISerializableBase>
             // to store all typed instances in a single polymorphic collection.
             auto *obj = new Accum<T>(executionEnv, data);
-            ObjectProvider<ISerializableBase>::inject(name, address, obj);
+            ObjectProvider<ISerializable>::inject(name, address, obj);
             return obj;
         }
 
@@ -36,7 +36,7 @@ namespace MadMax
         Accum<T> *Get(const std::string &name)
         {
             int32_t address;
-            return static_cast<Accum<T> *>(ObjectProvider<ISerializableBase>::Get(name, address));
+            return static_cast<Accum<T> *>(ObjectProvider<ISerializable>::Get(name, address));
         }
 
         void GetPersistencyValuesFromMem(const std::string &name, uint8_t *data, size_t length)
@@ -49,7 +49,7 @@ namespace MadMax
         void SavePersistencyValuesToMem(const std::string &name) override
         {
             int32_t address;
-            ISerializableBase *obj = ObjectProvider<ISerializableBase>::Get(name, address);
+            ISerializable *obj = ObjectProvider<ISerializable>::Get(name, address);
             if (!obj)
                 return;
 
@@ -66,7 +66,7 @@ namespace MadMax
             result.reserve(this->size());
 
             this->ForEach(
-                [&](const std::string &name, ISerializableBase *base)
+                [&](const std::string &name, ISerializable *base)
                 {
                     DTOBase dto;
                     if (dtoMappers && dtoMappers->ToDTO(*base, dto, name))
@@ -78,7 +78,7 @@ namespace MadMax
 
         bool GetDTO(const std::string &name, DTOBase &dto) const override
         {
-            ISerializableBase *obj = ObjectProvider<ISerializableBase>::Get(name);
+            ISerializable *obj = ObjectProvider<ISerializable>::Get(name);
 
             if (!obj)
                 return false;
@@ -101,7 +101,7 @@ namespace MadMax
         /// @return Return true if the DTO was filled successfully, false if there is an error during data retrieval
         bool GetDetailDTO(const std::string &name, DTOBase &dto) const override
         {
-            ISerializableBase *obj = ObjectProvider<ISerializableBase>::Get(name);
+            ISerializable *obj = ObjectProvider<ISerializable>::Get(name);
 
             if (!obj)
                 return false;

@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <unordered_map>
 #include <memory>
+
 #include "IPrimitive.h"
 #include "ExecutionEnv.h"
 #include "FeedbackErrorOption.h"
@@ -75,9 +76,6 @@ namespace MadMax
 
     bool GetValue() const;
     const FeedbackErrorStatus &GetStatus() const;
-
-    void GetBytesFromData(std::vector<uint8_t> &data) const override;
-    void SetDataFromBytes(std::vector<uint8_t> &data) override;
   };
 }
 

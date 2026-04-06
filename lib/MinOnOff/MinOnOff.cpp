@@ -85,16 +85,4 @@ namespace MadMax
     this->status.output = false;
     lastOfftickNumber = _tickNumber;
   }
-
-#pragma region IPersistable
-  /// @brief Get the bytes vector that represent the object persistency values, here we just serialize all pumps runtimes and start counts in a byte vector
-  /// @param data Reference to the vector that will receive the bytes that represent the object persistency values
-  void MinOnOff::GetBytesFromData(std::vector<uint8_t> &data) const
-  {
-  }
-
-  void MinOnOff::SetDataFromBytes(std::vector<uint8_t> &data)
-  {
-  }
-#pragma endregion IPersistable
 }

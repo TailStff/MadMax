@@ -1,4 +1,3 @@
-// DTOBase.h
 #pragma once
 
 #include <string>
@@ -29,11 +28,5 @@ namespace MadMax
         virtual bool GetDetailDTO(const std::string &name, DTOBase &dto) const = 0;
     };
 
-    class IObjectDTO
-    {
-    public:
-        virtual ~IObjectDTO() = default;
-        virtual bool GetDTO(DTOBase &dto) const = 0;
-        virtual bool GetDetailDTO(DTOBase &dto) const = 0;
-    };
+
 }

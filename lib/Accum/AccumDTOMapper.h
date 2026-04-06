@@ -7,7 +7,7 @@ namespace MadMax
     class AccumDTOMapper : public IDTOMapperBase
     {
     public:
-        bool ToDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override
+        bool ToDTO(const IPrimitive &obj, DTOBase &dto, const std::string &name) const override
         {
             const IVariableValue *primitive = static_cast<const IVariableValue *>(&obj);
 
@@ -17,7 +17,7 @@ namespace MadMax
             return true;
         }
 
-        bool ToDetailDTO(const ISerializableBase &obj, DTOBase &dto, const std::string &name) const override
+        bool ToDetailDTO(const IPrimitive &obj, DTOBase &dto, const std::string &name) const override
         {
             const IVariableValue *primitive = static_cast<const IVariableValue *>(&obj);
 

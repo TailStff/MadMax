@@ -15,7 +15,7 @@ namespace MadMax
   };
 
   template <class T>
-  class Accum : public IVariableValue, public IPrimitiveTyped<AccumPersistencyValues<T>>
+  class Accum : public IVariableValue, public ISerializable, public IPrimitiveTyped<AccumPersistencyValues<T>>
   {
 
   private:

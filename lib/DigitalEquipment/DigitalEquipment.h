@@ -2,7 +2,7 @@
 #define MADMAXDIGITALEQUIPMENT_H
 
 #include "DigitalEquipmentStatus.h"
-#include "IPrimitive.h"
+#include "ISerializable.h"
 #include "FeedbackError.h"
 #include "structFaults.h"
 #include "RunTime.h"
@@ -16,7 +16,7 @@ namespace MadMax
         uint64_t startCount;
     };
 
-    class DigitalEquipment : public IPrimitiveTyped<DigitalEquipementPersistencyValues>, public IPrimitive
+    class DigitalEquipment : public IPrimitiveTyped<DigitalEquipementPersistencyValues>, public ISerializable
     {
     private:
         ExecutionEnv *executionEnv;

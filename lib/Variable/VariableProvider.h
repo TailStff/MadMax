@@ -1,4 +1,5 @@
 #pragma once
+
 #include "ObjectProvider.h"
 #include "IPersistency.h"
 #include "Variable.h"
@@ -7,12 +8,12 @@
 
 namespace MadMax
 {
-    class VariableProvider : public ObjectProvider<ISerializableBase>, public IPersistable, public IProviderDTO
+    class VariableProvider : public ObjectProvider<ISerializable>, public IPersistable, public IProviderDTO
     {
     private:
         std::unique_ptr<IDTOMapperBase> dtoMappers;
 
-        void writePersistencyData(const std::string &name, ISerializableBase *obj)
+        void writePersistencyData(const std::string &name, ISerializable *obj)
         {
             // Get the bytes vector that represent the object persistency values
             std::vector<uint8_t> dataToWrite;
@@ -56,7 +57,7 @@ namespace MadMax
             // We must inject via the fixed base interface ObjectProvider<ISerializableBase>
             // to store all typed instances in a single polymorphic collection.
             auto *obj = new Variable<T>(executionEnv, data);
-            ObjectProvider<ISerializableBase>::inject(name, address, obj);
+            ObjectProvider<ISerializable>::inject(name, address, obj);
             return obj;
         }
 
@@ -68,7 +69,7 @@ namespace MadMax
         Variable<T> *Get(const std::string &name) const
         {
             int32_t address;
-            return static_cast<Variable<T> *>(ObjectProvider<ISerializableBase>::Get(name, address));
+            return static_cast<Variable<T> *>(ObjectProvider<ISerializable>::Get(name, address));
         }
 
 #pragma region IPersistable
@@ -79,7 +80,7 @@ namespace MadMax
             int32_t address;
 
             // Get the object to be serialized
-            auto *obj = ObjectProvider<ISerializableBase>::Get(name, address);
+            auto *obj = ObjectProvider<ISerializable>::Get(name, address);
 
             // If the object doesn't exist, we can't save its persistency values
             if (!obj)
@@ -105,7 +106,7 @@ namespace MadMax
             int32_t address;
 
             // Get the object to be serialized
-            Variable<T> *obj = static_cast<Variable<T> *>(ObjectProvider<ISerializableBase>::Get(name, address));
+            Variable<T> *obj = static_cast<Variable<T> *>(ObjectProvider<ISerializable>::Get(name, address));
 
             // If the object doesn't exist, we can't save its persistency values
             if (!obj)
@@ -120,11 +121,11 @@ namespace MadMax
         void RefreshFromModbusRegisters()
         {
             this->ForEach(
-                [&](const std::string &name, ISerializableBase *base)
+                [&](const std::string &name, ISerializable *base)
                 {
                 // We consider that only variables that are associated to Modbus registers need to be refreshed from Modbus registers, if the variable is not associated to any Modbus register, we consider that its value is managed internally and not updated from Modbus registers, so we skip it
                 int32_t address;
-                ISerializableBase *obj = ObjectProvider<ISerializableBase>::Get(name, address);
+                IPrimitive *obj = ObjectProvider<ISerializable>::Get(name, address);
 
                 if (address == -1)
                     return;
@@ -162,7 +163,7 @@ namespace MadMax
             result.reserve(this->size());
 
             this->ForEach(
-                [&](const std::string &name, ISerializableBase *base)
+                [&](const std::string &name, ISerializable *base)
                 {
                     DTOBase dto;
                     if (dtoMappers && dtoMappers->ToDTO(*base, dto, name))
@@ -174,7 +175,7 @@ namespace MadMax
 
         bool GetDTO(const std::string &name, DTOBase &dto) const override
         {
-            ISerializableBase *obj = ObjectProvider<ISerializableBase>::Get(name);
+            ISerializable *obj = ObjectProvider<ISerializable>::Get(name);
 
             if (!obj)
                 return false;
@@ -191,7 +192,7 @@ namespace MadMax
         /// @return Return true if the DTO was filled successfully, false if there is an error during data retrieval
         bool GetDetailDTO(const std::string &name, DTOBase &dto) const override
         {
-            ISerializableBase *obj = ObjectProvider<ISerializableBase>::Get(name);
+            ISerializable *obj = ObjectProvider<ISerializable>::Get(name);
 
             if (!obj)
                 return false;

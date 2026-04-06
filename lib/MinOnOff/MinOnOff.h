@@ -1,7 +1,10 @@
+#pragma once
+
 #ifndef MADMAXMINONOFF
 #define MADMAXMINONOFF
 
 #include <cstdint>
+
 #include "IPrimitive.h"
 #include "ExecutionEnv.h"
 #include "MinOnOffStatus.h"
@@ -30,9 +33,6 @@ namespace MadMax
 
     const bool GetValue() const { return this->status.output; };
     const MinOnOffStatus GetStatus() const { return this->status; }
-
-    void GetBytesFromData(std::vector<uint8_t> &data) const override;
-    void SetDataFromBytes(std::vector<uint8_t> &data) override;
   };
 }
 

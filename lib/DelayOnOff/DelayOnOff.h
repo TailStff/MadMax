@@ -2,6 +2,7 @@
 #define MADMAXDELAYONOFF_H
 
 #include <cstdint>
+
 #include "IPrimitive.h"
 #include "ExecutionEnv.h"
 #include "DelayOnOffStatus.h"
@@ -29,10 +30,7 @@ namespace MadMax
 
     const int64_t GetRemainingTime() const { return this->status.remainingTime; };
     const bool GetValue() const { return this->status.output; };
-    const DelayOnOffStatus GetStatus() const { return this->status; }
-
-    void GetBytesFromData(std::vector<uint8_t> &data) const override;
-    void SetDataFromBytes(std::vector<uint8_t> &data) override;
+    const DelayOnOffStatus GetStatus() const { return this->status; };
   };
 }
 

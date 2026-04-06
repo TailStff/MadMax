@@ -65,14 +65,4 @@ namespace MadMax
   {
     return this->status;
   }
-
-  /// @brief Get the bytes vector that represent the object persistency values,
-  /// @param data Reference to the vector that will receive the bytes that represent the object persistency values
-  void TPulse::GetBytesFromData(std::vector<uint8_t> &data) const
-  {
-  }
-
-  void TPulse::SetDataFromBytes(std::vector<uint8_t> &data)
-  {
-  }
 }
