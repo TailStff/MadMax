@@ -9,7 +9,10 @@ namespace MadMax
     public:
         bool ToDTO(const IPrimitive &obj, DTOBase &dto, const std::string &name) const override
         {
-            const PumpSwap *primitive = static_cast<const PumpSwap *>(&obj);
+            const auto *primitive = obj.AsPumpSwap();
+
+            if (!primitive)
+                return false;
 
             dto.objectName = name;
             dto.fields.push_back({"values", primitive->GetPhysicalValues()});
@@ -18,7 +21,10 @@ namespace MadMax
 
         bool ToDetailDTO(const IPrimitive &obj, DTOBase &dto, const std::string &name) const override
         {
-            const PumpSwap *primitive = static_cast<const PumpSwap *>(&obj);
+            const auto *primitive = obj.AsPumpSwap();
+
+            if (!primitive)
+                return false;
 
             if (ToDTO(obj, dto, name))
             {

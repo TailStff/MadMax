@@ -61,22 +61,28 @@ namespace MadMax
     template <class T>
     bool Variable<T>::SetVariantValue(const VariableValue &v)
     {
-        return std::visit([this](const auto &val) -> bool
-                          {
-        using V = std::decay_t<decltype(val)>;
+        return std::visit(
+            [this](const auto &val) -> bool
+            {
+                using V = std::decay_t<decltype(val)>;
 
-        if constexpr (std::is_same_v<V, T>) {
-            // Types identiques, pas besoin de cast
-            return this->SetValue(val);
-        }
-        else if constexpr (std::is_arithmetic_v<V> && std::is_arithmetic_v<T>) {
-            // Conversion entre types scalaires ok
-            return this->SetValue(static_cast<T>(val));
-        }
-        else {
-            // Types incompatibles (ex: mmByteArray -> float)
-            return false;
-        } }, v);
+                if constexpr (std::is_same_v<V, T>)
+                {
+                    // Types identiques, pas besoin de cast
+                    return this->SetValue(val);
+                }
+                else if constexpr (std::is_arithmetic_v<V> && std::is_arithmetic_v<T>)
+                {
+                    // Conversion entre types scalaires ok
+                    return this->SetValue(static_cast<T>(val));
+                }
+                else
+                {
+                    // Types incompatibles (ex: mmByteArray -> float)
+                    return false;
+                }
+            },
+            v);
     }
 #pragma endregion VariableValue
 }

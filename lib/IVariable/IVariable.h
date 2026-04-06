@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 
 /// new
 
@@ -13,4 +13,4 @@ namespace MadMax
         virtual VariableValue GetValue() const = 0;
         virtual bool SetValue(const VariableValue &v) = 0;
     };
-}
+}*/

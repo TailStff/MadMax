@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef MADMAXVARIABLE_H
 #define MADMAXVARIABLE_H
 
@@ -20,13 +22,28 @@ namespace MadMax
 
     private:
         T value;
-
         ExecutionEnv *executionEnv;
 
     public:
         // Constructors
         Variable(ExecutionEnv *_executionEnv, VariablePersistencyValues<T> data = {.value = static_cast<T>(0)});
         ~Variable() = default;
+
+        /// @brief  Function that return a pointer to the object as an ISerializable, this will be used for generic access to the object as an ISerializable without knowing its type
+        /// @return A pointer to the object as an ISerializable
+        const ISerializable *AsSerializable() const override { return this; }
+
+        /// @brief  Function that return a pointer to the object as an ISerializable, this will be used for generic access to the object as an ISerializable without knowing its type
+        /// @return A pointer to the object as an ISerializable
+        ISerializable *AsSerializable() override { return this; }
+
+        /// @brief  Function that return a pointer to the object as an IVariableValue, this will be used for generic access to the object as an IVariableValue without knowing its type
+        /// @return A pointer to the object as an IVariableValue
+        const IVariableValue *AsVariableValue() const override { return this; }
+
+        /// @brief  Function that return a pointer to the object as an IVariableValue, this will be used for generic access to the object as an IVariableValue without knowing its type
+        /// @return A pointer to the object as an IVariableValue
+        IVariableValue *AsVariableValue() override { return this; }
 
         /// @brief Function that SET new value to the variable
         /// @param value The new value to SET
@@ -62,12 +79,6 @@ namespace MadMax
         /// @return Return true if setted value is different from the previous, false if there is no changes or if the type of the variant value is not compatible with the variable type
         bool SetVariantValue(const VariableValue &v) override;
 #pragma endregion IVariableValue
-
-        const ISerializable *AsSerializable() const override { return this; }
-        ISerializable *AsSerializable() override { return this; }
-        
-        const IVariableValue *AsVariableValue() const override { return this; }
-        IVariableValue *AsVariableValue() override { return this; }
     };
 }
 

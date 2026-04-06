@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 
 /// new
 
@@ -44,4 +44,4 @@ namespace MadMax
     private:
         T value;
     };
-}
+}*/

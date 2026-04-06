@@ -9,8 +9,7 @@ namespace MadMax
     public:
         bool ToDTO(const IPrimitive &obj, DTOBase &dto, const std::string &name) const override
         {
-            // const auto *primitive = static_cast<const DigitalEquipment *>(&obj);
-            const DigitalEquipment *primitive = obj.AsDigitalEquipment();
+            const auto *primitive = obj.AsDigitalEquipment();
 
             if (!primitive)
                 return false;
