@@ -1,7 +1,7 @@
 // #define OLED_SSD1306
 #define OLED_SH1107
 
-// #define SERIALDEBUG
+#define SERIALDEBUG
 
 #define GPIO0 0
 #define PIN_SDA 4

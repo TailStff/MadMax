@@ -61,10 +61,11 @@ namespace MadMax
     bool SetVariantValue(const VariableValue &v) override;
 #pragma endregion IVariableValue
 
-    /*#pragma region IObjectDTO
-      bool GetDTO(DTOBase &dto) const override;
-      bool GetDetailDTO(DTOBase &dto) const override;
-    #pragma endregion IObjectDTO*/
+    const ISerializable *AsSerializable() const override { return this; }
+    ISerializable *AsSerializable() override { return this; }
+
+    const IVariableValue *AsVariableValue() const override { return this; }
+    IVariableValue *AsVariableValue() override { return this; }
   };
 }
 

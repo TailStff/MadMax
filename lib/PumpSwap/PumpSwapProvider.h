@@ -45,6 +45,9 @@ namespace MadMax
 
         void SavePersistencyValuesToMem(const std::string &name) override
         {
+            Serial.print(F("Saving persistency values for '"));
+            Serial.print(name.c_str());
+            
             int32_t address;
 
             // Get the object to be serialized

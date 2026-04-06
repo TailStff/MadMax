@@ -16,7 +16,7 @@ namespace MadMax
         uint64_t startCount;
     };
 
-    class DigitalEquipment : public IPrimitiveTyped<DigitalEquipementPersistencyValues>, public ISerializable
+    class DigitalEquipment : public IPrimitiveTyped<DigitalEquipementPersistencyValues>, public IPrimitive, public ISerializable
     {
     private:
         ExecutionEnv *executionEnv;
@@ -51,6 +51,12 @@ namespace MadMax
         void GetPersistencyValues(DigitalEquipementPersistencyValues &persistencyValues) const; // override;
         void GetBytesFromData(std::vector<uint8_t> &data) const override;
         void SetDataFromBytes(std::vector<uint8_t> &data) override;
+
+        const ISerializable *AsSerializable() const override { return this; }
+        ISerializable *AsSerializable() override { return this; }
+
+        const DigitalEquipment *AsDigitalEquipment() const override { return this; }
+        DigitalEquipment *AsDigitalEquipment() override { return this; }
     };
 }
 

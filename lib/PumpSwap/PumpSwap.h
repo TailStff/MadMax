@@ -54,7 +54,7 @@ namespace MadMax
         std::vector<DigitalEquipmentStatus *> PumpsStatus;
     };
 
-    class PumpSwap : public IPrimitiveTyped<PumpSwapPersistencyValues>, public ISerializable
+    class PumpSwap : public IPrimitiveTyped<PumpSwapPersistencyValues>, public IPrimitive, public ISerializable
     {
     private:
         ExecutionEnv *executionEnv;
@@ -116,6 +116,12 @@ namespace MadMax
         void GetPersistencyValues(PumpSwapPersistencyValues &persistencyValues) const; // override;
         void GetBytesFromData(std::vector<uint8_t> &data) const override;
         void SetDataFromBytes(std::vector<uint8_t> &data) override;
+
+        const ISerializable *AsSerializable() const override { return this; }
+        ISerializable *AsSerializable() override { return this; }
+
+        const PumpSwap *AsPumpSwap() const { return this; }
+        PumpSwap *AsPumpSwap() { return this; }
     };
 }
 

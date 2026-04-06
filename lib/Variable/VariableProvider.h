@@ -8,12 +8,12 @@
 
 namespace MadMax
 {
-    class VariableProvider : public ObjectProvider<ISerializable>, public IPersistable, public IProviderDTO
+    class VariableProvider : public ObjectProvider<IPrimitive>, public IPersistable, public IProviderDTO
     {
     private:
         std::unique_ptr<IDTOMapperBase> dtoMappers;
 
-        void writePersistencyData(const std::string &name, ISerializable *obj)
+        void writePersistencyData(const std::string &name, const ISerializable *obj)
         {
             // Get the bytes vector that represent the object persistency values
             std::vector<uint8_t> dataToWrite;
@@ -57,7 +57,7 @@ namespace MadMax
             // We must inject via the fixed base interface ObjectProvider<ISerializableBase>
             // to store all typed instances in a single polymorphic collection.
             auto *obj = new Variable<T>(executionEnv, data);
-            ObjectProvider<ISerializable>::inject(name, address, obj);
+            ObjectProvider<IPrimitive>::inject(name, address, obj);
             return obj;
         }
 
@@ -69,7 +69,7 @@ namespace MadMax
         Variable<T> *Get(const std::string &name) const
         {
             int32_t address;
-            return static_cast<Variable<T> *>(ObjectProvider<ISerializable>::Get(name, address));
+            return static_cast<Variable<T> *>(ObjectProvider<IPrimitive>::Get(name, address));
         }
 
 #pragma region IPersistable
@@ -78,9 +78,11 @@ namespace MadMax
         void SavePersistencyValuesToMem(const std::string &name) override
         {
             int32_t address;
+            auto *base = static_cast<IPrimitive *>(ObjectProvider<IPrimitive>::Get(name, address));
+            if (!base)
+                return;
 
-            // Get the object to be serialized
-            auto *obj = ObjectProvider<ISerializable>::Get(name, address);
+            const ISerializable *obj = base->AsSerializable();
 
             // If the object doesn't exist, we can't save its persistency values
             if (!obj)
@@ -106,7 +108,7 @@ namespace MadMax
             int32_t address;
 
             // Get the object to be serialized
-            Variable<T> *obj = static_cast<Variable<T> *>(ObjectProvider<ISerializable>::Get(name, address));
+            Variable<T> *obj = static_cast<Variable<T> *>(ObjectProvider<IPrimitive>::Get(name, address));
 
             // If the object doesn't exist, we can't save its persistency values
             if (!obj)
@@ -121,18 +123,19 @@ namespace MadMax
         void RefreshFromModbusRegisters()
         {
             this->ForEach(
-                [&](const std::string &name, ISerializable *base)
+                [&](const std::string &name, IPrimitive *base)
                 {
                 // We consider that only variables that are associated to Modbus registers need to be refreshed from Modbus registers, if the variable is not associated to any Modbus register, we consider that its value is managed internally and not updated from Modbus registers, so we skip it
                 int32_t address;
-                IPrimitive *obj = ObjectProvider<ISerializable>::Get(name, address);
+                ObjectProvider<IPrimitive>::Get(name, address);
 
                 if (address == -1)
                     return;
 
-                    IVariableValue* variable = static_cast<IVariableValue*>(obj);
-                    if (!variable)
-                        return;
+                IVariableValue* variable = base->AsVariableValue();
+
+                if (!variable)
+                    return;
 
                 // We consider that the address is a 32 bits integer where the 16 most significant bits represent the Modbus memory space (for example, holding registers, input registers, coils, discrete inputs) and the 16 least significant bits represent the Modbus address in that memory space, this allow to associate variables to different types of Modbus registers and not only holding registers
                 uint8_t modbusMemorySpace = (address & 0x00FF0000) >> 16;
@@ -152,7 +155,12 @@ namespace MadMax
                     }, variable->GetVariantValue());
 
                     if (variable->SetVariantValue(incoming))
-                        writePersistencyData(name, base);
+                    {
+                        if (const ISerializable *serializable = base->AsSerializable())
+                        {
+                            writePersistencyData(name, serializable);
+                        }
+                    }
                 } });
         }
 
@@ -163,7 +171,7 @@ namespace MadMax
             result.reserve(this->size());
 
             this->ForEach(
-                [&](const std::string &name, ISerializable *base)
+                [&](const std::string &name, IPrimitive *base)
                 {
                     DTOBase dto;
                     if (dtoMappers && dtoMappers->ToDTO(*base, dto, name))
@@ -175,7 +183,7 @@ namespace MadMax
 
         bool GetDTO(const std::string &name, DTOBase &dto) const override
         {
-            ISerializable *obj = ObjectProvider<ISerializable>::Get(name);
+            auto *obj = ObjectProvider<IPrimitive>::Get(name);
 
             if (!obj)
                 return false;
@@ -192,7 +200,7 @@ namespace MadMax
         /// @return Return true if the DTO was filled successfully, false if there is an error during data retrieval
         bool GetDetailDTO(const std::string &name, DTOBase &dto) const override
         {
-            ISerializable *obj = ObjectProvider<ISerializable>::Get(name);
+            auto *obj = ObjectProvider<IPrimitive>::Get(name);
 
             if (!obj)
                 return false;

@@ -1,3 +1,5 @@
+#define SERIALDEBUG
+
 #include "myApp.h"
 
 #include <ModbusClientRTU.h>
@@ -82,6 +84,7 @@ void MyApp::Init()
     */
 
     // Au démarrage de l'application, on crée les objets nécessaires et on charge leurs valeurs depuis la base de données de persistance et on les associe à des adresses de registres Modbus
+    
     mmVariables->Create<float>("varFloat1", 4 << 16 | 32, {.value = 0.0f});
     mmVariables->Create<float>("AB", 4 << 16 | 34, {.value = 10.0f});
     mmVariables->Create<float>("XW", 4 << 16 | 36, {.value = 12.0f});
@@ -258,7 +261,9 @@ void MyApp::Loop()
         // Serial.println(F("Save 'de0' persistancy values"));
 
         mmPumpSwaps->SavePersistencyValuesToMem("4pmp");
+        Serial.println(F("Saved '4pmp' persistancy values to memory"));
         mmAccums->SavePersistencyValuesToMem("accum1");
+        Serial.println(F("Saved 'accum1' persistancy values to memory"));
 
 #ifdef SERIALDEBUG
         Serial.println(F("Saved persistancy values successfully"));

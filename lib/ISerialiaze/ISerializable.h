@@ -7,7 +7,7 @@
 
 namespace MadMax
 {
-    class ISerializable : public IPrimitive
+    class ISerializable
     {
     public:
         virtual ~ISerializable() = default;

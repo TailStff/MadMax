@@ -15,7 +15,7 @@ namespace MadMax
     uint64_t value;
   };
 
-  class RunTime : public IPrimitiveTyped<RunTimePersistencyValues>, public ISerializable
+  class RunTime : public IPrimitiveTyped<RunTimePersistencyValues>, public IPrimitive, public ISerializable
   {
 
   private:
