@@ -72,7 +72,7 @@ namespace MadMax
 
   void MinOnOff::EmergencyOn()
   {
-    signed long long int _tickNumber = executionEnv->GetTicks();
+    int64_t _tickNumber = executionEnv->GetTicks();
 
     this->status.output = true;
     lastOntickNumber = _tickNumber;
@@ -80,7 +80,7 @@ namespace MadMax
 
   void MinOnOff::EmergencyOff()
   {
-    signed long long int _tickNumber = executionEnv->GetTicks();
+    int64_t _tickNumber = executionEnv->GetTicks();
 
     this->status.output = false;
     lastOfftickNumber = _tickNumber;
