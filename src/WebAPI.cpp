@@ -339,7 +339,7 @@ void WebAPI::getDigitalEquipmentDetail(const String &name, AsyncWebServerRequest
     }
 }
 
-// Digital Equipments
+// Pump Swaps
 void WebAPI::getPumpSwapsList(AsyncWebServerRequest *request)
 {
     auto ps = myApp->GetPumpSwapProvider()->GetDTOs();
@@ -477,7 +477,7 @@ void WebAPI::getFeedbackErrorDetail(const String &name, AsyncWebServerRequest *r
     }
 }
 
-// DelayOnOff Errors
+// DelayOnOffs
 void WebAPI::getDelayOnOffsList(AsyncWebServerRequest *request)
 {
     auto tp = myApp->GetDelayOnOffProvider()->GetDTOs();
