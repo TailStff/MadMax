@@ -45,6 +45,10 @@ void WebAPI::Setup()
               [this](AsyncWebServerRequest *r)
               { getDelayOnOffsList(r); });
 
+    server.on("^/API/RunTimes$", HTTP_GET,
+              [this](AsyncWebServerRequest *r)
+              { getRunTimesList(r); });
+
     server.on("^/API/Variables/([^/]+)$", HTTP_GET,
               [this](AsyncWebServerRequest *r)
               { getVariableDetail(r->pathArg(0), r); });
@@ -72,6 +76,10 @@ void WebAPI::Setup()
     server.on("^/API/DelayOnOffs/([^/]+)$", HTTP_GET,
               [this](AsyncWebServerRequest *r)
               { getDelayOnOffDetail(r->pathArg(0), r); });
+
+    server.on("^/API/RunTimes/([^/]+)$", HTTP_GET,
+              [this](AsyncWebServerRequest *r)
+              { getRunTimeDetail(r->pathArg(0), r); });
 
     server.on("^/API/Variables/([^/]+)/([^/]+)$", HTTP_GET,
               [this](AsyncWebServerRequest *r)
@@ -497,6 +505,52 @@ void WebAPI::getDelayOnOffDetail(const String &name, AsyncWebServerRequest *requ
 {
     MadMax::DTOBase dto;
     if (myApp->GetDelayOnOffProvider()->GetDetailDTO(name.c_str(), dto))
+    {
+        JsonDocument doc;
+        doc["name"] = dto.objectName;
+
+        JsonObject obj = doc.as<JsonObject>();
+
+        WriteJson(obj, dto);
+
+        AsyncResponseStream *response = request->beginResponseStream("application/json");
+        serializeJson(doc, *response);
+        request->send(response);
+    }
+    else
+    {
+        request->send(404, "text/plain", "Object not found");
+    }
+}
+
+// RunTimes
+void WebAPI::getRunTimesList(AsyncWebServerRequest *request)
+{
+    auto tp = myApp->GetRunTimeProvider()->GetDTOs();
+
+    JsonDocument doc;
+    JsonArray arr = doc.to<JsonArray>();
+
+    for (const auto &dto : tp)
+    {
+        JsonObject obj = arr.add<JsonObject>();
+        obj["name"] = dto.objectName;
+
+        for (auto &field : dto.fields)
+        {
+            WriteJson(obj, field);
+        }
+    }
+
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
+    serializeJson(doc, *response);
+    request->send(response);
+}
+
+void WebAPI::getRunTimeDetail(const String &name, AsyncWebServerRequest *request)
+{
+    MadMax::DTOBase dto;
+    if (myApp->GetRunTimeProvider()->GetDetailDTO(name.c_str(), dto))
     {
         JsonDocument doc;
         doc["name"] = dto.objectName;

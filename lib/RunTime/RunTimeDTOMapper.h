@@ -1,3 +1,5 @@
+#pragma once
+
 #include "IDTOMapperBase.h"
 #include "IVariableValue.h"
 #include "Variable.h"
@@ -9,9 +11,12 @@ namespace MadMax
     public:
         bool ToDTO(const IPrimitive &obj, DTOBase &dto, const std::string &name) const override
         {
-            const IVariableValue *primitive = static_cast<const IVariableValue *>(&obj);
+            const auto *primitive = obj.AsRunTime();
 
-            dto.fields.push_back({"value", primitive->GetVariantValue()});
+            if (!primitive)
+                return false;
+
+            dto.fields.push_back({"value", primitive->GetStatus().value});
             dto.objectName = name;
 
             return true;
@@ -19,10 +24,16 @@ namespace MadMax
 
         bool ToDetailDTO(const IPrimitive &obj, DTOBase &dto, const std::string &name) const override
         {
-            const IVariableValue *primitive = static_cast<const IVariableValue *>(&obj);
+            const auto *primitive = obj.AsRunTime();
+
+            if (!primitive)
+                return false;
 
             if (ToDTO(obj, dto, name))
+            {
+                dto.fields.push_back({"input", primitive->GetStatus().input});
                 return true;
+            }
 
             return false;
         }

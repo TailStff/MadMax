@@ -9,6 +9,8 @@
 #include "IPrimitive.h"
 #include "ISerializable.h"
 #include "IPrimitiveTyped.h"
+#include "RunTimeStatus.h"
+
 #include "ExecutionEnv.h"
 
 namespace MadMax
@@ -22,9 +24,10 @@ namespace MadMax
   {
 
   private:
-    uint16_t cycle;
-    uint64_t value;
+    uint16_t cycleTimeSpan;
     ExecutionEnv *executionEnv;
+
+    RunTimeStatus status;
 
   public:
     // Constructors
@@ -32,9 +35,11 @@ namespace MadMax
     ~RunTime();
 
     uint64_t Evaluate(bool in);
-    void Reset();
-    void Reset(uint64_t value);
-    uint64_t GetValue() { return value; }
+
+    const RunTimeStatus &GetStatus() const;
+
+    void Reset(uint64_t value = 0);
+    uint64_t GetValue() { return status.value; }
 
     /// @brief Static function that give the size of the serialized data of the object, here we just serialize the uint64_t value
     /// @return Size in bytes of the serialized data of the object
@@ -46,6 +51,12 @@ namespace MadMax
     void GetPersistencyValues(RunTimePersistencyValues &persistencyValues) const;
     void GetBytesFromData(std::vector<uint8_t> &data) const override;
     void SetDataFromBytes(std::vector<uint8_t> &data) override;
+
+    const ISerializable *AsSerializable() const override { return this; }
+    ISerializable *AsSerializable() override { return this; }
+
+    const RunTime *AsRunTime() const override { return this; }
+    RunTime *AsRunTime() override { return this; }
   };
 }
 

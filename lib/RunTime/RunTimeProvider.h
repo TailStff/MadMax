@@ -1,6 +1,7 @@
+#include "IPersistable.h"
+
 #include "ObjectProvider.h"
 #include "RunTime.h"
-#include "IPersistable.h"
 #include "RunTimeDTOMapper.h"
 
 namespace MadMax
@@ -20,7 +21,9 @@ namespace MadMax
         RunTime *Create(const std::string &name, uint32_t address, RunTimePersistencyValues data = {.value = 0})
         {
             // Mini prefs method
-            // executionEnv->GetMiniPrefs()->read(address, reinterpret_cast<uint8_t *>(&data), mmRunTime::GetSerializedSize());
+            uint16_t addr;
+            uint16_t writtenLength;
+            executionEnv->GetMiniPrefs()->Get(name.c_str(), reinterpret_cast<uint8_t *>(&data), RunTime::GetSerializedSize(), addr, writtenLength);
 
             return ObjectProvider<RunTime>::Create(name, address, executionEnv, data);
         }

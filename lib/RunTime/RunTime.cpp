@@ -5,34 +5,38 @@ namespace MadMax
   RunTime::RunTime(ExecutionEnv *_executionEnv, RunTimePersistencyValues data)
   {
     executionEnv = _executionEnv;
-    cycle = executionEnv->GetCycle();
+    cycleTimeSpan = executionEnv->GetCycle();
 
-    // Runtime value
-    value = data.value;
+    this->status.input = false;
+    this->status.value = data.value;
   }
 
   RunTime::~RunTime()
   {
     this->executionEnv = nullptr;
-    cycle = 0;
-    value = 0;
+    cycleTimeSpan = 0;
+
+    this->status.input = false;
+    this->status.value = 0;
   }
 
   uint64_t RunTime::Evaluate(bool in)
   {
+    this->status.input = in;
+
     if (in)
-      value += cycle;
-    return value;
+      this->status.value += cycleTimeSpan;
+    return this->status.value;
   }
 
-  void RunTime::Reset()
+  const RunTimeStatus &RunTime::GetStatus() const
   {
-    value = 0;
+    return this->status;
   }
 
   void RunTime::Reset(uint64_t value)
   {
-    this->value = value;
+    this->status.value = value;
   }
 
   /// @brief Get the persistency values of the object, here we just get the runtime value
@@ -40,7 +44,7 @@ namespace MadMax
   /// @return true if we have an error during persistency values retrieval, false otherwise
   void RunTime::GetPersistencyValues(RunTimePersistencyValues &persistencyValues) const
   {
-    persistencyValues.value = this->value;
+    persistencyValues.value = this->status.value;
   }
 
   /// @brief Get the bytes vector that represent the object persistency values,

@@ -43,6 +43,9 @@ private:
     void getDelayOnOffsList(AsyncWebServerRequest *request);
     void getDelayOnOffDetail(const String &name, AsyncWebServerRequest *request);
 
+    void getRunTimesList(AsyncWebServerRequest *request);
+    void getRunTimeDetail(const String &name, AsyncWebServerRequest *request);
+
     // -------- Interfaces --------
     void getInterfaceEth(AsyncWebServerRequest *request);
     void getInterfaceSta(AsyncWebServerRequest *request);

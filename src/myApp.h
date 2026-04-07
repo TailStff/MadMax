@@ -94,6 +94,7 @@ public:
     MadMax::TPulseProvider *GetTPulseProvider() { return mmTPulses; }
     MadMax::FeedbackErrorProvider *GetFeedbackErrorProvider() { return mmFeedbackErrors; }
     MadMax::DelayOnOffProvider *GetDelayOnOffProvider() { return mmDelayOnOffs; }
+    MadMax::RunTimeProvider *GetRunTimeProvider() { return mmRunTimes; }
 
     void cbShortPress();
     void cbLongPress();
