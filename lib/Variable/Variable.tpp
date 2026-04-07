@@ -4,15 +4,15 @@ namespace MadMax
     Variable<T>::Variable(ExecutionEnv *_executionEnv, VariablePersistencyValues<T> data)
     {
         this->executionEnv = _executionEnv;
-        this->value = data.value;
+        this->status.value = data.value;
     }
 
     template <class T>
     bool Variable<T>::SetValue(T value)
     {
-        if (this->value != value)
+        if (this->status.value != value)
         {
-            this->value = value;
+            this->status.value = value;
             return true;
         }
         return false;
@@ -21,7 +21,7 @@ namespace MadMax
     template <class T>
     void Variable<T>::GetPersistencyValues(VariablePersistencyValues<T> &persistencyValues) const
     {
-        persistencyValues.value = this->value;
+        persistencyValues.value = this->status.value;
     }
 
     /// @brief Serialize persistency values into a byte vector
@@ -47,7 +47,7 @@ namespace MadMax
         VariablePersistencyValues<T> persistencyValues;
         memcpy(&persistencyValues, data.data(), sizeof(VariablePersistencyValues<T>));
 
-        this->value = persistencyValues.value;
+        this->status.value = persistencyValues.value;
     }
 
 #pragma region VariableValue
@@ -55,7 +55,7 @@ namespace MadMax
     VariableValue Variable<T>::GetVariantValue() const
     {
         // We return the value as a mmVariableValue variant, this will allow to access to the variable value without knowing its type, it will be used for example in the web interface to display variable values in a generic way
-        return VariableValue{value};
+        return VariableValue{this->status.value};
     }
 
     template <class T>

@@ -9,7 +9,10 @@ namespace MadMax
     public:
         bool ToDTO(const IPrimitive &obj, DTOBase &dto, const std::string &name) const override
         {
-            const IVariableValue *primitive = static_cast<const IVariableValue *>(&obj);
+            const auto *primitive = obj.AsVariableValue();
+
+            if (!primitive)
+                return false;
 
             dto.fields.push_back({"value", primitive->GetVariantValue()});
             dto.objectName = name;
@@ -19,7 +22,10 @@ namespace MadMax
 
         bool ToDetailDTO(const IPrimitive &obj, DTOBase &dto, const std::string &name) const override
         {
-            const IVariableValue *primitive = static_cast<const IVariableValue *>(&obj);
+            const auto *primitive = obj.AsVariableValue();
+
+            if (!primitive)
+                return false;
 
             if (ToDTO(obj, dto, name))
             {
