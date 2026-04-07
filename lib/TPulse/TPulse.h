@@ -35,6 +35,9 @@ namespace MadMax
 
     const bool GetValue() const;
     const TPulseStatus GetStatus() const;
+
+    const TPulse *AsTPulse() const override { return this; }
+    TPulse *AsTPulse() override { return this; }
   };
 }
 

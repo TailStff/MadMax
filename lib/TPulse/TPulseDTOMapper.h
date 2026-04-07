@@ -8,7 +8,10 @@ namespace MadMax
     public:
         bool ToDTO(const IPrimitive &obj, DTOBase &dto, const std::string &name) const override
         {
-            const TPulse *primitive = static_cast<const TPulse *>(&obj);
+            const auto *primitive = obj.AsTPulse();
+
+            if (!primitive)
+                return false;
 
             dto.fields.push_back({"value", primitive->GetValue()});
             dto.objectName = name;
@@ -18,7 +21,10 @@ namespace MadMax
 
         bool ToDetailDTO(const IPrimitive &obj, DTOBase &dto, const std::string &name) const override
         {
-            const TPulse *primitive = static_cast<const TPulse *>(&obj);
+            const auto *primitive = obj.AsTPulse();
+
+            if (!primitive)
+                return false;
 
             if (ToDTO(obj, dto, name))
             {
