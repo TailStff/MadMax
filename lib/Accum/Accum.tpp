@@ -6,15 +6,15 @@ namespace MadMax
         this->executionEnv = _executionEnv;
         this->memInput = false;
         this->memResetTrigger = false;
-        this->value = data.value;
+        this->status.value = data.value;
     }
 
     template <class T>
     bool Accum<T>::SetValue(T value)
     {
-        if (this->value != value)
+        if (this->status.value != value)
         {
-            this->value = value;
+            this->status.value = value;
             return true;
         }
         return false;
@@ -37,16 +37,16 @@ namespace MadMax
         }
         else if (input && !memInput)
         {
-            if (increment > 0 && value > std::numeric_limits<T>::max() - increment)
-                value = std::numeric_limits<T>::max();
+            if (increment > 0 && status.value > std::numeric_limits<T>::max() - increment)
+                status.value = std::numeric_limits<T>::max();
             else
-                value += increment;
+                status.value += increment;
         }
 
         memInput = input;
         memResetTrigger = resetTrigger;
 
-        return value;
+        return status.value;
     }
 
     /// @brief Function that SET the internal value to the requested value
@@ -55,13 +55,13 @@ namespace MadMax
     template <class T>
     void Accum<T>::Reset(T resetValue)
     {
-        value = resetValue;
+        status.value = resetValue;
     }
 
     template <class T>
     void Accum<T>::GetPersistencyValues(AccumPersistencyValues<T> &persistencyValues) const
     {
-        persistencyValues.value = this->value;
+        persistencyValues.value = this->status.value;
     }
 
     /// @brief Serialize persistency values into a byte vector
@@ -72,7 +72,7 @@ namespace MadMax
         size_t size = sizeof(AccumPersistencyValues<T>);
         data.resize(size);
 
-        memcpy(data.data(), &this->value, size);
+        memcpy(data.data(), &this->status.value, size);
     }
 
     template <class T>
@@ -84,7 +84,7 @@ namespace MadMax
         AccumPersistencyValues<T> persistencyValues;
         memcpy(&persistencyValues, data.data(), sizeof(AccumPersistencyValues<T>));
 
-        this->value = persistencyValues.value;
+        this->status.value = persistencyValues.value;
     }
 
 #pragma region mmVariableValue
@@ -92,7 +92,7 @@ namespace MadMax
     VariableValue Accum<T>::GetVariantValue() const
     {
         // We return the value as a mmVariableValue variant, this will allow to access to the variable value without knowing its type, it will be used for example in the web interface to display variable values in a generic way
-        return VariableValue{value};
+        return VariableValue{this->status.value};
     }
 
     template <class T>

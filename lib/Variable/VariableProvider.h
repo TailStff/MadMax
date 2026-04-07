@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ObjectProvider.h"
-#include "IPersistency.h"
+//#include "IPersistency.h"
 #include "Variable.h"
 #include "DataType.h"
 #include "VariableDTOMapper.h"

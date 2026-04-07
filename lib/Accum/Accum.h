@@ -4,6 +4,7 @@
 #include "IVariableValue.h"
 #include "IPrimitive.h"
 #include <HardwareSerial.h>
+#include "AccumStatus.h"
 #include "ExecutionEnv.h"
 
 namespace MadMax
@@ -19,10 +20,12 @@ namespace MadMax
   {
 
   private:
-    bool memInput, memResetTrigger;
-    T value;
+    bool memInput;
+    bool memResetTrigger;
 
     ExecutionEnv *executionEnv;
+
+    AccumStatus<T> status;
 
   public:
     // Constructors
@@ -36,7 +39,7 @@ namespace MadMax
 
     /// @brief Function that return the current value of the variable
     /// @return The current value of the variable
-    T GetValue() const { return value; }
+    T GetValue() const { return this->status.value; }
 
     /// @brief Static function that give the size of the serialized data of the object, here we just serialize the value
     /// @return Size in bytes of the serialized data of the object
