@@ -8,6 +8,7 @@ namespace MadMax
     class PumpSwap;         // Forward declaration
     class RunTime;          // Forward declaration
     class TPulse;           // Forward declaration
+    class MinOnOff;         // Forward declaration
 
     class IPrimitive
     {
@@ -20,6 +21,7 @@ namespace MadMax
         const virtual RunTime *AsRunTime() const { return nullptr; }
         const virtual PumpSwap *AsPumpSwap() const { return nullptr; }
         const virtual TPulse *AsTPulse() const { return nullptr; }
+        const virtual MinOnOff *AsMinOnOff() const { return nullptr; }
 
         virtual ISerializable *AsSerializable() { return nullptr; }
         virtual IVariableValue *AsVariableValue() { return nullptr; }
@@ -27,5 +29,6 @@ namespace MadMax
         virtual RunTime *AsRunTime() { return nullptr; }
         virtual PumpSwap *AsPumpSwap() { return nullptr; }
         virtual TPulse *AsTPulse() { return nullptr; }
+        virtual MinOnOff *AsMinOnOff() { return nullptr; }
     };
 }

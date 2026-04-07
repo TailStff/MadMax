@@ -8,7 +8,10 @@ namespace MadMax
     public:
         bool ToDTO(const IPrimitive &obj, DTOBase &dto, const std::string &name) const override
         {
-            const auto *primitive = static_cast<const MinOnOff *>(&obj);
+            const auto *primitive = obj.AsMinOnOff();
+
+            if (!primitive)
+                return false;
 
             dto.objectName = name;
             dto.fields.push_back({"value", primitive->GetValue()});
@@ -17,16 +20,19 @@ namespace MadMax
 
         bool ToDetailDTO(const IPrimitive &obj, DTOBase &dto, const std::string &name) const override
         {
-            const auto *primitive = static_cast<const MinOnOff *>(&obj);
+            const auto *primitive = obj.AsMinOnOff();
+
+            if (!primitive)
+                return false;
 
             if (ToDTO(obj, dto, name))
             {
-                auto &statusObj = primitive->GetStatus();
+                auto &status = primitive->GetStatus();
 
-                dto.fields.push_back({"input", statusObj.input});
-                dto.fields.push_back({"minOnTime", statusObj.minOnTime});
-                dto.fields.push_back({"minOffTime", statusObj.minOffTime});
-                dto.fields.push_back({"remainingTime", statusObj.remainingTime});
+                dto.fields.push_back({"input", status.input});
+                dto.fields.push_back({"minOnTime", status.minOnTime});
+                dto.fields.push_back({"minOffTime", status.minOffTime});
+                dto.fields.push_back({"remainingTime", status.remainingTime});
 
                 return true;
             }

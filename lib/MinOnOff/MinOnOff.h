@@ -33,6 +33,9 @@ namespace MadMax
 
     const bool GetValue() const { return this->status.output; };
     const MinOnOffStatus GetStatus() const { return this->status; }
+
+    const MinOnOff *AsMinOnOff() const override { return this; }
+    MinOnOff *AsMinOnOff() override { return this; }
   };
 }
 
