@@ -8,7 +8,6 @@ WebAPI::WebAPI(AsyncWebServer &server, MyApp *app, ExecutionEnv *env) : server(s
 
 void WebAPI::Setup()
 {
-
     server.on("/", HTTP_GET, [this](AsyncWebServerRequest *r)
               { homePage(r); });
     server.on("/index.html", HTTP_GET, [this](AsyncWebServerRequest *r)
@@ -17,80 +16,16 @@ void WebAPI::Setup()
     server.on("/styles.css", HTTP_GET, [this](AsyncWebServerRequest *r)
               { styles(r); });
 
-    server.on("^/API/Variables$", HTTP_GET,
-              [this](AsyncWebServerRequest *r)
-              { getVariablesList(r); });
+    server.on("/API/*", HTTP_GET, [this](AsyncWebServerRequest *r)
+              { handleAPI(r); });
 
-    server.on("^/API/Accums$", HTTP_GET,
-              [this](AsyncWebServerRequest *r)
-              { getAccumsList(r); });
+    /*
+            server.on("/API", HTTP_GET, [this](AsyncWebServerRequest *r)
+                      { apiRouter(r); });
 
-    server.on("^/API/DigitalEquipments$", HTTP_GET,
-              [this](AsyncWebServerRequest *r)
-              { getDigitalEquipmentsList(r); });
-
-    server.on("^/API/PumpSwaps$", HTTP_GET,
-              [this](AsyncWebServerRequest *r)
-              { getPumpSwapsList(r); });
-
-    server.on("^/API/TPulses$", HTTP_GET,
-              [this](AsyncWebServerRequest *r)
-              { getTPulsesList(r); });
-
-    server.on("^/API/FeedbackErrors$", HTTP_GET,
-              [this](AsyncWebServerRequest *r)
-              { getFeedbackErrorsList(r); });
-
-    server.on("^/API/DelayOnOffs$", HTTP_GET,
-              [this](AsyncWebServerRequest *r)
-              { getDelayOnOffsList(r); });
-
-    server.on("^/API/RunTimes$", HTTP_GET,
-              [this](AsyncWebServerRequest *r)
-              { getRunTimesList(r); });
-
-    server.on("^/API/Variables/([^/]+)$", HTTP_GET,
-              [this](AsyncWebServerRequest *r)
-              { getVariableDetail(r->pathArg(0), r); });
-
-    server.on("^/API/Accums/([^/]+)$", HTTP_GET,
-              [this](AsyncWebServerRequest *r)
-              { getAccumDetail(r->pathArg(0), r); });
-
-    server.on("^/API/DigitalEquipments/([^/]+)$", HTTP_GET,
-              [this](AsyncWebServerRequest *r)
-              { getDigitalEquipmentDetail(r->pathArg(0), r); });
-
-    server.on("^/API/PumpSwaps/([^/]+)$", HTTP_GET,
-              [this](AsyncWebServerRequest *r)
-              { getPumpSwapDetail(r->pathArg(0), r); });
-
-    server.on("^/API/TPulses/([^/]+)$", HTTP_GET,
-              [this](AsyncWebServerRequest *r)
-              { getTPulseDetail(r->pathArg(0), r); });
-
-    server.on("^/API/FeedbackErrors/([^/]+)$", HTTP_GET,
-              [this](AsyncWebServerRequest *r)
-              { getFeedbackErrorDetail(r->pathArg(0), r); });
-
-    server.on("^/API/DelayOnOffs/([^/]+)$", HTTP_GET,
-              [this](AsyncWebServerRequest *r)
-              { getDelayOnOffDetail(r->pathArg(0), r); });
-
-    server.on("^/API/RunTimes/([^/]+)$", HTTP_GET,
-              [this](AsyncWebServerRequest *r)
-              { getRunTimeDetail(r->pathArg(0), r); });
-
-    server.on("^/API/Variables/([^/]+)/([^/]+)$", HTTP_GET,
-              [this](AsyncWebServerRequest *r)
-              { getVariableProperty(r->pathArg(0).c_str(), r->pathArg(1).c_str(), r); });
-
-    server.on("/API", HTTP_GET, [this](AsyncWebServerRequest *r)
-              { apiRouter(r); });
-
-    server.on("/API", HTTP_POST, [this](AsyncWebServerRequest *r)
-              { apiRouter(r); }, NULL, [this](AsyncWebServerRequest *r, uint8_t *data, size_t len, size_t index, size_t total)
-              { apiBodyHandler(r, data, len, index, total); });
+            server.on("/API", HTTP_POST, [this](AsyncWebServerRequest *r)
+                      { apiRouter(r); }, NULL, [this](AsyncWebServerRequest *r, uint8_t *data, size_t len, size_t index, size_t total)
+                      { apiBodyHandler(r, data, len, index, total); });*/
 
     // server.on("/API/interfaces", HTTP_GET, apiGetInterfaces);
 
@@ -108,6 +43,72 @@ void WebAPI::Setup()
     // server.onNotFound(notFound);
 
     server.begin();
+}
+
+void WebAPI::handleAPI(AsyncWebServerRequest *r)
+{
+    String path = r->url(); // ex: /API/Variables/test/value
+
+    path.remove(0, 5); // enlève "/API/"
+
+    // Split simple
+    std::vector<String> parts;
+    int start = 0;
+    int idx;
+
+    while ((idx = path.indexOf('/', start)) != -1)
+    {
+        parts.push_back(path.substring(start, idx));
+        start = idx + 1;
+    }
+    parts.push_back(path.substring(start));
+
+    // Dispatch
+    if (parts.size() == 1)
+    {
+        if (parts[0] == "Variables")
+            return getVariablesList(r);
+        else if (parts[0] == "Accums")
+            return getAccumsList(r);
+        else if (parts[0] == "DigitalEquipments")
+            return getDigitalEquipmentsList(r);
+        else if (parts[0] == "PumpSwaps")
+            return getPumpSwapsList(r);
+        else if (parts[0] == "TPulses")
+            return getTPulsesList(r);
+        else if (parts[0] == "FeedbackErrors")
+            return getFeedbackErrorsList(r);
+        else if (parts[0] == "DelayOnOffs")
+            return getDelayOnOffsList(r);
+        else if (parts[0] == "RunTimes")
+            return getRunTimesList(r);
+    }
+    else if (parts.size() == 2)
+    {
+        if (parts[0] == "Variables")
+            return getVariableDetail(parts[1].c_str(), r);
+        else if (parts[0] == "Accums")
+            return getAccumDetail(parts[1].c_str(), r);
+        else if (parts[0] == "DigitalEquipments")
+            return getDigitalEquipmentDetail(parts[1].c_str(), r);
+        else if (parts[0] == "PumpSwaps")
+            return getPumpSwapDetail(parts[1].c_str(), r);
+        else if (parts[0] == "TPulses")
+            return getTPulseDetail(parts[1].c_str(), r);
+        else if (parts[0] == "FeedbackErrors")
+            return getFeedbackErrorDetail(parts[1].c_str(), r);
+        else if (parts[0] == "DelayOnOffs")
+            return getDelayOnOffDetail(parts[1].c_str(), r);
+        else if (parts[0] == "RunTimes")
+            return getRunTimeDetail(parts[1].c_str(), r);
+    }
+    else if (parts.size() == 3)
+    {
+        if (parts[0] == "Variables")
+            return getVariableProperty(parts[1].c_str(), parts[2].c_str(), r);
+    }
+
+    r->send(404, "text/plain", "Not found");
 }
 
 // -------- Pages --------
@@ -154,7 +155,7 @@ void WriteJson(JsonObject obj, const MadMax::DTOBase &dto)
     // Objets enfants
     for (const auto &childDto : dto.children)
     {
-        JsonObject child = obj.createNestedObject(childDto.objectName);
+        JsonObject child = obj[childDto.objectName].to<JsonObject>();
         WriteJson(child, childDto);
     }
 }
@@ -185,7 +186,7 @@ void WebAPI::getVariablesList(AsyncWebServerRequest *request)
     request->send(response);
 }
 
-void WebAPI::getVariableDetail(const String &name, AsyncWebServerRequest *request)
+void WebAPI::getVariableDetail(const std::string &name, AsyncWebServerRequest *request)
 {
     MadMax::DTOBase dto;
     if (myApp->GetVariableProvider()->GetDetailDTO(name.c_str(), dto))
@@ -224,11 +225,11 @@ void WebAPI::getVariableProperty(const std::string &name, const std::string &pro
     auto it = std::find_if(dto.fields.begin(), dto.fields.end(), [&](const MadMax::FieldValue &f)
                            { return f.key == property; });
 
-    JsonObject obj = doc.as<JsonObject>();
+    JsonObject obj = doc.to<JsonObject>();
 
     if (it != dto.fields.end())
     {
-        WriteJson(obj, it[0]);
+        WriteJson(obj, *it);
     }
     else
     {
@@ -266,7 +267,7 @@ void WebAPI::getAccumsList(AsyncWebServerRequest *request)
     request->send(response);
 }
 
-void WebAPI::getAccumDetail(const String &name, AsyncWebServerRequest *request)
+void WebAPI::getAccumDetail(const std::string &name, AsyncWebServerRequest *request)
 {
     MadMax::DTOBase dto;
     if (myApp->GetAccumsProvider()->GetDetailDTO(name.c_str(), dto))
@@ -317,7 +318,7 @@ void WebAPI::getDigitalEquipmentsList(AsyncWebServerRequest *request)
     request->send(response);
 }
 
-void WebAPI::getDigitalEquipmentDetail(const String &name, AsyncWebServerRequest *request)
+void WebAPI::getDigitalEquipmentDetail(const std::string &name, AsyncWebServerRequest *request)
 {
     MadMax::DTOBase dto;
     if (myApp->GetDigitalEquipmentProvider()->GetDetailDTO(name.c_str(), dto))
@@ -363,7 +364,7 @@ void WebAPI::getPumpSwapsList(AsyncWebServerRequest *request)
     request->send(response);
 }
 
-void WebAPI::getPumpSwapDetail(const String &name, AsyncWebServerRequest *request)
+void WebAPI::getPumpSwapDetail(const std::string &name, AsyncWebServerRequest *request)
 {
     MadMax::DTOBase dto;
     if (myApp->GetPumpSwapProvider()->GetDetailDTO(name.c_str(), dto))
@@ -409,7 +410,7 @@ void WebAPI::getTPulsesList(AsyncWebServerRequest *request)
     request->send(response);
 }
 
-void WebAPI::getTPulseDetail(const String &name, AsyncWebServerRequest *request)
+void WebAPI::getTPulseDetail(const std::string &name, AsyncWebServerRequest *request)
 {
     MadMax::DTOBase dto;
     if (myApp->GetTPulseProvider()->GetDetailDTO(name.c_str(), dto))
@@ -455,7 +456,7 @@ void WebAPI::getFeedbackErrorsList(AsyncWebServerRequest *request)
     request->send(response);
 }
 
-void WebAPI::getFeedbackErrorDetail(const String &name, AsyncWebServerRequest *request)
+void WebAPI::getFeedbackErrorDetail(const std::string &name, AsyncWebServerRequest *request)
 {
     MadMax::DTOBase dto;
     if (myApp->GetFeedbackErrorProvider()->GetDetailDTO(name.c_str(), dto))
@@ -501,7 +502,7 @@ void WebAPI::getDelayOnOffsList(AsyncWebServerRequest *request)
     request->send(response);
 }
 
-void WebAPI::getDelayOnOffDetail(const String &name, AsyncWebServerRequest *request)
+void WebAPI::getDelayOnOffDetail(const std::string &name, AsyncWebServerRequest *request)
 {
     MadMax::DTOBase dto;
     if (myApp->GetDelayOnOffProvider()->GetDetailDTO(name.c_str(), dto))
@@ -547,7 +548,7 @@ void WebAPI::getRunTimesList(AsyncWebServerRequest *request)
     request->send(response);
 }
 
-void WebAPI::getRunTimeDetail(const String &name, AsyncWebServerRequest *request)
+void WebAPI::getRunTimeDetail(const std::string &name, AsyncWebServerRequest *request)
 {
     MadMax::DTOBase dto;
     if (myApp->GetRunTimeProvider()->GetDetailDTO(name.c_str(), dto))

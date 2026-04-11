@@ -20,31 +20,33 @@ private:
     void apiRouter(AsyncWebServerRequest *request);
     void apiBodyHandler(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total);
 
+    void handleAPI(AsyncWebServerRequest *r);
+
     // -------- Variables --------
     void getVariablesList(AsyncWebServerRequest *request);
-    void getVariableDetail(const String &name, AsyncWebServerRequest *request);
+    void getVariableDetail(const std::string &name, AsyncWebServerRequest *request);
     void getVariableProperty(const std::string &name, const std::string &property, AsyncWebServerRequest *request);
 
     void getAccumsList(AsyncWebServerRequest *request);
-    void getAccumDetail(const String &name, AsyncWebServerRequest *request);
+    void getAccumDetail(const std::string &name, AsyncWebServerRequest *request);
 
     void getDigitalEquipmentsList(AsyncWebServerRequest *request);
-    void getDigitalEquipmentDetail(const String &name, AsyncWebServerRequest *request);
+    void getDigitalEquipmentDetail(const std::string &name, AsyncWebServerRequest *request);
 
     void getPumpSwapsList(AsyncWebServerRequest *request);
-    void getPumpSwapDetail(const String &name, AsyncWebServerRequest *request);
+    void getPumpSwapDetail(const std::string &name, AsyncWebServerRequest *request);
 
     void getTPulsesList(AsyncWebServerRequest *request);
-    void getTPulseDetail(const String &name, AsyncWebServerRequest *request);
+    void getTPulseDetail(const std::string &name, AsyncWebServerRequest *request);
 
     void getFeedbackErrorsList(AsyncWebServerRequest *request);
-    void getFeedbackErrorDetail(const String &name, AsyncWebServerRequest *request);
+    void getFeedbackErrorDetail(const std::string &name, AsyncWebServerRequest *request);
 
     void getDelayOnOffsList(AsyncWebServerRequest *request);
-    void getDelayOnOffDetail(const String &name, AsyncWebServerRequest *request);
+    void getDelayOnOffDetail(const std::string &name, AsyncWebServerRequest *request);
 
     void getRunTimesList(AsyncWebServerRequest *request);
-    void getRunTimeDetail(const String &name, AsyncWebServerRequest *request);
+    void getRunTimeDetail(const std::string &name, AsyncWebServerRequest *request);
 
     // -------- Interfaces --------
     void getInterfaceEth(AsyncWebServerRequest *request);
