@@ -48,6 +48,7 @@ namespace MadMax
             return static_cast<Accum<T> *>(ObjectProvider<IPrimitive>::Get(name, address));
         }
 
+#pragma region IPersistable
         void GetPersistencyValuesFromMem(const std::string &name, uint8_t *data, size_t length)
         {
             uint16_t readedLength;
@@ -117,6 +118,8 @@ namespace MadMax
                     writePersistencyData(name, serializable);
             }
         }
+
+#pragma endregion IPersistable
 
 #pragma region IProviderDTO
         std::vector<DTOBase> GetDTOs() const override
