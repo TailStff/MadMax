@@ -44,7 +44,7 @@ void WebAPI::Setup()
     server.on("/SETTINGS", HTTP_POST, setSettingsResponse, NULL, setSettingsExecute);
     server.on("/DATETIME", HTTP_POST, setDateTimeResponse, NULL, setDateTimeExecute);*/
 
-    // server.onNotFound(notFound);
+    //server.onNotFound(notFound);
 
     server.begin();
 }
@@ -126,7 +126,15 @@ void WebAPI::handleAPI(AsyncWebServerRequest *request)
             {
                 // We check Variable existence before reading the body, to avoid reading a potentially big body if the variable doesn't exist or is not writable
                 MadMax::DTOBase dto;
-                if (myApp->GetVariableProvider()->GetDetailDTO(parts[1].c_str(), dto))
+                if (myApp->GetVariablesProvider()->GetDetailDTO(parts[1].c_str(), dto))
+                    return;
+            }
+
+            if (parts[0] == "Accums")
+            {
+                // We check Accum existence before reading the body, to avoid reading a potentially big body if the variable doesn't exist or is not writable
+                MadMax::DTOBase dto;
+                if (myApp->GetAccumsProvider()->GetDetailDTO(parts[1].c_str(), dto))
                     return;
             }
         }
@@ -206,7 +214,7 @@ void WriteJson(JsonObject obj, const MadMax::DTOBase &dto)
 
 void WebAPI::getVariablesList(AsyncWebServerRequest *request)
 {
-    auto variables = myApp->GetVariableProvider()->GetDTOs();
+    auto variables = myApp->GetVariablesProvider()->GetDTOs();
 
     AsyncResponseStream *response = request->beginResponseStream("application/json");
 
@@ -231,7 +239,7 @@ void WebAPI::getVariablesList(AsyncWebServerRequest *request)
 void WebAPI::getVariableDetail(const std::string &name, AsyncWebServerRequest *request)
 {
     MadMax::DTOBase dto;
-    if (myApp->GetVariableProvider()->GetDetailDTO(name.c_str(), dto))
+    if (myApp->GetVariablesProvider()->GetDetailDTO(name.c_str(), dto))
     {
         JsonDocument doc;
         doc["name"] = dto.objectName;
@@ -256,7 +264,7 @@ void WebAPI::getVariableDetail(const std::string &name, AsyncWebServerRequest *r
 void WebAPI::getVariableProperty(const std::string &name, const std::string &property, AsyncWebServerRequest *request)
 {
     MadMax::DTOBase dto;
-    if (!myApp->GetVariableProvider()->GetDetailDTO(name.c_str(), dto))
+    if (!myApp->GetVariablesProvider()->GetDetailDTO(name.c_str(), dto))
     {
         request->send(404, "text/plain", "Object not found");
         return;
@@ -814,7 +822,6 @@ void WebAPI::apiRouter(AsyncWebServerRequest *request)
 
 void WebAPI::apiBodyHandler(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
 {
-
     struct RequestContext
     {
         char buffer[512];
@@ -928,7 +935,44 @@ void WebAPI::apiBodyHandler(AsyncWebServerRequest *request, uint8_t *data, size_
         }
 
         // Set Variable value
-        myApp->GetVariableProvider()->SetValue(parts[1].c_str(), value);
+        myApp->GetVariablesProvider()->SetValue(parts[1].c_str(), value);
+        request->send(200, "text/plain", "OK");
+        return;
+    }
+
+    if (parts[0] == "Accums")
+    {
+        // check if URL consists of 2 parts -> /API/Accums/{name}
+        if (parts.size() != 2)
+        {
+            request->send(400, "text/plain", "Invalid URL");
+            return;
+        }
+
+        // Check if name is provided
+        if (parts[1].isEmpty())
+        {
+            request->send(400, "text/plain", "Accum name is required");
+            return;
+        }
+
+        // Mandatory fields
+        auto v = doc["value"];
+        if (v.isUnbound() || v.isNull())
+        {
+            request->send(400, "text/plain", "Missing 'value' field");
+            return;
+        }
+
+        MadMax::VariableValue value;
+        if (!MadMax::VariableValueFromJson(v, value))
+        {
+            request->send(400, "text/plain", "Unsupported type");
+            return;
+        }
+
+        // Set Variable value
+        myApp->GetAccumsProvider()->SetValue(parts[1].c_str(), value);
         request->send(200, "text/plain", "OK");
         return;
     }

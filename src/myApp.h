@@ -87,7 +87,7 @@ public:
     void Init();
     void Loop();
 
-    MadMax::VariableProvider *GetVariableProvider() { return mmVariables; }
+    MadMax::VariableProvider *GetVariablesProvider() { return mmVariables; }
     MadMax::AccumProvider *GetAccumsProvider() { return mmAccums; }
     MadMax::DigitalEquipmentProvider *GetDigitalEquipmentProvider() { return mmDigitalEquipments; }
     MadMax::PumpSwapProvider *GetPumpSwapProvider() { return mmPumpSwaps; }
