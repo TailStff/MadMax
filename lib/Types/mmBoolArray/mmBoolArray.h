@@ -14,6 +14,7 @@ struct mmBoolArray
     size_t size() const { return data.size(); }
     std::vector<bool>::reference operator[](size_t i) { return data[i]; }
     bool operator[](size_t i) const { return data[i]; } // retour par valeur pour const
+    void push_back(bool b) { data.push_back(b); }
 };
 
 // Spécialisation ArduinoJson pour mmBoolArray

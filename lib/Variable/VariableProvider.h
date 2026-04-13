@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ObjectProvider.h"
-//#include "IPersistency.h"
+// #include "IPersistency.h"
 #include "Variable.h"
 #include "DataType.h"
 #include "VariableDTOMapper.h"
@@ -116,6 +116,25 @@ namespace MadMax
 
             if (obj->SetValue(value))
                 writePersistencyData(name, obj);
+        }
+
+        void SetValue(const std::string &name, const VariableValue &value)
+        {
+            int32_t address;
+
+            auto *base = ObjectProvider<IPrimitive>::Get(name, address);
+            if (!base)
+                return;
+
+            auto *obj = base->AsVariableValue();
+            if (!obj)
+                return;
+
+            if (obj->SetVariantValue(value))
+            {
+                if (auto *serializable = base->AsSerializable())
+                    writePersistencyData(name, serializable);
+            }
         }
 
         // API Parts

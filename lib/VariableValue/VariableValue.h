@@ -58,4 +58,79 @@ namespace MadMax
             },
             v);
     }
+
+    inline bool VariableValueFromJson(JsonVariantConst v, VariableValue &out)
+    {
+        // bool en premier (sinon true → 1)
+        if (v.is<bool>())
+        {
+            out = v.as<bool>();
+            return true;
+        }
+
+        // Entiers
+        if (v.is<int64_t>())
+        {
+            out = v.as<int64_t>();
+            return true;
+        }
+
+        if (v.is<int32_t>())
+        {
+            out = v.as<int32_t>();
+            return true;
+        }
+
+        // Float / double
+        if (v.is<float>())
+        {
+            out = v.as<float>();
+            return true;
+        }
+
+        if (v.is<double>())
+        {
+            out = v.as<double>();
+            return true;
+        }
+
+        // Array uint8 (ex: [1,2,3])
+        if (v.is<JsonArray>())
+        {
+            JsonArrayConst arr = v.as<JsonArrayConst>();
+
+            // Heuristique simple : tableau de bool ?
+            bool isBoolArray = true;
+
+            for (auto val : arr)
+            {
+                if (!val.is<bool>())
+                {
+                    isBoolArray = false;
+                    break;
+                }
+            }
+
+            if (isBoolArray)
+            {
+                mmBoolArray outArr;
+                for (auto val : arr)
+                    outArr.push_back(val.as<bool>());
+
+                out = outArr;
+                return true;
+            }
+            else
+            {
+                mmUint8tArray outArr;
+                for (auto val : arr)
+                    outArr.push_back(val.as<uint8_t>());
+
+                out = outArr;
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

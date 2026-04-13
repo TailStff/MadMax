@@ -19,6 +19,10 @@ void WebAPI::Setup()
     server.on("/API/*", HTTP_GET, [this](AsyncWebServerRequest *r)
               { handleAPI(r); });
 
+    server.on("/API/*", HTTP_POST, [this](AsyncWebServerRequest *r)
+              { handleAPI(r); }, NULL, [this](AsyncWebServerRequest *r, uint8_t *data, size_t len, size_t index, size_t total)
+              { apiBodyHandler(r, data, len, index, total); });
+
     /*
             server.on("/API", HTTP_GET, [this](AsyncWebServerRequest *r)
                       { apiRouter(r); });
@@ -45,9 +49,9 @@ void WebAPI::Setup()
     server.begin();
 }
 
-void WebAPI::handleAPI(AsyncWebServerRequest *r)
+void WebAPI::handleAPI(AsyncWebServerRequest *request)
 {
-    String path = r->url(); // ex: /API/Variables/test/value
+    String path = request->url(); // ex: /API/Variables/test/value
 
     path.remove(0, 5); // enlève "/API/"
 
@@ -63,52 +67,90 @@ void WebAPI::handleAPI(AsyncWebServerRequest *r)
     }
     parts.push_back(path.substring(start));
 
-    // Dispatch
-    if (parts.size() == 1)
+    if (request->method() == HTTP_GET)
     {
-        if (parts[0] == "Variables")
-            return getVariablesList(r);
-        else if (parts[0] == "Accums")
-            return getAccumsList(r);
-        else if (parts[0] == "DigitalEquipments")
-            return getDigitalEquipmentsList(r);
-        else if (parts[0] == "PumpSwaps")
-            return getPumpSwapsList(r);
-        else if (parts[0] == "TPulses")
-            return getTPulsesList(r);
-        else if (parts[0] == "FeedbackErrors")
-            return getFeedbackErrorsList(r);
-        else if (parts[0] == "DelayOnOffs")
-            return getDelayOnOffsList(r);
-        else if (parts[0] == "RunTimes")
-            return getRunTimesList(r);
-    }
-    else if (parts.size() == 2)
-    {
-        if (parts[0] == "Variables")
-            return getVariableDetail(parts[1].c_str(), r);
-        else if (parts[0] == "Accums")
-            return getAccumDetail(parts[1].c_str(), r);
-        else if (parts[0] == "DigitalEquipments")
-            return getDigitalEquipmentDetail(parts[1].c_str(), r);
-        else if (parts[0] == "PumpSwaps")
-            return getPumpSwapDetail(parts[1].c_str(), r);
-        else if (parts[0] == "TPulses")
-            return getTPulseDetail(parts[1].c_str(), r);
-        else if (parts[0] == "FeedbackErrors")
-            return getFeedbackErrorDetail(parts[1].c_str(), r);
-        else if (parts[0] == "DelayOnOffs")
-            return getDelayOnOffDetail(parts[1].c_str(), r);
-        else if (parts[0] == "RunTimes")
-            return getRunTimeDetail(parts[1].c_str(), r);
-    }
-    else if (parts.size() == 3)
-    {
-        if (parts[0] == "Variables")
-            return getVariableProperty(parts[1].c_str(), parts[2].c_str(), r);
+
+        // Dispatch
+        if (parts.size() == 1)
+        {
+            if (parts[0] == "Variables")
+                return getVariablesList(request);
+            else if (parts[0] == "Accums")
+                return getAccumsList(request);
+            else if (parts[0] == "DigitalEquipments")
+                return getDigitalEquipmentsList(request);
+            else if (parts[0] == "PumpSwaps")
+                return getPumpSwapsList(request);
+            else if (parts[0] == "TPulses")
+                return getTPulsesList(request);
+            else if (parts[0] == "FeedbackErrors")
+                return getFeedbackErrorsList(request);
+            else if (parts[0] == "DelayOnOffs")
+                return getDelayOnOffsList(request);
+            else if (parts[0] == "RunTimes")
+                return getRunTimesList(request);
+        }
+        else if (parts.size() == 2)
+        {
+            if (parts[0] == "Variables")
+                return getVariableDetail(parts[1].c_str(), request);
+            else if (parts[0] == "Accums")
+                return getAccumDetail(parts[1].c_str(), request);
+            else if (parts[0] == "DigitalEquipments")
+                return getDigitalEquipmentDetail(parts[1].c_str(), request);
+            else if (parts[0] == "PumpSwaps")
+                return getPumpSwapDetail(parts[1].c_str(), request);
+            else if (parts[0] == "TPulses")
+                return getTPulseDetail(parts[1].c_str(), request);
+            else if (parts[0] == "FeedbackErrors")
+                return getFeedbackErrorDetail(parts[1].c_str(), request);
+            else if (parts[0] == "DelayOnOffs")
+                return getDelayOnOffDetail(parts[1].c_str(), request);
+            else if (parts[0] == "RunTimes")
+                return getRunTimeDetail(parts[1].c_str(), request);
+        }
+        else if (parts.size() == 3)
+        {
+            if (parts[0] == "Variables")
+                return getVariableProperty(parts[1].c_str(), parts[2].c_str(), request);
+        }
     }
 
-    r->send(404, "text/plain", "Not found");
+    if (request->method() == HTTP_POST)
+    {
+        String url = request->url();
+
+        if (parts.size() == 2)
+        {
+            if (parts[0] == "Variables")
+            {
+                // We check Variable existence before reading the body, to avoid reading a potentially big body if the variable doesn't exist or is not writable
+                MadMax::DTOBase dto;
+                if (myApp->GetVariableProvider()->GetDetailDTO(parts[1].c_str(), dto))
+                    return;
+            }
+        }
+
+        /*
+        // Get a specific interface
+        if (url.startsWith("/API/Interfaces/"))
+        {
+            String guid = url.substring(16);
+
+            if (guid == "eth")
+            {
+                r->send(200, "text/plain", "Settings eth interface…");
+                return;
+            }
+            if (guid == "sta")
+            {
+                r->send(200, "text/plain", "Settings sta interface…");
+                return;
+            }
+        }*/
+    }
+
+    request->send(404, "text/plain", "Not found");
 }
 
 // -------- Pages --------
@@ -772,10 +814,128 @@ void WebAPI::apiRouter(AsyncWebServerRequest *request)
 
 void WebAPI::apiBodyHandler(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
 {
-    static char jsonBuffer[512];
-    static size_t jsonIndex;
 
-    String url = request->url();
+    struct RequestContext
+    {
+        char buffer[512];
+        size_t index = 0;
+    };
+
+    struct RequestContextGuard
+    {
+        AsyncWebServerRequest *req;
+        RequestContext *ctx;
+
+        ~RequestContextGuard()
+        {
+            delete ctx;
+            req->_tempObject = nullptr;
+        }
+    };
+
+    if (index == 0)
+        request->_tempObject = new RequestContext();
+
+    auto *ctx = (RequestContext *)request->_tempObject;
+
+    if (!ctx)
+    {
+        request->send(500, "text/plain", "Internal error");
+        return;
+    }
+
+    // Check if total size is not too big, + 1 for terminaison byte
+    if (ctx->index + len + 1 >= sizeof(ctx->buffer))
+    {
+        request->send(413, "text/plain", "Payload too large");
+        delete ctx;
+        request->_tempObject = nullptr;
+        return;
+    }
+
+    memcpy(&ctx->buffer[ctx->index], data, len);
+    ctx->index += len;
+
+    if (index + len != total)
+        return;
+
+    RequestContextGuard guard{request, ctx};
+
+    ctx->buffer[ctx->index] = '\0';
+
+    JsonDocument doc;
+    if (deserializeJson(doc, ctx->buffer))
+    {
+        request->send(400, "text/plain", "Invalid JSON");
+        return;
+    }
+
+    String path = request->url();
+
+    // Remove /API/ prefix
+    path.remove(0, 5);
+
+#pragma region SplitPath
+    std::vector<String> parts;
+    int start = 0;
+    int idx;
+
+    while ((idx = path.indexOf('/', start)) != -1)
+    {
+        parts.push_back(path.substring(start, idx));
+        start = idx + 1;
+    }
+    parts.push_back(path.substring(start));
+#pragma endregion
+
+    // Check if we have at least one part (the ressource type)
+    if (parts.empty())
+    {
+        request->send(400, "text/plain", "Invalid URL");
+        return;
+    }
+
+    // Dispatch
+    if (parts[0] == "Variables")
+    {
+        // check if URL consists of 2 parts -> /API/Variables/{name}
+        if (parts.size() != 2)
+        {
+            request->send(400, "text/plain", "Invalid URL");
+            return;
+        }
+
+        // Check if name is provided
+        if (parts[1].isEmpty())
+        {
+            request->send(400, "text/plain", "Variable name is required");
+            return;
+        }
+
+        // Mandatory fields
+        auto v = doc["value"];
+        if (v.isUnbound() || v.isNull())
+        {
+            request->send(400, "text/plain", "Missing 'value' field");
+            return;
+        }
+
+        MadMax::VariableValue value;
+        if (!MadMax::VariableValueFromJson(v, value))
+        {
+            request->send(400, "text/plain", "Unsupported type");
+            return;
+        }
+
+        // Set Variable value
+        myApp->GetVariableProvider()->SetValue(parts[1].c_str(), value);
+        request->send(200, "text/plain", "OK");
+        return;
+    }
+
+    request->send(404, "text/plain", "Ressource not found");
+
+    /*
     String iface = url.startsWith("/API/Interfaces/") ? url.substring(16) : "";
 
     if (iface.isEmpty())
@@ -803,5 +963,5 @@ void WebAPI::apiBodyHandler(AsyncWebServerRequest *request, uint8_t *data, size_
             setInterfaceSta(jsonBuffer, request);
         else
             request->send(404);
-    }
+    }*/
 }
