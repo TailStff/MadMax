@@ -50,7 +50,7 @@ namespace MadMax
         this->status.value = persistencyValues.value;
     }
 
-#pragma region VariableValue
+#pragma region IVariableValue
     template <class T>
     VariableValue Variable<T>::GetVariantValue() const
     {
@@ -84,5 +84,5 @@ namespace MadMax
             },
             v);
     }
-#pragma endregion VariableValue
+#pragma endregion IVariableValue
 }

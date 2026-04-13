@@ -77,16 +77,25 @@ namespace MadMax
         /// @param name Name of the object to be serialized
         void SavePersistencyValuesToMem(const std::string &name) override
         {
+#ifdef SERIALDEBUG
+            Serial.print(F("Saving persistency values for '"));
+            Serial.print(name.c_str());
+            Serial.println(F("'"));
+#endif
+
             int32_t address;
-            auto *base = static_cast<IPrimitive *>(ObjectProvider<IPrimitive>::Get(name, address));
+            auto *base = ObjectProvider<IPrimitive>::Get(name, address);
             if (!base)
                 return;
 
-            const ISerializable *obj = base->AsSerializable();
+            auto *obj = base->AsSerializable();
 
             // If the object doesn't exist, we can't save its persistency values
             if (!obj)
+            {
+                Serial.println(F("Object is not serializable"));
                 return;
+            }
 
             writePersistencyData(name, obj);
         }

@@ -12,6 +12,15 @@ namespace MadMax
     private:
         std::unique_ptr<IDTOMapperBase> dtoMappers;
 
+        void writePersistencyData(const std::string &name, const ISerializable *obj)
+        {
+            // Get the bytes vector that represent the object persistency values
+            std::vector<uint8_t> dataToWrite;
+            obj->GetBytesFromData(dataToWrite);
+
+            executionEnv->GetMiniPrefs()->Put(name.c_str(), dataToWrite.data(), dataToWrite.size());
+        }
+
     public:
         AccumProvider(ExecutionEnv *executionEnv)
         {
@@ -56,28 +65,57 @@ namespace MadMax
 
             int32_t address;
             auto *base = ObjectProvider<IPrimitive>::Get(name, address);
-
             if (!base)
                 return;
 
-            Serial.println(F("OK"));
-
             auto *obj = base->AsSerializable();
 
+            // If the object doesn't exist, we can't save its persistency values
             if (!obj)
             {
                 Serial.println(F("Object is not serializable"));
                 return;
             }
 
-#ifdef SERIALDEBUG
-            Serial.print(F("Object is serializable"));
-#endif
+            writePersistencyData(name, obj);
+        }
 
-            std::vector<uint8_t> dataToWrite;
-            obj->GetBytesFromData(dataToWrite);
+        /// @brief Function that SET new value to the accum output value and save persistency values if the value is different from the previous one
+        /// @param name Name of the object to be updated
+        /// @param value The new value to SET
+        template <class T>
+        void SetValue(const std::string &name, T value)
+        {
+            int32_t address;
 
-            executionEnv->GetMiniPrefs()->Put(name.c_str(), dataToWrite.data(), dataToWrite.size());
+            // Get the object to be serialized
+            Accum<T> *obj = static_cast<Accum<T> *>(ObjectProvider<IPrimitive>::Get(name, address));
+
+            // If the object doesn't exist, we can't save its persistency values
+            if (!obj)
+                return;
+
+            if (obj->SetValue(value))
+                writePersistencyData(name, obj);
+        }
+
+        void SetValue(const std::string &name, const VariableValue &value)
+        {
+            int32_t address;
+
+            auto *base = ObjectProvider<IPrimitive>::Get(name, address);
+            if (!base)
+                return;
+
+            auto *obj = base->AsVariableValue();
+            if (!obj)
+                return;
+
+            if (obj->SetVariantValue(value))
+            {
+                if (auto *serializable = base->AsSerializable())
+                    writePersistencyData(name, serializable);
+            }
         }
 
 #pragma region IProviderDTO
