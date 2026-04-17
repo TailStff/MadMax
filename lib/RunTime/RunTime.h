@@ -8,7 +8,6 @@
 
 #include "IPrimitive.h"
 #include "ISerializable.h"
-#include "IPrimitiveTyped.h"
 #include "RunTimeStatus.h"
 
 #include "ExecutionEnv.h"
@@ -20,7 +19,7 @@ namespace MadMax
     uint64_t value;
   };
 
-  class RunTime : public IPrimitiveTyped<RunTimePersistencyValues>, public IPrimitive, public ISerializable
+  class RunTime : public IPrimitive, public ISerializable
   {
 
   private:

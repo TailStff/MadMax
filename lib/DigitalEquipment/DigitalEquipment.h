@@ -16,7 +16,7 @@ namespace MadMax
         uint64_t startCount;
     };
 
-    class DigitalEquipment : public IPrimitiveTyped<DigitalEquipementPersistencyValues>, public IPrimitive, public ISerializable
+    class DigitalEquipment : public IPrimitive, public ISerializable
     {
     private:
         ExecutionEnv *executionEnv;

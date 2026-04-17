@@ -54,7 +54,7 @@ namespace MadMax
         std::vector<DigitalEquipmentStatus *> PumpsStatus;
     };
 
-    class PumpSwap : public IPrimitiveTyped<PumpSwapPersistencyValues>, public IPrimitive, public ISerializable
+    class PumpSwap : public IPrimitive, public ISerializable
     {
     private:
         ExecutionEnv *executionEnv;

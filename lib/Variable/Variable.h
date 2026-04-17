@@ -5,7 +5,6 @@
 
 #include "ISerializable.h"
 #include "IVariableValue.h"
-#include "IPrimitiveTyped.h"
 #include "VariableStatus.h"
 #include "ExecutionEnv.h"
 
@@ -18,7 +17,7 @@ namespace MadMax
     };
 
     template <class T>
-    class Variable : public IVariableValue, public ISerializable, public IPrimitiveTyped<VariablePersistencyValues<T>>
+    class Variable : public IVariableValue, public ISerializable
     {
 
     private:
