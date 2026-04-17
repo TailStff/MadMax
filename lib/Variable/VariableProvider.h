@@ -36,6 +36,20 @@ namespace MadMax
             // We get the last saved value from memory
             GetPersistencyValuesFromMem(name, reinterpret_cast<uint8_t *>(&data), sizeof(VariablePersistencyValues<T>));
 
+            WriteValueToModbusSpace(address, data);
+
+            // mmVariable<T> varies per T, so we cannot use ObjectProvider<mmVariable<T>> as base.
+            // We must inject via the fixed base interface ObjectProvider<ISerializableBase>
+            // to store all typed instances in a single polymorphic collection.
+            auto *obj = new Variable<T>(executionEnv, data);
+            ObjectProvider<IPrimitive>::inject(name, address, obj);
+            return obj;
+        }
+
+        // Fonction must be used from variable object now, deprecated to avoid misuse
+        template <class T>
+        void WriteValueToModbusSpace(int32_t address, MadMax::VariablePersistencyValues<T> &data)
+        {
             // Copy the last saved value to modbus memory space, if it's valid, we consider that an address of -1 is an invalid address that mean that the variable is not associated to any Modbus register, this allow to create variable that are not exposed through Modbus if we want to
             if (address != -1)
             {
@@ -52,13 +66,6 @@ namespace MadMax
                     *value = data.value;
                 }
             }
-
-            // mmVariable<T> varies per T, so we cannot use ObjectProvider<mmVariable<T>> as base.
-            // We must inject via the fixed base interface ObjectProvider<ISerializableBase>
-            // to store all typed instances in a single polymorphic collection.
-            auto *obj = new Variable<T>(executionEnv, data);
-            ObjectProvider<IPrimitive>::inject(name, address, obj);
-            return obj;
         }
 
         /// @brief Getter function to get the desired object given by his name
@@ -87,6 +94,8 @@ namespace MadMax
             if (!obj)
                 return;
 
+            WriteValueToModbusSpace(address, value);
+
             if (obj->SetValue(value))
                 writePersistencyData(name, obj);
         }
@@ -105,6 +114,8 @@ namespace MadMax
 
             if (obj->SetVariantValue(value))
             {
+                obj->WriteToModbus(address);
+
                 if (auto *serializable = base->AsSerializable())
                     writePersistencyData(name, serializable);
             }

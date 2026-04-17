@@ -190,7 +190,7 @@ void MyApp::Loop()
 
     uint8_t minute = executionEnv->getMinute();
 
-    // mmVariables->RefreshFromModbusRegisters();
+    mmVariables->RefreshFromModbusRegisters();
 
     auto permut4 = mmPumpSwaps->Get("4pmp");
 

@@ -115,5 +115,10 @@ namespace MadMax
             return false;
         } }, v);
     }
+
+    template <class T>
+    void Accum<T>::WriteToModbus(int32_t address)
+    {
+    }
 #pragma endregion IVariableValue
 }
