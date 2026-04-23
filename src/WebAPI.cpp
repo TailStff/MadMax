@@ -1,21 +1,89 @@
 #include "WebAPI.h"
-#include "home.h"
-#include "styles.css.h"
+#include <LittleFS.h>
+
 #include <ArduinoJson.h>
 #include "VariableValue.h"
 
 WebAPI::WebAPI(AsyncWebServer &server, MyApp *app, ExecutionEnv *env) : server(server), myApp(app), executionEnv(env) {}
 
+// -------- Pages --------
+/*
+void WebAPI::jquery(AsyncWebServerRequest *request)
+{
+    request->send(LittleFS, "/jquery-4.0.0.min.js", "application/javascript");
+}
+
+void WebAPI::jqueryUI(AsyncWebServerRequest *request)
+{
+    request->send(LittleFS, "/jquery-ui.min.js", "application/javascript");
+}
+
+void WebAPI::jqueryUICSS(AsyncWebServerRequest *request)
+{
+    request->send(LittleFS, "/jquery-ui.min.css", "text/css");
+}
+
+void WebAPI::homePage(AsyncWebServerRequest *request)
+{
+    request->send(LittleFS, "/index.html", "text/html");
+}
+
+void WebAPI::styles(AsyncWebServerRequest *request)
+{
+    request->send(LittleFS, "/styles.css", "text/css");
+}
+
+void WebAPI::application(AsyncWebServerRequest *request)
+{
+    request->send(LittleFS, "/app.js", "application/javascript");
+}
+
+void WebAPI::variablesNavigator(AsyncWebServerRequest *request)
+{
+    request->send(LittleFS, "/variablesNavigator.js", "application/javascript");
+}
+
+void WebAPI::variablesNavigatorCSS(AsyncWebServerRequest *request)
+{
+    request->send(LittleFS, "/variablesNavigator.css", "text/css");
+}*/
+
+/// Setup the web server routes and handlers
 void WebAPI::Setup()
 {
-    server.on("/", HTTP_GET, [this](AsyncWebServerRequest *r)
-              { homePage(r); });
-    server.on("/index.html", HTTP_GET, [this](AsyncWebServerRequest *r)
-              { homePage(r); });
+    // Files
+    /*server.on("/", HTTP_GET, [this](AsyncWebServerRequest *r)
+              { homePage(r); });*/
 
-    server.on("/styles.css", HTTP_GET, [this](AsyncWebServerRequest *r)
-              { styles(r); });
+    server.serveStatic("/", LittleFS, "/")
+        .setDefaultFile("index.html");
 
+    /*
+server.on("/index.html", HTTP_GET, [this](AsyncWebServerRequest *r)
+    { homePage(r); });
+
+server.on("/jquery-4.0.0.min.js", HTTP_GET, [this](AsyncWebServerRequest *r)
+    { jquery(r); });
+
+server.on("/jquery-ui.min.js", HTTP_GET, [this](AsyncWebServerRequest *r)
+    { jqueryUI(r); });
+
+server.on("/jquery-ui.min.css", HTTP_GET, [this](AsyncWebServerRequest *r)
+    { jqueryUICSS(r); });
+
+server.on("/styles.css", HTTP_GET, [this](AsyncWebServerRequest *r)
+    { styles(r); });
+
+server.on("/variablesNavigator.css", HTTP_GET, [this](AsyncWebServerRequest *r)
+    { variablesNavigatorCSS(r); });
+
+server.on("/app.js", HTTP_GET, [this](AsyncWebServerRequest *r)
+    { application(r); });
+
+server.on("/variablesNavigator.js", HTTP_GET, [this](AsyncWebServerRequest *r)
+    { variablesNavigator(r); });*/
+
+    // API
     server.on("/API/*", HTTP_GET, [this](AsyncWebServerRequest *r)
               { handleAPI(r); });
 
@@ -35,8 +103,7 @@ void WebAPI::Setup()
 
     // server.on("/API/interfaces/:int", HTTP_GET, apiGetInterface);
 
-    /*server.on("/app.js", HTTP_GET, application);
-    server.on("/styles.css", HTTP_GET, styles);
+    /*
     server.on("/INFOS", HTTP_GET, SendInfos);
     server.on("/DATAS", HTTP_GET, SendDatas);
     server.on("/RESET", HTTP_GET, ESPReset);
@@ -44,7 +111,7 @@ void WebAPI::Setup()
     server.on("/SETTINGS", HTTP_POST, setSettingsResponse, NULL, setSettingsExecute);
     server.on("/DATETIME", HTTP_POST, setDateTimeResponse, NULL, setDateTimeExecute);*/
 
-    //server.onNotFound(notFound);
+    // server.onNotFound(notFound);
 
     server.begin();
 }
@@ -159,18 +226,6 @@ void WebAPI::handleAPI(AsyncWebServerRequest *request)
     }
 
     request->send(404, "text/plain", "Not found");
-}
-
-// -------- Pages --------
-
-void WebAPI::homePage(AsyncWebServerRequest *request)
-{
-    request->send_P(200, "text/html", Home);
-}
-
-void WebAPI::styles(AsyncWebServerRequest *request)
-{
-    request->send_P(200, "text/css", Styles);
 }
 
 void WriteJson(JsonObject obj, const MadMax::FieldValue &field)

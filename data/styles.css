@@ -1,7 +1,35 @@
-// R means raw
-// PROGMEM indicate store in Flash instead Ram
+body {
+    background-color: rgb(61, 61, 60);
+}
 
-const char Styles[] PROGMEM = R"=====(
+div#appContainer {
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+div#navigationContainer {
+
+    flex: 0 0 64px;
+    width: 100%;
+}
+
+div#contentContainer {
+
+    flex: 1 1 auto;
+    width: 100%;
+    display: flex;
+}
+
+/*
 
 div.title-container {
     display: flex;
@@ -176,7 +204,4 @@ dialog p.title {
 dialog::backdrop {
     background-color: rgba(40, 40, 40, .4);
 	backdrop-filter: blur(.05rem);
-}
-
-
-)=====";
+} */

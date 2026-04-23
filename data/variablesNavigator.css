@@ -1,0 +1,23 @@
+div#VariablesContainer {
+
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    width: 100%;
+}
+
+div#VariablesContainer>ul {
+
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #ccc;
+    flex: 0 0 300px;
+}
+
+div#VariableDetail {
+
+    border: 1px solid #ddd;
+    padding: 10px;
+    flex: 1;
+}

@@ -1,76 +1,72 @@
-const char Home[] PROGMEM = R"=====(
-
 <html>
-	<head>
-	  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	  <meta http-equiv="Content-Language" content="fr" />
-	  <meta name="author" content="Jannic ANDREIS" />
-	  <title>
-		  A2imp LoRaWAN multi-device
-	  </title>
-	  <link rel="stylesheet" href="styles.css">
-	  <script src="app.js"></script>
-	  <script type="text/javascript">
-	  
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="Content-Language" content="fr" />
+	<meta name="author" content="Jannic ANDREIS" />
+
+	<title>
+		A2imp LoRaWAN multi-device
+	</title>
+
+	<link rel="stylesheet" href="styles.css">
+	<link rel="stylesheet" href="jquery-ui.min.css">
+	<link rel="stylesheet" href="variablesNavigator.css">
+
+	<script src="jquery-4.0.0.min.js"></script>
+	<script src="jquery-ui.min.js"></script>
+
+	<script src="variablesNavigator.js"></script>
+	<script src="app.js"></script>
+
+	<script type="text/javascript">
+
 		let timeTimeOut;
-	  
-		let app = new App (
-			{
-				DI: {
-					number: 4,
-					datarefs: [
-						{ name: "Digital input 1", jsonProperty: "DI1" },
-						{ name: "Digital input 2", jsonProperty: "DI2" },
-						{ name: "Digital input 3", jsonProperty: "DI3" },
-						{ name: "Digital input 4", jsonProperty: "DI4" }
-					]
-				},
-				AV: {
-					number: 1,
-					datarefs: [
-						{ name: "Battery voltage", jsonProperty: "VBAT", decimal: '0', unit: "mV" }
-					]
-				}
-			}
-		);
-	  
+
+		let app = new App({});
+
 		document.addEventListener("DOMContentLoaded", function () {
-		    setTimeout(() => {
+			setTimeout(() => {
 
-		        app.PrepareDOM();
-		        app.ReplaceInfos();
-				app.AddHelps();
+				app.PrepareDOM();
+				//app.ReplaceInfos();
+				//app.AddHelps();
 
-		    }, 500);
+			}, 500);
 
-		    setInterval(() => {
-		        app.getData();
-		    }, 1000);
-			
+			/*setInterval(() => {
+				app.getData();
+			}, 1000);
+
 			timeTimeOut = setInterval(() => {
-		        app.refreshDateTime();
-		    }, 1000);
+				app.refreshDateTime();
+			}, 1000);*/
 		});
-		
+
 		document.addEventListener("visibilitychange", () => {
-		
+
 			if (document.visibilityState === "visible") {
-			
+
 				// Restart
 				location.reload();
 			} else {
-			
+
 				// Stop
 			}
 		});
-		
-	  </script>
-	  <style>
 
-	  </style>
-	</head>
-	<body>
-	  <div class='title-container'><div class='logo'></div> <div class='title'>LoRaWAN multi-device</div><div class='version'>Version 0.2a</div></div>
+	</script>
+	<style>
+
+	</style>
+</head>
+
+<body>
+	<div id="appContainer">
+
+	</div>
+
+	<!--<div class='title-container'><div class='logo'></div> <div class='title'>LoRaWAN multi-device</div><div class='version'>Version 0.2a</div></div>
 	  <form id='time' onsubmit="app.SendDateTime(); return false;">
 	  <table class='time-info'>
 		<tr>
@@ -140,8 +136,7 @@ const char Home[] PROGMEM = R"=====(
 
 		<form id='formReset' action="/RESET">
 			<input type="submit" value="Reset device" />
-		</form>
-	</body>
-</html>
+		</form>-->
+</body>
 
-  )=====";
+</html>

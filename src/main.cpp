@@ -42,6 +42,7 @@
 #include <ESPAsyncWebServer.h>
 #include <ETH.h>
 #include <SPI.h>
+#include <LittleFS.h>
 
 #include <Adafruit_GFX.h>
 
@@ -54,9 +55,6 @@
 #include "SafeSet.h"
 
 #include "MadMax.h"
-
-#include "home.h"
-#include "styles.css.h"
 
 #include "RTCWrapper.h"
 
@@ -324,6 +322,12 @@ void setup()
 #endif
 
   Serial.begin(115200);
+
+  if (!LittleFS.begin())
+  {
+    Serial.println("Erreur LittleFS !");
+    return;
+  }
 
   pinMode(GPIO0, INPUT_PULLUP);
 

@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "noEmitHelpers": true,
+    "importHelpers": false,
+    "declaration": false,
+    "sourceMap": false,
+    "removeComments": true,
+    "strict": true
+  }
+}
