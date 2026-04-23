@@ -168,17 +168,15 @@ namespace MadMax
         }
 
 #pragma region IPersistable
-        /// @brief Save the persistency values of the mmVariableFloat object with the given name
-        /// @param name Name of the object to be serialized
         void SavePersistencyValuesToMem(const std::string &name) override
         {
-#ifdef SERIALDEBUG
             Serial.print(F("Saving persistency values for '"));
             Serial.print(name.c_str());
-            Serial.println(F("'"));
-#endif
+            Serial.println(F("' to memory"));
 
             int32_t address;
+
+            // Get the object to be serialized
             auto *base = ObjectProvider<IPrimitive>::Get(name, address);
             if (!base)
                 return;
@@ -197,6 +195,10 @@ namespace MadMax
 
         void GetPersistencyValuesFromMem(const std::string &name, uint8_t *data, size_t length) override
         {
+            Serial.print(F("Getting persistency values for '"));
+            Serial.print(name.c_str());
+            Serial.println(F("' from memory"));
+
             uint16_t readedLength;
             uint16_t addr;
             executionEnv->GetMiniPrefs()->Get(name.c_str(), data, length, addr, readedLength);

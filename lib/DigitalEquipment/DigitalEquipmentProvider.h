@@ -19,14 +19,18 @@ namespace MadMax
 
         DigitalEquipment *Create(const std::string &name, uint32_t address, DigitalEquipementPersistencyValues data = {})
         {
-            // Mini prefs method
-            // executionEnv->GetMiniPrefs()->read(address, reinterpret_cast<uint8_t *>(&data), mmDigitalEquipment::GetSerializedSize());
-
+            // Get values from memory to be able to create the object with his previous persistency values
+            GetPersistencyValuesFromMem(name, reinterpret_cast<uint8_t *>(&data), DigitalEquipment::GetSerializedSize());
             return ObjectProvider<DigitalEquipment>::Create(name, address, executionEnv, data);
         }
 
+#pragma region IPersistable
         void SavePersistencyValuesToMem(const std::string &name) override
         {
+            Serial.print(F("Saving persistency values for '"));
+            Serial.print(name.c_str());
+            Serial.println(F("' to memory"));
+
             int32_t address;
 
             // Get the object to be serialized
@@ -45,10 +49,15 @@ namespace MadMax
 
         void GetPersistencyValuesFromMem(const std::string &name, uint8_t *data, size_t length) override
         {
+            Serial.print(F("Getting persistency values for '"));
+            Serial.print(name.c_str());
+            Serial.println(F("' from memory"));
+
             uint16_t readedLength;
             uint16_t addr;
             executionEnv->GetMiniPrefs()->Get(name.c_str(), data, length, addr, readedLength);
         }
+#pragma endregion IPersistable
 
 #pragma region IProviderDTO
         std::vector<DTOBase> GetDTOs() const override

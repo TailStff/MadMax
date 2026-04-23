@@ -48,39 +48,6 @@ namespace MadMax
             return static_cast<Accum<T> *>(ObjectProvider<IPrimitive>::Get(name, address));
         }
 
-#pragma region IPersistable
-        void GetPersistencyValuesFromMem(const std::string &name, uint8_t *data, size_t length)
-        {
-            uint16_t readedLength;
-            uint16_t addr;
-            executionEnv->GetMiniPrefs()->Get(name.c_str(), data, length, addr, readedLength);
-        }
-
-        void SavePersistencyValuesToMem(const std::string &name) override
-        {
-#ifdef SERIALDEBUG
-            Serial.print(F("Saving persistency values for '"));
-            Serial.print(name.c_str());
-            Serial.println(F("'"));
-#endif
-
-            int32_t address;
-            auto *base = ObjectProvider<IPrimitive>::Get(name, address);
-            if (!base)
-                return;
-
-            auto *obj = base->AsSerializable();
-
-            // If the object doesn't exist, we can't save its persistency values
-            if (!obj)
-            {
-                Serial.println(F("Object is not serializable"));
-                return;
-            }
-
-            writePersistencyData(name, obj);
-        }
-
         /// @brief Function that SET new value to the accum output value and save persistency values if the value is different from the previous one
         /// @param name Name of the object to be updated
         /// @param value The new value to SET
@@ -96,6 +63,7 @@ namespace MadMax
             if (!obj)
                 return;
 
+            // If the old value is different from the new one, we save persistency values to memory, otherwise we do nothing to avoid unnecessary write operations to memory
             if (obj->SetValue(value))
                 writePersistencyData(name, obj);
         }
@@ -119,6 +87,42 @@ namespace MadMax
             }
         }
 
+#pragma region IPersistable
+        void SavePersistencyValuesToMem(const std::string &name) override
+        {
+            Serial.print(F("Saving persistency values for '"));
+            Serial.print(name.c_str());
+            Serial.println(F("' to memory"));
+
+            int32_t address;
+
+            // Get the object to be serialized
+            auto *base = ObjectProvider<IPrimitive>::Get(name, address);
+            if (!base)
+                return;
+
+            auto *obj = base->AsSerializable();
+
+            // If the object doesn't exist, we can't save its persistency values
+            if (!obj)
+            {
+                Serial.println(F("Object is not serializable"));
+                return;
+            }
+
+            writePersistencyData(name, obj);
+        }
+
+        void GetPersistencyValuesFromMem(const std::string &name, uint8_t *data, size_t length) override
+        {
+            Serial.print(F("Getting persistency values for '"));
+            Serial.print(name.c_str());
+            Serial.println(F("' from memory"));
+
+            uint16_t readedLength;
+            uint16_t addr;
+            executionEnv->GetMiniPrefs()->Get(name.c_str(), data, length, addr, readedLength);
+        }
 #pragma endregion IPersistable
 
 #pragma region IProviderDTO

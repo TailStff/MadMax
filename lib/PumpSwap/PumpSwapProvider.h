@@ -36,18 +36,19 @@ namespace MadMax
             // We resize our vector to be able to receive persistency values
             data.data.resize(count);
 
-            uint16_t writtenLength;
-            uint16_t addr;
-            executionEnv->GetMiniPrefs()->Get(name.c_str(), reinterpret_cast<uint8_t *>(data.data.data()), PumpSwap::GetSerializedSize(count), addr, writtenLength);
+            // Get values from memory to be able to create the object with his previous persistency values
+            GetPersistencyValuesFromMem(name, reinterpret_cast<uint8_t *>(data.data.data()), PumpSwap::GetSerializedSize(count));
 
             return ObjectProvider<PumpSwap>::Create(name, address, executionEnv, count, feedbackDelay, data);
         }
 
+#pragma region IPersistable
         void SavePersistencyValuesToMem(const std::string &name) override
         {
             Serial.print(F("Saving persistency values for '"));
             Serial.print(name.c_str());
-            
+            Serial.println(F("' to memory"));
+
             int32_t address;
 
             // Get the object to be serialized
@@ -66,10 +67,15 @@ namespace MadMax
 
         void GetPersistencyValuesFromMem(const std::string &name, uint8_t *data, size_t length) override
         {
+            Serial.print(F("Getting persistency values for '"));
+            Serial.print(name.c_str());
+            Serial.println(F("' from memory"));
+
             uint16_t readedLength;
             uint16_t addr;
             executionEnv->GetMiniPrefs()->Get(name.c_str(), data, length, addr, readedLength);
         }
+#pragma endregion IPersistable
 
 #pragma region IProviderDTO
         std::vector<DTOBase> GetDTOs() const override
