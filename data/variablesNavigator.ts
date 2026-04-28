@@ -4,6 +4,7 @@ declare var $: any;
 $(function () {
 
     type Variable = {
+        
         name: string;
         value: any;
         type: number;
@@ -260,20 +261,37 @@ $(function () {
             switch (variable.type) {
 
                 case 1: // double
-                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='0' /></div>`);
+                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' step='any' /></div>`);
                     break;
                 case 2: // float
-                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='0' /></div>`);
+                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' step='any' /></div>`);
                     break;
-
+                case 3: // int64
+                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' min='-9223372036854775808' max='9223372036854775807' step='1' /></div>`);
+                    break;
+                case 4: // uint64
+                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' min='0' max='18446744073709551615' step='1' /></div>`);
+                    break;
+                case 5: // int32
+                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' min='-2147483648' max='2147483647' step='1' /></div>`);
+                    break;
+                case 6: // uint32
+                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' min='0' max='4294967295' step='1' /></div>`);
+                    break;
                 case 7: // int16
-                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='0' min='-32768' max='32767' /></div>`);
+                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' min='-32768' max='32767' step='1' /></div>`);
+                    break;
+                case 8: // uint16
+                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' min='0' max='65535' step='1' /></div>`);
                     break;
                 case 9: // int8
-                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='0' min='-128' max='127' /></div>`);
+                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' min='-128' max='127' step='1' /></div>`);
+                    break;
+                case 10: // uint8
+                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' min='0' max='255' step='1' /></div>`);
                     break;
                 case 11: // bool
-                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='checkbox' value='true' /></div>`);
+                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='checkbox' ${variable.value === true ? "checked:'checked'":""} value='true' /></div>`);
                     break;
 
             }
