@@ -67,8 +67,10 @@ div#VariableDetail div.title {
 
     font-size: 18px;
     font-weight: bold;
+    border-bottom: 2px solid #DDD;
     margin-bottom: 10px;
-    background: rgb(192, 192, 192);
+    margin-top: 10px;
+    color: #DDD;
 }
 
 div#VariableDetail div.property {

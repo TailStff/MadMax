@@ -191,6 +191,8 @@ $(function () {
             $(`<div class="button"><button type='submit'>Mettre à jour</button></div>`).appendTo(form);
             form.on("submit", (e) => {
                 e.preventDefault();
+                let button = $(".button button", form);
+                button.attr("disabled", "disabled");
                 let newValue = { value: null };
                 switch (variable.type) {
                     case 1:
@@ -214,9 +216,11 @@ $(function () {
                 self.setVariableValue(variable.name, newValue)
                     .then(() => {
                     console.log("Variable updated successfully");
+                    button.removeAttr("disabled");
                 })
                     .catch((error) => {
                     console.error("Error updating variable:", error);
+                    button.removeAttr("disabled");
                 });
                 return false;
             });

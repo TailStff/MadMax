@@ -303,6 +303,10 @@ $(function () {
             form.on("submit", (e: any) => {
 
                 e.preventDefault();
+
+                let button = $(".button button", form);
+                button.attr("disabled", "disabled");
+
                 let newValue: any = { value: null };
                 switch (variable.type) {
 
@@ -329,9 +333,11 @@ $(function () {
                 self.setVariableValue(variable.name, newValue)
                     .then(() => {
                         console.log("Variable updated successfully");
+                        button.removeAttr("disabled");
                     })
                     .catch((error: string) => {
                         console.error("Error updating variable:", error);
+                        button.removeAttr("disabled");
                     });
 
                 return false;
