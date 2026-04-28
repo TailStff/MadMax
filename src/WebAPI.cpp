@@ -55,9 +55,6 @@ void WebAPI::Setup()
     /*server.on("/", HTTP_GET, [this](AsyncWebServerRequest *r)
               { homePage(r); });*/
 
-    server.serveStatic("/", LittleFS, "/")
-        .setDefaultFile("index.html");
-
     /*
 server.on("/index.html", HTTP_GET, [this](AsyncWebServerRequest *r)
     { homePage(r); });
@@ -112,6 +109,9 @@ server.on("/variablesNavigator.js", HTTP_GET, [this](AsyncWebServerRequest *r)
     server.on("/DATETIME", HTTP_POST, setDateTimeResponse, NULL, setDateTimeExecute);*/
 
     // server.onNotFound(notFound);
+
+    server.serveStatic("/", LittleFS, "/")
+        .setDefaultFile("index.html");
 
     server.begin();
 }

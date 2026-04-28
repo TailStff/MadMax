@@ -152,39 +152,40 @@ $(function () {
             let self = this;
             container.append(`<div class="title">Mise à jour de la valeur</div>`);
             let form = $("<form></form>").appendTo(container);
+            let div = $("<div class='property name'></div>").appendTo(form).append(`<span>Nouvelle valeur :</span>`);
             switch (variable.type) {
                 case 1:
-                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' step='any' /></div>`);
+                    div.append(`<input id='value' type='number' value='${variable.value}' step='any'/>`);
                     break;
                 case 2:
-                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' step='any' /></div>`);
+                    div.append(`<input id='value' type='number' value='${variable.value}' step='any'/>`);
                     break;
                 case 3:
-                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' min='-9223372036854775808' max='9223372036854775807' step='1' /></div>`);
+                    div.append(`<input id='value' type='number' value='${variable.value}' min='-9223372036854775808' max='9223372036854775807' step='1'/>`);
                     break;
                 case 4:
-                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' min='0' max='18446744073709551615' step='1' /></div>`);
+                    div.append(`<input id='value' type='number' value='${variable.value}' min='0' max='18446744073709551615' step='1'/>`);
                     break;
                 case 5:
-                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' min='-2147483648' max='2147483647' step='1' /></div>`);
+                    div.append(`<input id='value' type='number' value='${variable.value}' min='-2147483648' max='2147483647' step='1'/>`);
                     break;
                 case 6:
-                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' min='0' max='4294967295' step='1' /></div>`);
+                    div.append(`<input id='value' type='number' value='${variable.value}' min='0' max='4294967295' step='1'/>`);
                     break;
                 case 7:
-                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' min='-32768' max='32767' step='1' /></div>`);
+                    div.append(`<input id='value' type='number' value='${variable.value}' min='-32768' max='32767' step='1'/>`);
                     break;
                 case 8:
-                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' min='0' max='65535' step='1' /></div>`);
+                    div.append(`<input id='value' type='number' value='${variable.value}' min='0' max='65535' step='1'/>`);
                     break;
                 case 9:
-                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' min='-128' max='127' step='1' /></div>`);
+                    div.append(`<input id='value' type='number' value='${variable.value}' min='-128' max='127' step='1'/>`);
                     break;
                 case 10:
-                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='number' value='${variable.value}' min='0' max='255' step='1' /></div>`);
+                    div.append(`<input id='value' type='number' value='${variable.value}' min='0' max='255' step='1'/>`);
                     break;
                 case 11:
-                    form.append(`<div class="property value"><span>Nouvelle valeur :</span><input id='value' type='checkbox' ${variable.value === true ? "checked:'checked'" : ""} value='true' /></div>`);
+                    div.append(`<input id='value' type='checkbox' ${variable.value === true ? "checked:'checked'" : ""} value='true'/>`);
                     break;
             }
             $(`<div class="button"><button type='submit'>Mettre à jour</button></div>`).appendTo(form);
