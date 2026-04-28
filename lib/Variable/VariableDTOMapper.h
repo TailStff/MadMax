@@ -15,6 +15,7 @@ namespace MadMax
                 return false;
 
             dto.fields.push_back({"value", primitive->GetVariantValue()});
+            dto.fields.push_back({"type", GetDataType(primitive->GetVariantValue())});
             dto.objectName = name;
 
             return true;
@@ -29,7 +30,6 @@ namespace MadMax
 
             if (ToDTO(obj, dto, name))
             {
-                dto.fields.push_back({"type", GetDataType(primitive->GetVariantValue())});
                 return true;
             }
             return false;

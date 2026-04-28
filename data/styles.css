@@ -20,6 +20,8 @@ div#navigationContainer {
 
     flex: 0 0 64px;
     width: 100%;
+    display: flex;
+    flex-direction: row;
 }
 
 div#contentContainer {

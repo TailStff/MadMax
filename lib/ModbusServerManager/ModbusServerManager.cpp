@@ -165,15 +165,9 @@ namespace MadMax
 
     void ModbusServerManager::RegisterWorkers()
     {
-        RegisterWorker(1, READ_COIL, [this](auto req)
-                       { return FC01(req); }); // FC=01 for serverID = 1
-        RegisterWorker(1, READ_HOLD_REGISTER, [this](auto req)
-                       { return FC03(req); }); // FC=03 for serverID = 1
-        RegisterWorker(1, READ_INPUT_REGISTER, [this](auto req)
-                       { return FC04(req); }); // FC=04 for serverID = 1
-        RegisterWorker(1, WRITE_HOLD_REGISTER, [this](auto req)
-                       { return FC06(req); }); // FC=06 for serverID = 1
-        RegisterWorker(1, WRITE_MULT_REGISTERS, [this](auto req)
-                       { return FC16(req); }); // FC=16 for serverID = 1
+        RegisterWorker(1, READ_COIL, [this](auto req) { return FC01(req); });            // FC=01 for serverID = 1
+        RegisterWorker(1, READ_HOLD_REGISTER, [this](auto req) { return FC03(req); });   // FC=03 for serverID = 1
+        RegisterWorker(1, READ_INPUT_REGISTER, [this](auto req) { return FC04(req); });  // FC=04 for serverID = 1
+        RegisterWorker(1, WRITE_MULT_REGISTERS, [this](auto req) { return FC16(req); }); // FC=16 for serverID = 1
     }
 }
