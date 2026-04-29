@@ -18,6 +18,8 @@ $(function () {
         _refresh: function () {
         },
         _destroy: function () {
+            let self = this;
+            self.interval && clearInterval(self.interval);
         },
         _setOptions: function () {
             this._superApply(arguments);

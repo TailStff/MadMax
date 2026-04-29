@@ -18,8 +18,18 @@ class App {
 
         self.navVariables = $("#navVariables");
         self.navVariables.on("click", function () {
-            self.contentContainer.html('');
-            $(self.contentContainer).VariableNavigator({});
+
+            let container = $(self.contentContainer);
+
+            // Détruire proprement l'ancien widget
+            if (container.data("custom-VariableNavigator")) {
+                container.VariableNavigator("destroy");
+            }
+
+            container.empty();
+
+            // Recréation
+            container.VariableNavigator({});
         });
 
     }

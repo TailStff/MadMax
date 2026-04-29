@@ -55,6 +55,9 @@ $(function () {
         // revert other modifications here, remove DOM
         _destroy: function () {
 
+            let self = this;
+            
+            self.interval && clearInterval(self.interval);
         },
 
         // _setOptions is called with a hash of all options that are changing
