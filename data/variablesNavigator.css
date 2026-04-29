@@ -95,3 +95,35 @@ div#VariableDetail div.property>span:nth-child(2) {
     border-radius: 3px;
     padding: 4px 4px;
 }
+
+div#VariableDetail div.property>span {
+
+    color: #FFF;
+}
+
+div#VariableDetail div.property>span.stale {
+
+    color: #BBB;
+}
+
+button[type='submit'] {
+
+    background: #0f9961;
+    color: #fff;
+    border: none;
+    padding: 4px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button[type='submit']:hover {
+
+    background: #00bb70;
+    color: #fff;
+}
+
+button[type='submit'][disabled='disabled'] {
+
+    background: #777;
+    color: #fff;
+}

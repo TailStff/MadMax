@@ -102,24 +102,22 @@ $(function () {
 
                         item.on("click", () => {
 
-                            // Set selected class on the clicked item and remove it from siblings
-                            item.addClass("selected").siblings().removeClass("selected");
+                            self.interval && clearInterval(self.interval);                  // Clear previous interval if it exists
 
-                            // Prepare the detail container for new content
-                            self.uiPrepareVariableDetail(detail);
-                            self.uiDisplaySetVariableValue(variable, detail);
+                            item.addClass("selected").siblings().removeClass("selected");   // Set selected class on the clicked item and remove it from siblings
+                            self.uiPrepareVariableDetail(variable, detail);                 // Prepare the detail container for new content
+                            self.uiDisplayVariableValueEditor(variable, detail);            // Display value editor interface immediately, then start polling for updates
 
-                            self.interval && clearInterval(self.interval); // Clear previous interval if it exists
                             self.interval = setInterval(() => {
 
                                 self.getDetails(variable.name)
                                     .then((json: VariableDetail | null) => {
 
-                                        if (json === null) {
-
-                                            console.warn("getDetails is busy, please wait.");
+                                        if (json === null)
                                             return;
-                                        }
+
+                                        // Update memorized value with current server value
+                                        variable.value = json.value;
 
                                         self.uiDisplayVariableDetail(json, detail);
                                     })
@@ -242,22 +240,24 @@ $(function () {
             }
         },
 
-        uiPrepareVariableDetail: function (detail: any) {
+        uiPrepareVariableDetail: function (variable: Variable, detail: any) {
+
+            let variableDataType: String = this.getVariableDataType(variable.type);
 
             detail.html(''); // Clear previous content
             detail.append(`<div class="title">Propriété de la variable</div>`);
-            detail.append(`<div class="property name"><span>Désignation :</span><span id="variable-name">-</span></div>`);
-            detail.append(`<div class="property value"><span>Valeur :</span><span id="variable-value">-</span></div>`);
-            detail.append(`<div class="property type"><span>Type :</span><span id="variable-type">-</span></div>`);
+            detail.append(`<div class="property name"><span>Désignation :</span><span id="variable-name">${variable.name}</span></div>`);
+            detail.append(`<div class="property value"><span>Valeur :</span><span id="variable-value" class='stale'>-</span></div>`);
+            detail.append(`<div class="property type"><span>Type :</span><span id="variable-type">${variableDataType}</span></div>`);
         },
 
-        uiDisplaySetVariableValue: function (variable: Variable, container: any) {
+        uiDisplayVariableValueEditor: function (variable: Variable, container: any) {
 
             let self = this;
 
-            container.append(`<div class="title">Mise à jour de la valeur</div>`);
+            container.append(`<div class="title">Édition des propriétés</div>`);
             let form = $("<form></form>").appendTo(container);
-            let div = $("<div class='property name'></div>").appendTo(form).append(`<span>Nouvelle valeur :</span>`);
+            let div = $("<div class='property name'></div>").appendTo(form).append(`<span>Valeur :</span>`);
 
             switch (variable.type) {
 
@@ -292,27 +292,30 @@ $(function () {
                     div.append(`<input id='value' type='number' value='${variable.value}' min='0' max='255' step='1'/>`);
                     break;
                 case 11: // bool
-                    div.append(`<input id='value' type='checkbox' ${variable.value === true ? "checked:'checked'" : ""} value='true'/>`);
+                    div.append(`<input id='value' type='checkbox' ${variable.value === true ? "checked='checked'" : ""} value='true'/>`);
                     break;
-
             }
+
             // Add submit button
-            $(`<div class="button"><button type='submit'>Mettre à jour</button></div>`).appendTo(form);
+            let buttons = $("<div class='buttons'>").appendTo(form);
+            let submitButton = $("<button type='submit'>Mettre à jour</button></div>").appendTo(buttons);
 
             // Handle form submission
             form.on("submit", (e: any) => {
 
                 e.preventDefault();
 
-                let button = $(".button button", form);
-                button.attr("disabled", "disabled");
+                submitButton.attr("disabled", "disabled");
 
                 let newValue: any = { value: null };
+                let newDisplayedValue: any = null;
+
                 switch (variable.type) {
 
                     case 1: // double
                     case 2: // float
                         newValue.value = parseFloat(form.find("#value").val());
+                        newDisplayedValue = newValue.value;
                         break;
 
                     case 3: // int64
@@ -324,80 +327,75 @@ $(function () {
                     case 9: // int8
                     case 10: // uint8
                         newValue.value = parseInt(form.find("#value").val());
+                        newDisplayedValue = newValue.value;
                         break;
 
                     case 11: // bool
                         newValue.value = form.find("#value").is(":checked");
+                        newDisplayedValue = newValue.value ? "true" : "false";
                         break;
                 }
+
+                console.log("Updating variable with new value:", JSON.stringify(newValue));
+
                 self.setVariableValue(variable.name, newValue)
                     .then(() => {
-                        console.log("Variable updated successfully");
-                        button.removeAttr("disabled");
+                        $(".property #variable-value", container).html(newDisplayedValue).addClass("stale"); // Update displayed value and add stale class as it may take a moment for the new value to be reflected in the details view
+                        submitButton.removeAttr("disabled");
                     })
                     .catch((error: string) => {
                         console.error("Error updating variable:", error);
-                        button.removeAttr("disabled");
+                        submitButton.removeAttr("disabled");
                     });
 
                 return false;
             });
         },
 
+        getVariableDataType: function (type: number): string {
+
+            switch (type) {
+
+                case 1: return "64 bit double";
+                case 2: return "32 bit float";
+                case 3: return "64 bit signed integer";
+                case 4: return "64 bit unsigned integer";
+                case 5: return "32 bit signed integer";
+                case 6: return "32 bit unsigned integer";
+                case 7: return "16 bit signed integer";
+                case 8: return "16 bit unsigned integer";
+                case 9: return "8 bit signed integer";
+                case 10: return "8 bit unsigned integer";
+                case 11: return "Boolean";
+            }
+
+            return "Unknown";
+        },
+
         uiDisplayVariableDetail: function (variable: VariableDetail, container: any) {
 
-            // Ici, vous pouvez personnaliser l'affichage en fonction du type de variable
-            // Par exemple, pour les booléens, vous pourriez afficher une icône ou un interrupteur
-            // Pour les nombres, vous pourriez formater l'affichage différemment
+            if (container.find("#variable-name").html() == variable.name) {
 
-            container.find("#variable-name").html(variable.name);
+                container.find("#variable-value").removeClass("stale"); // Remove stale class to indicate value is up-to-date
 
-            switch (variable.type) {
+                switch (variable.type) {
 
-                case 1: // double
-                    container.find("#variable-value").html(variable.value);
-                    container.find("#variable-type").html("64 bit double");
-                    break;
-                case 2: // float
-                    container.find("#variable-value").html(variable.value);
-                    container.find("#variable-type").html("32 bit float");
-                    break;
-                case 3: // int64
-                    container.find("#variable-value").html(variable.value);
-                    container.find("#variable-type").html("64 bit signed integer");
-                    break;
-                case 4: // uint64
-                    container.find("#variable-value").html(variable.value);
-                    container.find("#variable-type").html("64 bit unsigned integer");
-                    break;
-                case 5: // int32
-                    container.find("#variable-value").html(variable.value);
-                    container.find("#variable-type").html("32 bit signed integer");
-                    break;
-                case 6: // uint32
-                    container.find("#variable-value").html(variable.value);
-                    container.find("#variable-type").html("32 bit unsigned integer");
-                    break;
-                case 7: // int16
-                    container.find("#variable-value").html(variable.value);
-                    container.find("#variable-type").html("16 bit signed integer");
-                    break;
-                case 8: // uint16
-                    container.find("#variable-value").html(variable.value);
-                    container.find("#variable-type").html("16 bit unsigned integer");
-                    break;
-                case 9: // int8
-                    container.find("#variable-value").html(variable.value);
-                    container.find("#variable-type").html("8 bit signed integer");
-                    break;
-                case 10: // uint8
-                    container.find("#variable-value").html(variable.value);
-                    container.find("#variable-type").html("8 bit unsigned integer");
-                    break;
-                case 11: // bool
-                    container.find("#variable-value").html(variable.value ? "True" : "False");
-                    container.find("#variable-type").html("Boolean");
-                    break;
+                    case 1: // double
+                    case 2: // float
+                    case 3: // int64
+                    case 4: // uint64
+                    case 5: // int32
+                    case 6: // uint32
+                    case 7: // int16
+                    case 8: // uint16
+                    case 9: // int8
+                    case 10: // uint8
+                        container.find("#variable-value").html(variable.value);
+                        break;
+                    case 11: // bool
+                        container.find("#variable-value").html(variable.value ? "true" : "false");
+                        break;
+                }
             }
         },
 
