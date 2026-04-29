@@ -1,0 +1,129 @@
+div#AccumsContainer {
+
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    width: 100%;
+}
+
+div#AccumsContainer>ul {
+
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #ccc;
+    flex: 0 0 300px;
+}
+
+div#AccumsContainer>ul>li {
+
+    height: 32px;
+    line-height: 32px;
+    color: #FFF;
+    cursor: pointer;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    display: flex;
+    flex-direction: row;
+    gap: 2px;
+}
+
+div#AccumsContainer>ul>li:hover {
+
+    background-color: #4d4d4d;
+}
+
+
+div#AccumsContainer>ul>li.selected {
+
+    background-color: #34A7DF;
+}
+
+div#AccumsContainer>ul>li>span.icon {
+
+    background: url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/Pg0KPHN2ZyBpZD0iVmFyaWFibGVzLmZ3LXBhZ2UlMjAxIiB2aWV3Qm94PSIwIDAgMzIgMzIiIHN0eWxlPSJiYWNrZ3JvdW5kLWNvbG9yOiNmZmZmZmYwMCIgdmVyc2lvbj0iMS4xIg0KCXhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbDpzcGFjZT0icHJlc2VydmUiDQoJeD0iMHB4IiB5PSIwcHgiIHdpZHRoPSIzMnB4IiBoZWlnaHQ9IjMycHgiDQo+DQoJPHBhdGggZD0iTSAxNiA1LjUgTCAyNS4wOTMzIDEwLjc1IEwgMjUuMDkzMyAyMS4yNSBMIDE2IDI2LjUgTCA2LjkwNjcgMjEuMjUgTCA2LjkwNjcgMTAuNzUgTCAxNiA1LjUgWk0gMTYgMi44NzUgTCA0LjYzMzQgOS40Mzc1IEwgNC42MzM0IDIyLjU2MjUgTCAxNiAyOS4xMjUgTCAyNy4zNjY2IDIyLjU2MjUgTCAyNy4zNjY2IDkuNDM3NSBMIDE2IDIuODc1IFoiIGZpbGw9IiNGRkZGRkYiLz4NCgk8cGF0aCBpZD0iRWxsaXBzZSIgZD0iTSAxMy44NzUgMTYgQyAxMy44NzUgMTQuODI2NCAxNC44MjY0IDEzLjg3NSAxNiAxMy44NzUgQyAxNy4xNzM2IDEzLjg3NSAxOC4xMjUgMTQuODI2NCAxOC4xMjUgMTYgQyAxOC4xMjUgMTcuMTczNiAxNy4xNzM2IDE4LjEyNSAxNiAxOC4xMjUgQyAxNC44MjY0IDE4LjEyNSAxMy44NzUgMTcuMTczNiAxMy44NzUgMTYgWiIgZmlsbD0iI0ZGRkZGRiIvPg0KPC9zdmc+") no-repeat center center;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 40px;
+}
+
+div#AccumsContainer>ul>li>span.text {
+
+    flex: 1 1 auto;
+}
+
+div#AccumDetail {
+
+    border: 1px solid #ddd;
+    padding: 10px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+}
+
+div#AccumDetail div.title {
+
+    font-size: 18px;
+    font-weight: bold;
+    border-bottom: 2px solid #DDD;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    color: #DDD;
+}
+
+div#AccumDetail div.property {
+
+    font-size: 14px;
+    display: flex;
+    color: #FFF;
+    height: 32px;
+    align-items: center;
+}
+
+
+div#AccumDetail div.property>span:first-child {
+
+    flex: 0 0 200px;
+}
+
+div#AccumDetail div.property>span:nth-child(2) {
+
+    flex: 1 1 auto;
+    border: 1px solid #AAA;
+    border-radius: 3px;
+    padding: 4px 4px;
+}
+
+div#AccumDetail div.property>span {
+
+    color: #FFF;
+}
+
+div#AccumDetail div.property>span.stale {
+
+    color: #BBB;
+}
+
+button[type='submit'] {
+
+    background: #0f9961;
+    color: #fff;
+    border: none;
+    padding: 4px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button[type='submit']:hover {
+
+    background: #00bb70;
+    color: #fff;
+}
+
+button[type='submit'][disabled='disabled'] {
+
+    background: #777;
+    color: #fff;
+}

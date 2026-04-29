@@ -3,9 +3,9 @@ $(function () {
     function isDev() {
         return window.location.protocol === "file:";
     }
-    $.widget("custom.VariablesNavigator", {
+    $.widget("custom.AccumsNavigator", {
         container: null,
-        manageVariablesContainer: null,
+        manageAccumsContainer: null,
         getData_busy: false,
         interval: null,
         options: {},
@@ -31,31 +31,31 @@ $(function () {
         _uiCreateComposant: function () {
             let self = this;
             self.container.html('');
-            self.manageVariablesContainer = $("<div id='VariablesContainer'></div>").appendTo(self.container);
-            let list = $("<ul></ul>").appendTo(self.manageVariablesContainer);
-            let detail = $("<div id='VariableDetail'></div>").appendTo(self.manageVariablesContainer);
+            self.manageAccumsContainer = $("<div id='AccumsContainer'></div>").appendTo(self.container);
+            let list = $("<ul></ul>").appendTo(self.manageAccumsContainer);
+            let detail = $("<div id='AccumDetail'></div>").appendTo(self.manageAccumsContainer);
             self.getList()
                 .then((json) => {
                 if (json === null) {
                     console.warn("getList is busy, please wait.");
                     return;
                 }
-                json.forEach((variable) => {
+                json.forEach((Accum) => {
                     let item = $("<li></li>").appendTo(list);
                     item.append($("<span class='icon'></span>"));
-                    item.append($("<span></span>").text(variable.name));
+                    item.append($("<span></span>").text(Accum.name));
                     item.on("click", () => {
                         self.interval && clearInterval(self.interval);
                         item.addClass("selected").siblings().removeClass("selected");
-                        self.uiPrepareVariableDetail(variable, detail);
-                        self.uiDisplayVariableValueEditor(variable, detail);
+                        self.uiPrepareAccumDetail(Accum, detail);
+                        self.uiDisplayAccumValueEditor(Accum, detail);
                         self.interval = setInterval(() => {
-                            self.getDetails(variable.name)
+                            self.getDetails(Accum.name)
                                 .then((json) => {
                                 if (json === null)
                                     return;
-                                variable.value = json.value;
-                                self.uiDisplayVariableDetail(json, detail);
+                                Accum.value = json.value;
+                                self.uiDisplayAccumDetail(json, detail);
                             })
                                 .catch((error) => {
                                 console.error("Erreur getDetails:", error);
@@ -84,7 +84,7 @@ $(function () {
                     return mock;
                 }
                 else {
-                    const response = await fetch("/API/Variables");
+                    const response = await fetch("/API/Accums");
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}`);
                     }
@@ -130,7 +130,7 @@ $(function () {
                     return mock;
                 }
                 else {
-                    const response = await fetch(`/API/Variables/${name}`);
+                    const response = await fetch(`/API/Accums/${name}`);
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}`);
                     }
@@ -142,52 +142,52 @@ $(function () {
                 this.getData_busy = false;
             }
         },
-        uiPrepareVariableDetail: function (variable, detail) {
-            let variableDataType = this.getVariableDataType(variable.type);
+        uiPrepareAccumDetail: function (Accum, detail) {
+            let AccumDataType = this.getAccumDataType(Accum.type);
             detail.html('');
-            detail.append(`<div class="title">Propriété de la variable</div>`);
-            detail.append(`<div class="property name"><span>Désignation :</span><span id="variable-name">${variable.name}</span></div>`);
-            detail.append(`<div class="property value"><span>Valeur :</span><span id="variable-value" class='stale'>-</span></div>`);
-            detail.append(`<div class="property type"><span>Type :</span><span id="variable-type">${variableDataType}</span></div>`);
+            detail.append(`<div class="title">Propriété de l'Accum</div>`);
+            detail.append(`<div class="property name"><span>Désignation :</span><span id="Accum-name">${Accum.name}</span></div>`);
+            detail.append(`<div class="property value"><span>Valeur :</span><span id="Accum-value" class='stale'>-</span></div>`);
+            detail.append(`<div class="property type"><span>Type :</span><span id="Accum-type">${AccumDataType}</span></div>`);
         },
-        uiDisplayVariableValueEditor: function (variable, container) {
+        uiDisplayAccumValueEditor: function (Accum, container) {
             let self = this;
             container.append(`<div class="title">Édition des propriétés</div>`);
             let form = $("<form></form>").appendTo(container);
             let div = $("<div class='property name'></div>").appendTo(form).append(`<span>Valeur :</span>`);
-            switch (variable.type) {
+            switch (Accum.type) {
                 case 1:
-                    div.append(`<input id='value' type='number' value='${variable.value}' step='any'/>`);
+                    div.append(`<input id='value' type='number' value='${Accum.value}' step='any'/>`);
                     break;
                 case 2:
-                    div.append(`<input id='value' type='number' value='${variable.value}' step='any'/>`);
+                    div.append(`<input id='value' type='number' value='${Accum.value}' step='any'/>`);
                     break;
                 case 3:
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='-9223372036854775808' max='9223372036854775807' step='1'/>`);
+                    div.append(`<input id='value' type='number' value='${Accum.value}' min='-9223372036854775808' max='9223372036854775807' step='1'/>`);
                     break;
                 case 4:
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='0' max='18446744073709551615' step='1'/>`);
+                    div.append(`<input id='value' type='number' value='${Accum.value}' min='0' max='18446744073709551615' step='1'/>`);
                     break;
                 case 5:
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='-2147483648' max='2147483647' step='1'/>`);
+                    div.append(`<input id='value' type='number' value='${Accum.value}' min='-2147483648' max='2147483647' step='1'/>`);
                     break;
                 case 6:
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='0' max='4294967295' step='1'/>`);
+                    div.append(`<input id='value' type='number' value='${Accum.value}' min='0' max='4294967295' step='1'/>`);
                     break;
                 case 7:
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='-32768' max='32767' step='1'/>`);
+                    div.append(`<input id='value' type='number' value='${Accum.value}' min='-32768' max='32767' step='1'/>`);
                     break;
                 case 8:
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='0' max='65535' step='1'/>`);
+                    div.append(`<input id='value' type='number' value='${Accum.value}' min='0' max='65535' step='1'/>`);
                     break;
                 case 9:
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='-128' max='127' step='1'/>`);
+                    div.append(`<input id='value' type='number' value='${Accum.value}' min='-128' max='127' step='1'/>`);
                     break;
                 case 10:
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='0' max='255' step='1'/>`);
+                    div.append(`<input id='value' type='number' value='${Accum.value}' min='0' max='255' step='1'/>`);
                     break;
                 case 11:
-                    div.append(`<input id='value' type='checkbox' ${variable.value === true ? "checked='checked'" : ""} value='true'/>`);
+                    div.append(`<input id='value' type='checkbox' ${Accum.value === true ? "checked='checked'" : ""} value='true'/>`);
                     break;
             }
             let buttons = $("<div class='buttons'>").appendTo(form);
@@ -197,7 +197,7 @@ $(function () {
                 submitButton.attr("disabled", "disabled");
                 let newValue = { value: null };
                 let newDisplayedValue = null;
-                switch (variable.type) {
+                switch (Accum.type) {
                     case 1:
                     case 2:
                         newValue.value = parseFloat(form.find("#value").val());
@@ -219,20 +219,20 @@ $(function () {
                         newDisplayedValue = newValue.value ? "true" : "false";
                         break;
                 }
-                console.log("Updating variable with new value:", JSON.stringify(newValue));
-                self.setVariableValue(variable.name, newValue)
+                console.log("Updating Accum with new value:", JSON.stringify(newValue));
+                self.setAccumValue(Accum.name, newValue)
                     .then(() => {
-                    $(".property #variable-value", container).html(newDisplayedValue).addClass("stale");
+                    $(".property #Accum-value", container).html(newDisplayedValue).addClass("stale");
                     submitButton.removeAttr("disabled");
                 })
                     .catch((error) => {
-                    console.error("Error updating variable:", error);
+                    console.error("Error updating Accum:", error);
                     submitButton.removeAttr("disabled");
                 });
                 return false;
             });
         },
-        getVariableDataType: function (type) {
+        getAccumDataType: function (type) {
             switch (type) {
                 case 1: return "64 bit double";
                 case 2: return "32 bit float";
@@ -248,10 +248,10 @@ $(function () {
             }
             return "Unknown";
         },
-        uiDisplayVariableDetail: function (variable, container) {
-            if (container.find("#variable-name").html() == variable.name) {
-                container.find("#variable-value").removeClass("stale");
-                switch (variable.type) {
+        uiDisplayAccumDetail: function (Accum, container) {
+            if (container.find("#Accum-name").html() == Accum.name) {
+                container.find("#Accum-value").removeClass("stale");
+                switch (Accum.type) {
                     case 1:
                     case 2:
                     case 3:
@@ -262,17 +262,17 @@ $(function () {
                     case 8:
                     case 9:
                     case 10:
-                        container.find("#variable-value").html(variable.value);
+                        container.find("#Accum-value").html(Accum.value);
                         break;
                     case 11:
-                        container.find("#variable-value").html(variable.value ? "true" : "false");
+                        container.find("#Accum-value").html(Accum.value ? "true" : "false");
                         break;
                 }
             }
         },
-        setVariableValue: async function (variableName, newValue) {
+        setAccumValue: async function (AccumName, newValue) {
             try {
-                const response = await fetch(`/API/Variables/${variableName}`, {
+                const response = await fetch(`/API/Accums/${AccumName}`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -284,7 +284,7 @@ $(function () {
                 }
             }
             catch (error) {
-                console.error("Error in setVariableValue: ", error);
+                console.error("Error in setAccumValue: ", error);
                 throw error;
             }
         }
