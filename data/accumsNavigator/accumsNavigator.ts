@@ -3,34 +3,44 @@ declare var $: any;
 
 $(function () {
 
-    type Variable = {
+    type Accum = {
 
         name: string;
         value: any;
         type: number;
     };
 
-    type VariableDetail = {
+    type AccumDetail = {
 
         name: string;
         value: any;
         type: number;
     };
 
-    type Variables = Variable[];
+    type Accums = Accum[];
+
+    type DataTypeProperty = {
+
+        name: string;
+        min?: any;
+        max?: any;
+        step: any;
+    };
 
     function isDev(): boolean {
         return window.location.protocol === "file:";
     }
 
     // the widget definition, where "custom" is the namespace,
-    // "VariablesNavigator" the widget name
-    $.widget("custom.VariablesNavigator", {
+    // "AccumsNavigator" the widget name
+    $.widget("custom.AccumsNavigator", {
 
         container: null,
-        manageVariablesContainer: null,
+        manageAccumsContainer: null,
         getData_busy: false,
         interval: null,
+
+        dataTypeProperties: {} as Record<number, DataTypeProperty>,
 
         options: {},
 
@@ -38,6 +48,21 @@ $(function () {
         _create: function () {
 
             let self = this;
+
+            self.dataTypeProperties = {
+
+                1: { name: "64 bit double", min: -1.7976931348623157e+308, max: 1.7976931348623157e+308, step: "any" },
+                2: { name: "32 bit float", min: -3.4028235e+38, max: 3.4028235e+38, step: "any" },
+                3: { name: "64 bit signed integer", min: -9223372036854775808, max: 9223372036854775807, step: 1 },
+                4: { name: "64 bit unsigned integer", min: 0, max: 18446744073709551615, step: 1 },
+                5: { name: "32 bit signed integer", min: -2147483648, max: 2147483647, step: 1 },
+                6: { name: "32 bit unsigned integer", min: 0, max: 4294967295, step: 1 },
+                7: { name: "16 bit signed integer", min: -32768, max: 32767, step: 1 },
+                8: { name: "16 bit unsigned integer", min: 0, max: 65535, step: 1 },
+                9: { name: "8 bit signed integer", min: -128, max: 127, step: 1 },
+                10: { name: "8 bit unsigned integer", min: 0, max: 255, step: 1 },
+                11: { name: "Boolean", min: 0, max: 1, step: 1 }
+            };
 
             self.container = self.element;
 
@@ -83,13 +108,13 @@ $(function () {
 
             self.container.html('');
 
-            self.manageVariablesContainer = $("<div id='VariablesContainer'></div>").appendTo(self.container);
+            self.manageAccumsContainer = $("<div id='AccumsContainer'></div>").appendTo(self.container);
 
-            let list = $("<ul></ul>").appendTo(self.manageVariablesContainer);
-            let detail = $("<div id='VariableDetail'></div>").appendTo(self.manageVariablesContainer);
+            let list = $("<ul></ul>").appendTo(self.manageAccumsContainer);
+            let detail = $("<div id='AccumDetail'></div>").appendTo(self.manageAccumsContainer);
 
             self.getList()
-                .then((json: Variables | null) => {
+                .then((json: Accums | null) => {
 
                     if (json === null) {
 
@@ -97,32 +122,32 @@ $(function () {
                         return;
                     }
 
-                    json.forEach((variable: Variable) => {
+                    json.forEach((Accum: Accum) => {
 
                         let item = $("<li></li>").appendTo(list);
                         item.append($("<span class='icon'></span>"));
-                        item.append($("<span></span>").text(variable.name));
+                        item.append($("<span></span>").text(Accum.name));
 
                         item.on("click", () => {
 
                             self.interval && clearInterval(self.interval);                  // Clear previous interval if it exists
 
                             item.addClass("selected").siblings().removeClass("selected");   // Set selected class on the clicked item and remove it from siblings
-                            self.uiPrepareVariableDetail(variable, detail);                 // Prepare the detail container for new content
-                            self.uiDisplayVariableValueEditor(variable, detail);            // Display value editor interface immediately, then start polling for updates
+                            self.uiPrepareAccumDetail(Accum, detail);                       // Prepare the detail container for new content
+                            self.uiDisplayAccumValueEditor(Accum, detail);                  // Display value editor interface immediately, then start polling for updates
 
                             self.interval = setInterval(() => {
 
-                                self.getDetails(variable.name)
-                                    .then((json: VariableDetail | null) => {
+                                self.getDetails(Accum.name)
+                                    .then((json: AccumDetail | null) => {
 
                                         if (json === null)
                                             return;
 
                                         // Update memorized value with current server value
-                                        variable.value = json.value;
+                                        Accum.value = json.value;
 
-                                        self.uiDisplayVariableDetail(json, detail);
+                                        self.uiDisplayAccumDetail(json, detail);
                                     })
                                     .catch((error: any) => {
                                         console.error("Erreur getDetails:", error);
@@ -139,8 +164,8 @@ $(function () {
                 });
         },
 
-        /// Get variables list from the server, returns null if a request is already in progress, otherwise returns a promise that resolves to the variables list
-        getList: async function (): Promise<Variables | null> {
+        /// Get Accums list from the server, returns null if a request is already in progress, otherwise returns a promise that resolves to the Accums list
+        getList: async function (): Promise<Accums | null> {
 
             if (this.getData_busy)
                 return null;
@@ -152,7 +177,7 @@ $(function () {
                 // Simulate API response with mock data in development, otherwise fetch from the server
                 if (isDev()) {
 
-                    const mock: Variables = [
+                    const mock: Accums = [
 
                         { name: "test_bool", value: false, type: 11 },
                         { name: "test_int", value: 42, type: 7 },
@@ -166,7 +191,7 @@ $(function () {
                     return mock;
                 } else {
 
-                    const response = await fetch("/API/Variables");
+                    const response = await fetch("/API/Accums");
 
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}`);
@@ -174,7 +199,7 @@ $(function () {
 
                     const json = await response.json();
 
-                    return json as Variables;
+                    return json as Accums;
                 }
 
             } finally {
@@ -182,8 +207,8 @@ $(function () {
             }
         },
 
-        /// Get variables list from the server, returns null if a request is already in progress, otherwise returns a promise that resolves to the variables list
-        getDetails: async function (name: string): Promise<VariableDetail | null> {
+        /// Get Accums list from the server, returns null if a request is already in progress, otherwise returns a promise that resolves to the Accums list
+        getDetails: async function (name: string): Promise<AccumDetail | null> {
 
             if (this.getData_busy)
                 return null;
@@ -195,7 +220,7 @@ $(function () {
                 // Simulate API response with mock data in development, otherwise fetch from the server
                 if (isDev()) {
 
-                    let mock: VariableDetail = { name: name, value: null, type: 0 };
+                    let mock: AccumDetail = { name: name, value: null, type: 0 };
 
                     switch (name) {
 
@@ -227,7 +252,7 @@ $(function () {
                     return mock;
                 } else {
 
-                    const response = await fetch(`/API/Variables/${name}`);
+                    const response = await fetch(`/API/Accums/${name}`);
 
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}`);
@@ -235,7 +260,7 @@ $(function () {
 
                     const json = await response.json();
 
-                    return json as VariableDetail;
+                    return json as AccumDetail;
                 }
 
             } finally {
@@ -243,59 +268,43 @@ $(function () {
             }
         },
 
-        uiPrepareVariableDetail: function (variable: Variable, detail: any) {
+        uiPrepareAccumDetail: function (Accum: Accum, detail: any) {
 
-            let variableDataType: String = this.getVariableDataType(variable.type);
+            let AccumDataType: String = this.getAccumDataType(Accum.type);
 
             detail.html(''); // Clear previous content
-            detail.append(`<div class="title">Propriété de la variable</div>`);
-            detail.append(`<div class="property name"><span>Désignation :</span><span id="variable-name">${variable.name}</span></div>`);
-            detail.append(`<div class="property value"><span>Valeur :</span><span id="variable-value" class='stale'>-</span></div>`);
-            detail.append(`<div class="property type"><span>Type :</span><span id="variable-type">${variableDataType}</span></div>`);
+            detail.append(`<div class="title">Propriété de l'Accum</div>`);
+            detail.append(`<div class="property name"><span>Désignation :</span><span id="accum-name">${Accum.name}</span></div>`);
+            detail.append(`<div class="property value"><span>Valeur :</span><span id="accum-value" class='stale'>-</span></div>`);
+            detail.append(`<div class="property type"><span>Type :</span><span id="accum-type">${AccumDataType}</span></div>`);
         },
 
-        uiDisplayVariableValueEditor: function (variable: Variable, container: any) {
+        uiDisplayAccumValueEditor: function (accum: Accum, container: any) {
 
             let self = this;
 
-            container.append(`<div class="title">Édition des propriétés</div>`);
+            container.append(`<div class="title">Édition des propriétés persistentes</div>`);
             let form = $("<form></form>").appendTo(container);
             let div = $("<div class='property name'></div>").appendTo(form).append(`<span>Valeur :</span>`);
 
-            switch (variable.type) {
+            let dataType = self.dataTypeProperties[accum.type];
+
+            switch (accum.type) {
 
                 case 1: // double
-                    div.append(`<input id='value' type='number' value='${variable.value}' step='any'/>`);
-                    break;
                 case 2: // float
-                    div.append(`<input id='value' type='number' value='${variable.value}' step='any'/>`);
-                    break;
                 case 3: // int64
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='-9223372036854775808' max='9223372036854775807' step='1'/>`);
-                    break;
                 case 4: // uint64
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='0' max='18446744073709551615' step='1'/>`);
-                    break;
                 case 5: // int32
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='-2147483648' max='2147483647' step='1'/>`);
-                    break;
                 case 6: // uint32
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='0' max='4294967295' step='1'/>`);
-                    break;
                 case 7: // int16
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='-32768' max='32767' step='1'/>`);
-                    break;
                 case 8: // uint16
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='0' max='65535' step='1'/>`);
-                    break;
                 case 9: // int8
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='-128' max='127' step='1'/>`);
-                    break;
                 case 10: // uint8
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='0' max='255' step='1'/>`);
+                    div.append(`<input id='value' type='number' value='${accum.value}' min='${dataType.min}' max='${dataType.max}' step='${dataType.step}' />`);
                     break;
                 case 11: // bool
-                    div.append(`<input id='value' type='checkbox' ${variable.value === true ? "checked='checked'" : ""} value='true'/>`);
+                    div.append(`<input id='value' type='checkbox' ${accum.value === true ? "checked='checked'" : ""} value='true' />`);
                     break;
             }
 
@@ -313,7 +322,7 @@ $(function () {
                 let newValue: any = { value: null };
                 let newDisplayedValue: any = null;
 
-                switch (variable.type) {
+                switch (accum.type) {
 
                     case 1: // double
                     case 2: // float
@@ -339,15 +348,15 @@ $(function () {
                         break;
                 }
 
-                console.log("Updating variable with new value:", JSON.stringify(newValue));
+                console.log("Updating Accum with new value:", JSON.stringify(newValue));
 
-                self.setVariableValue(variable.name, newValue)
+                self.setAccumValue(accum.name, newValue)
                     .then(() => {
-                        $(".property #variable-value", container).html(newDisplayedValue).addClass("stale"); // Update displayed value and add stale class as it may take a moment for the new value to be reflected in the details view
+                        $(".property #accum-value", container).html(newDisplayedValue).addClass("stale"); // Update displayed value and add stale class as it may take a moment for the new value to be reflected in the details view
                         submitButton.removeAttr("disabled");
                     })
                     .catch((error: string) => {
-                        console.error("Error updating variable:", error);
+                        console.error("Error updating Accum:", error);
                         submitButton.removeAttr("disabled");
                     });
 
@@ -355,33 +364,27 @@ $(function () {
             });
         },
 
-        getVariableDataType: function (type: number): string {
+        getAccumDataType: function (type: number): string {
 
-            switch (type) {
+            let self = this;
 
-                case 1: return "64 bit double";
-                case 2: return "32 bit float";
-                case 3: return "64 bit signed integer";
-                case 4: return "64 bit unsigned integer";
-                case 5: return "32 bit signed integer";
-                case 6: return "32 bit unsigned integer";
-                case 7: return "16 bit signed integer";
-                case 8: return "16 bit unsigned integer";
-                case 9: return "8 bit signed integer";
-                case 10: return "8 bit unsigned integer";
-                case 11: return "Boolean";
+            let dataType = self.dataTypeProperties[type];
+
+            if (dataType !== undefined) {
+
+                return dataType.name;
             }
 
             return "Unknown";
         },
 
-        uiDisplayVariableDetail: function (variable: VariableDetail, container: any) {
+        uiDisplayAccumDetail: function (Accum: AccumDetail, container: any) {
 
-            if (container.find("#variable-name").html() == variable.name) {
+            if (container.find("#accum-name").html() == Accum.name) {
 
-                container.find("#variable-value").removeClass("stale"); // Remove stale class to indicate value is up-to-date
+                container.find("#accum-value").removeClass("stale"); // Remove stale class to indicate value is up-to-date
 
-                switch (variable.type) {
+                switch (Accum.type) {
 
                     case 1: // double
                     case 2: // float
@@ -393,19 +396,19 @@ $(function () {
                     case 8: // uint16
                     case 9: // int8
                     case 10: // uint8
-                        container.find("#variable-value").html(variable.value);
+                        container.find("#accum-value").html(Accum.value);
                         break;
                     case 11: // bool
-                        container.find("#variable-value").html(variable.value ? "true" : "false");
+                        container.find("#accum-value").html(Accum.value ? "true" : "false");
                         break;
                 }
             }
         },
 
-        setVariableValue: async function (variableName: string, newValue: any): Promise<void> {
+        setAccumValue: async function (AccumName: string, newValue: any): Promise<void> {
 
             try {
-                const response = await fetch(`/API/Variables/${variableName}`, {
+                const response = await fetch(`/API/Accums/${AccumName}`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -416,7 +419,7 @@ $(function () {
                     throw new Error(`HTTP ${response.status}`);
                 }
             } catch (error) {
-                console.error("Error in setVariableValue: ", error);
+                console.error("Error in setAccumValue: ", error);
                 throw error;
             }
         }

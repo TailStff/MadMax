@@ -8,9 +8,23 @@ $(function () {
         manageVariablesContainer: null,
         getData_busy: false,
         interval: null,
+        dataTypeProperties: {},
         options: {},
         _create: function () {
             let self = this;
+            self.dataTypeProperties = {
+                1: { name: "64 bit double", min: -1.7976931348623157e+308, max: 1.7976931348623157e+308, step: "any" },
+                2: { name: "32 bit float", min: -3.4028235e+38, max: 3.4028235e+38, step: "any" },
+                3: { name: "64 bit signed integer", min: -9223372036854775808, max: 9223372036854775807, step: 1 },
+                4: { name: "64 bit unsigned integer", min: 0, max: 18446744073709551615, step: 1 },
+                5: { name: "32 bit signed integer", min: -2147483648, max: 2147483647, step: 1 },
+                6: { name: "32 bit unsigned integer", min: 0, max: 4294967295, step: 1 },
+                7: { name: "16 bit signed integer", min: -32768, max: 32767, step: 1 },
+                8: { name: "16 bit unsigned integer", min: 0, max: 65535, step: 1 },
+                9: { name: "8 bit signed integer", min: -128, max: 127, step: 1 },
+                10: { name: "8 bit unsigned integer", min: 0, max: 255, step: 1 },
+                11: { name: "Boolean", min: 0, max: 1, step: 1 }
+            };
             self.container = self.element;
             self._uiCreateComposant();
             return self;
@@ -152,42 +166,25 @@ $(function () {
         },
         uiDisplayVariableValueEditor: function (variable, container) {
             let self = this;
-            container.append(`<div class="title">Édition des propriétés</div>`);
+            container.append(`<div class="title">Édition des propriétés persistentes</div>`);
             let form = $("<form></form>").appendTo(container);
             let div = $("<div class='property name'></div>").appendTo(form).append(`<span>Valeur :</span>`);
+            let dataType = self.dataTypeProperties[variable.type];
             switch (variable.type) {
                 case 1:
-                    div.append(`<input id='value' type='number' value='${variable.value}' step='any'/>`);
-                    break;
                 case 2:
-                    div.append(`<input id='value' type='number' value='${variable.value}' step='any'/>`);
-                    break;
                 case 3:
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='-9223372036854775808' max='9223372036854775807' step='1'/>`);
-                    break;
                 case 4:
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='0' max='18446744073709551615' step='1'/>`);
-                    break;
                 case 5:
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='-2147483648' max='2147483647' step='1'/>`);
-                    break;
                 case 6:
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='0' max='4294967295' step='1'/>`);
-                    break;
                 case 7:
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='-32768' max='32767' step='1'/>`);
-                    break;
                 case 8:
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='0' max='65535' step='1'/>`);
-                    break;
                 case 9:
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='-128' max='127' step='1'/>`);
-                    break;
                 case 10:
-                    div.append(`<input id='value' type='number' value='${variable.value}' min='0' max='255' step='1'/>`);
+                    div.append(`<input id='value' type='number' value='${variable.value}' min='${dataType.min}' max='${dataType.max}' step='${dataType.step}' />`);
                     break;
                 case 11:
-                    div.append(`<input id='value' type='checkbox' ${variable.value === true ? "checked='checked'" : ""} value='true'/>`);
+                    div.append(`<input id='value' type='checkbox' ${variable.value === true ? "checked='checked'" : ""} value='true' />`);
                     break;
             }
             let buttons = $("<div class='buttons'>").appendTo(form);
@@ -233,18 +230,10 @@ $(function () {
             });
         },
         getVariableDataType: function (type) {
-            switch (type) {
-                case 1: return "64 bit double";
-                case 2: return "32 bit float";
-                case 3: return "64 bit signed integer";
-                case 4: return "64 bit unsigned integer";
-                case 5: return "32 bit signed integer";
-                case 6: return "32 bit unsigned integer";
-                case 7: return "16 bit signed integer";
-                case 8: return "16 bit unsigned integer";
-                case 9: return "8 bit signed integer";
-                case 10: return "8 bit unsigned integer";
-                case 11: return "Boolean";
+            let self = this;
+            let dataType = self.dataTypeProperties[type];
+            if (dataType !== undefined) {
+                return dataType.name;
             }
             return "Unknown";
         },
