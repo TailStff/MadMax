@@ -88,6 +88,8 @@ namespace MadMax
         enumCapacityState GetCapacityState(uint8_t availablePumps, uint8_t requestedPumps);
         void GetBytesInto(std::vector<uint8_t> &data) const;
 
+        PumpSwapResult pumpSwapResult;
+
     public:
         // Constructors
         PumpSwap(ExecutionEnv *_executionEnv, uint8_t count, uint32_t feedbackDelay, PumpSwapPersistencyValues &persistancyValues);
@@ -98,6 +100,7 @@ namespace MadMax
         uint8_t GetCount() const;
         std::vector<bool> GetPhysicalValues() const;
         const DigitalEquipmentStatus &GetStatus(uint8_t index) const;
+        const PumpSwapResult GetPumpSwapResult() const;
 
         // Evaluate function, here we user lambda with enclosure to give access to pumps inputs values while keeping access to env.
         PumpSwapResult Evaluate(std::function<void(std::vector<SetPumpValue *> &)> callbackFunction, std::initializer_list<bool> logicalValues, bool reevaluation, bool acknowledge);

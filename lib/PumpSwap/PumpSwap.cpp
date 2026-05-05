@@ -68,6 +68,11 @@ namespace MadMax
         return *this->statuses.at(index);
     }
 
+    const PumpSwapResult PumpSwap::GetPumpSwapResult() const
+    {
+        return pumpSwapResult;
+    }
+
     /// @brief Evaluate function, here we user lambda with enclosure to give access to pumps inputs values while keeping access to env.
     /// @param callbackFunction Callback lambda function that allow user to inject values
     /// @param logicalValues List of values to apply
@@ -141,7 +146,15 @@ namespace MadMax
         for (auto &ptr : statuses)
             rawStatuses.push_back(ptr.get());
 
-        return (struct PumpSwapResult){.AvailablePumps = availablePumps, .RequestedPumps = requestedPumps, .RunningPumps = runningPumps, .CapacityState = capacityState, .TotalPumps = count, .PumpsStatus = rawStatuses};
+        // Set pumpSwapResult return value
+        pumpSwapResult.AvailablePumps = availablePumps;
+        pumpSwapResult.RequestedPumps = requestedPumps;
+        pumpSwapResult.RunningPumps = runningPumps;
+        pumpSwapResult.CapacityState = capacityState;
+        pumpSwapResult.TotalPumps = count;
+        pumpSwapResult.PumpsStatus = rawStatuses;
+
+        return pumpSwapResult;
     }
 
     /// @brief Function that allow to RECOMPUTE pumps orders by their actuals states and their runtimes

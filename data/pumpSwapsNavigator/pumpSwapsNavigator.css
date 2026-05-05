@@ -1,0 +1,190 @@
+div#PumpSwapsContainer {
+
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    width: 100%;
+}
+
+div#PumpSwapsContainer>ul {
+
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #ccc;
+    flex: 0 0 300px;
+}
+
+div#PumpSwapsContainer>ul>li {
+
+    height: 32px;
+    line-height: 32px;
+    color: #FFF;
+    cursor: pointer;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    display: flex;
+    flex-direction: row;
+    gap: 2px;
+}
+
+div#PumpSwapsContainer>ul>li:hover {
+
+    background-color: #4d4d4d;
+}
+
+
+div#PumpSwapsContainer>ul>li.selected {
+
+    background-color: #34A7DF;
+}
+
+div#PumpSwapsContainer>ul>li>span.icon {
+
+    background: url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/Pg0KPHN2ZyBpZD0iVmFyaWFibGVzLmZ3LXBhZ2UlMjAxIiB2aWV3Qm94PSIwIDAgMzIgMzIiIHN0eWxlPSJiYWNrZ3JvdW5kLWNvbG9yOiNmZmZmZmYwMCIgdmVyc2lvbj0iMS4xIg0KCXhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbDpzcGFjZT0icHJlc2VydmUiDQoJeD0iMHB4IiB5PSIwcHgiIHdpZHRoPSIzMnB4IiBoZWlnaHQ9IjMycHgiDQo+DQoJPHBhdGggZD0iTSAxNiA1LjUgTCAyNS4wOTMzIDEwLjc1IEwgMjUuMDkzMyAyMS4yNSBMIDE2IDI2LjUgTCA2LjkwNjcgMjEuMjUgTCA2LjkwNjcgMTAuNzUgTCAxNiA1LjUgWk0gMTYgMi44NzUgTCA0LjYzMzQgOS40Mzc1IEwgNC42MzM0IDIyLjU2MjUgTCAxNiAyOS4xMjUgTCAyNy4zNjY2IDIyLjU2MjUgTCAyNy4zNjY2IDkuNDM3NSBMIDE2IDIuODc1IFoiIGZpbGw9IiNGRkZGRkYiLz4NCgk8cGF0aCBpZD0iRWxsaXBzZSIgZD0iTSAxMy44NzUgMTYgQyAxMy44NzUgMTQuODI2NCAxNC44MjY0IDEzLjg3NSAxNiAxMy44NzUgQyAxNy4xNzM2IDEzLjg3NSAxOC4xMjUgMTQuODI2NCAxOC4xMjUgMTYgQyAxOC4xMjUgMTcuMTczNiAxNy4xNzM2IDE4LjEyNSAxNiAxOC4xMjUgQyAxNC44MjY0IDE4LjEyNSAxMy44NzUgMTcuMTczNiAxMy44NzUgMTYgWiIgZmlsbD0iI0ZGRkZGRiIvPg0KPC9zdmc+") no-repeat center center;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 40px;
+}
+
+div#PumpSwapsContainer>ul>li>span.text {
+
+    flex: 1 1 auto;
+}
+
+div#PumpSwapDetail {
+
+    border: 1px solid #ddd;
+    padding: 10px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+}
+
+div#PumpSwapDetail div.title {
+
+    font-size: 18px;
+    font-weight: bold;
+    border-bottom: 2px solid #DDD;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    color: #DDD;
+}
+
+div#PumpSwapDetail div.property {
+
+    font-size: 14px;
+    display: flex;
+    color: #FFF;
+    height: 32px;
+    align-items: center;
+}
+
+
+div#PumpSwapDetail div.property>span:first-child {
+
+    flex: 0 0 300px;
+}
+
+div#PumpSwapDetail div.property>span:nth-child(2) {
+
+    flex: 1 1 auto;
+    border: 1px solid #AAA;
+    border-radius: 3px;
+    padding: 4px 4px;
+}
+
+div#PumpSwapDetail div.property>span {
+
+    color: #FFF;
+}
+
+div#PumpSwapDetail div.property>span.stale {
+
+    color: #BBB;
+}
+
+button[type='submit'] {
+
+    background: #0f9961;
+    color: #fff;
+    border: none;
+    padding: 4px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button[type='submit']:hover {
+
+    background: #00bb70;
+    color: #fff;
+}
+
+button[type='submit'][disabled='disabled'] {
+
+    background: #777;
+    color: #fff;
+}
+
+#pumpSwap-values {
+
+    display: flex;
+    gap: 4px;
+}
+
+#pumpSwap-values>div.value {
+
+    height: 18px;
+    width: 18px;
+    background: #666;
+    text-align: center;
+    border: 1px solid #999;
+    color: #fff;
+    align-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 2px;
+    padding: 0px 6px;
+    user-select: none;
+}
+
+#pumpSwap-values>div.value.on {
+
+    background: #00bb70;
+    border-color: #00ff99;
+}
+
+span.pumpSwap-properties {
+
+    display: flex;
+    gap: 4px;
+}
+
+span.pumpSwap-properties>div.value {
+
+    height: 18px;
+    background: #666;
+    text-align: center;
+    border: 1px solid #999;
+    color: #fff;
+    align-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 2px;
+    padding: 0px 6px;
+    user-select: none;
+}
+
+span.pumpSwap-properties>div.value.on {
+
+    background: #00bb70;
+    border-color: #00ff99;
+}
+
+span.pumpSwap-properties>div.defaut.on {
+
+    background: #00bb70;
+    border-color: #00ff99;
+}

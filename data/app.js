@@ -16,6 +16,7 @@ class App {
 
         self.navigationContainer.append("<div class='navButton' id='navVariables'>Variables</div>");
         self.navigationContainer.append("<div class='navButton' id='navAccums'>Accums</div>");
+        self.navigationContainer.append("<div class='navButton' id='navPumpSwaps'>Pump Swaps</div>");
 
         self.navVariables = $("#navVariables");
         self.navVariables.on("click", function () {
@@ -43,6 +44,19 @@ class App {
             container.AccumsNavigator({});
         });
 
+        self.navPumpSwaps = $("#navPumpSwaps");
+        self.navPumpSwaps.on("click", function () {
+
+            let container = $(self.contentContainer);
+
+            self.removeAllWidget(container);
+
+            container.empty();
+
+            // Recréation
+            container.PumpSwapsNavigator({});
+        });
+
     };
 
     removeAllWidget(container) {
@@ -55,6 +69,11 @@ class App {
         // Détruire proprement l'ancien widget
         if (container.data("custom-AccumsNavigator")) {
             container.AccumsNavigator("destroy");
+        }
+
+        // Détruire proprement l'ancien widget
+        if (container.data("custom-PumpSwapsNavigator")) {
+            container.PumpSwapsNavigator("destroy");
         }
     }
 

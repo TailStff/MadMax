@@ -28,6 +28,12 @@ namespace MadMax
 
             if (ToDTO(obj, dto, name))
             {
+                auto pumpSwapResult = primitive->GetPumpSwapResult();
+                dto.fields.push_back({"availablePumps", pumpSwapResult.AvailablePumps});
+                dto.fields.push_back({"capacityState", (int)pumpSwapResult.CapacityState});
+                dto.fields.push_back({"requestedPumps", pumpSwapResult.RequestedPumps});
+                dto.fields.push_back({"runningPumps", pumpSwapResult.RunningPumps});
+                dto.fields.push_back({"totalPumps", pumpSwapResult.TotalPumps});
 
                 for (auto i = 0; i < primitive->GetCount(); i++)
                 {

@@ -90,6 +90,7 @@ void MyApp::Init()
     mmVariables->Create<float>("XW", 4 << 16 | 36, {.value = 12.0f});
     mmVariables->Create<int8_t>("myChar", 4 << 16 | 38, {.value = 0});
     mmVariables->Create<bool>("myBool", 4 << 16 | 39, {.value = true});
+    mmVariables->Create<uint8_t>("pumps_nbr", 4 << 16 | 50, {.value = 3});
 
     mmPumpSwaps->Create("4pmp", 4, 4, 10000);
 
@@ -194,16 +195,23 @@ void MyApp::Loop()
 
     auto permut4 = mmPumpSwaps->Get("4pmp");
 
-    MadMax::PumpSwapResult result = permut4->Evaluate([this](const std::vector<MadMax::SetPumpValue *> &pumps)
-                                                      {
-                        pumps[0]->Fault = this->digitalInputs->Get(8);
-                        pumps[0]->Feedback = this->digitalInputs->Get(9);
-                        pumps[1]->Fault = this->digitalInputs->Get(10);
-                        pumps[1]->Feedback = this->digitalInputs->Get(11);
-                        pumps[2]->Fault = this->digitalInputs->Get(12);
-                        pumps[2]->Feedback = this->digitalInputs->Get(13);
-                        pumps[3]->Fault = this->digitalInputs->Get(14);
-                        pumps[3]->Feedback = this->digitalInputs->Get(15); }, {true, true, false, false}, false, this->digitalInputs->Get(0));
+    MadMax::PumpSwapResult result = permut4->Evaluate(
+        [this](const std::vector<MadMax::SetPumpValue *> &pumps)
+        {
+            pumps[0]->Fault = this->digitalInputs->Get(8);
+            pumps[0]->Feedback = this->digitalInputs->Get(9);
+            pumps[1]->Fault = this->digitalInputs->Get(10);
+            pumps[1]->Feedback = this->digitalInputs->Get(11);
+            pumps[2]->Fault = this->digitalInputs->Get(12);
+            pumps[2]->Feedback = this->digitalInputs->Get(13);
+            pumps[3]->Fault = this->digitalInputs->Get(14);
+            pumps[3]->Feedback = this->digitalInputs->Get(15);
+        },
+        {(this->mmVariables->Get<uint8_t>("pumps_nbr")->GetValue() > 0),
+         (this->mmVariables->Get<uint8_t>("pumps_nbr")->GetValue() > 1),
+         (this->mmVariables->Get<uint8_t>("pumps_nbr")->GetValue() > 2),
+         (this->mmVariables->Get<uint8_t>("pumps_nbr")->GetValue() > 3)},
+        false, this->digitalInputs->Get(0));
 
     digitalOutputs->Set(0, result.PumpsStatus[0]->output);
     digitalOutputs->Set(1, result.PumpsStatus[1]->output);
