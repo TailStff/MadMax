@@ -14,6 +14,7 @@ namespace MadMax
         virtual bool SetVariantValue(const VariableValue &value) = 0;
 
         // TBD
+        virtual bool ReadFromModbus(int32_t address) = 0;
         virtual void WriteToModbus(int32_t address) = 0;
     };
 }

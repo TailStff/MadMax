@@ -36,12 +36,13 @@ void MyApp::cbLongPress()
     }
 }
 
-MyApp::MyApp(ExecutionEnv *executionEnv, ModbusClientRTU &MBRTU, MadMax::ModbusServerMemoryManager *modbusServerManager, DigitalInputs *digitalInputs, DigitalOutputs *digitalOutputs)
+MyApp::MyApp(ExecutionEnv *executionEnv, ModbusClientRTU &MBRTU, MadMax::ModbusServerManager *modbusServerManager, MadMax::ModbusServerMemoryManager *modbusServerMemoryManager, DigitalInputs *digitalInputs, DigitalOutputs *digitalOutputs)
 {
     this->executionEnv = executionEnv;
     this->digitalInputs = digitalInputs;
     this->digitalOutputs = digitalOutputs;
     this->modbusServerManager = modbusServerManager;
+    this->modbusServerMemoryManager = modbusServerMemoryManager;
     this->scheduler = new ModbusScheduler(MBRTU);
     this->screenPages = new mmScreenPages(executionEnv, 6, [this]()
                                           { this->cbShortPress(); }, [this]()
@@ -94,7 +95,7 @@ void MyApp::Init()
 
     mmPumpSwaps->Create("4pmp", 4, 4, 10000);
 
-    mmAccums->Create<uint64_t>("accum1", 0, {.value = 0});
+    mmAccums->Create<uint64_t>("accum1", 4 << 16 | 64, {.value = 0});
 
     mmDigitalEquipments->Create("de0", 4 << 16 | 40, {.runTime = 10, .startCount = 1});
 
@@ -191,7 +192,7 @@ void MyApp::Loop()
 
     uint8_t minute = executionEnv->getMinute();
 
-    mmVariables->RefreshFromModbusRegisters();
+    // mmVariables->RefreshFromModbusRegisters();
 
     auto permut4 = mmPumpSwaps->Get("4pmp");
 
@@ -222,14 +223,14 @@ void MyApp::Loop()
     // digitalOutputs->Set(6, result.PumpsStatus[2]->faults.fault);
     // digitalOutputs->Set(7, result.PumpsStatus[3]->faults.fault);
 
-    uint16_t *AvailablePumps = this->modbusServerManager->AssociateHoldingRegister<uint16_t>(12);
-    uint16_t *RequestedPumps = this->modbusServerManager->AssociateHoldingRegister<uint16_t>(13);
-    uint16_t *RunningPumps = this->modbusServerManager->AssociateHoldingRegister<uint16_t>(14);
-    uint16_t *CapacityState = this->modbusServerManager->AssociateHoldingRegister<uint16_t>(15);
-    uint64_t *Rt1 = this->modbusServerManager->AssociateHoldingRegister<uint64_t>(16);
-    uint64_t *Rt2 = this->modbusServerManager->AssociateHoldingRegister<uint64_t>(20);
-    uint64_t *Rt3 = this->modbusServerManager->AssociateHoldingRegister<uint64_t>(24);
-    uint64_t *Rt4 = this->modbusServerManager->AssociateHoldingRegister<uint64_t>(28);
+    uint16_t *AvailablePumps = this->modbusServerMemoryManager->AssociateHoldingRegister<uint16_t>(12);
+    uint16_t *RequestedPumps = this->modbusServerMemoryManager->AssociateHoldingRegister<uint16_t>(13);
+    uint16_t *RunningPumps = this->modbusServerMemoryManager->AssociateHoldingRegister<uint16_t>(14);
+    uint16_t *CapacityState = this->modbusServerMemoryManager->AssociateHoldingRegister<uint16_t>(15);
+    uint64_t *Rt1 = this->modbusServerMemoryManager->AssociateHoldingRegister<uint64_t>(16);
+    uint64_t *Rt2 = this->modbusServerMemoryManager->AssociateHoldingRegister<uint64_t>(20);
+    uint64_t *Rt3 = this->modbusServerMemoryManager->AssociateHoldingRegister<uint64_t>(24);
+    uint64_t *Rt4 = this->modbusServerMemoryManager->AssociateHoldingRegister<uint64_t>(28);
 
     *AvailablePumps = result.AvailablePumps;
     *RequestedPumps = result.RequestedPumps;
@@ -264,7 +265,7 @@ void MyApp::Loop()
     mmVariables->SetValue("myBool", *myBool);*/
 
     auto accum1 = mmAccums->Get<uint64_t>("accum1");
-    uint64_t *Accum1 = this->modbusServerManager->AssociateHoldingRegister<uint64_t>(40);
+    uint64_t *Accum1 = this->modbusServerMemoryManager->AssociateHoldingRegister<uint64_t>(40);
     *Accum1 = accum1->Evaluate(memMinute != minute, 1, false);
 
     if (memMinute != minute)

@@ -59,6 +59,37 @@ namespace MadMax
             v);
     }
 
+    inline size_t GetDataTypeSize(DataType type)
+    {
+        switch (type)
+        {
+        case DataType::floatType:
+            return sizeof(float);
+        case DataType::doubleType:
+            return sizeof(double);
+        case DataType::int64Type:
+            return sizeof(int64_t);
+        case DataType::uint64Type:
+            return sizeof(uint64_t);
+        case DataType::int32Type:
+            return sizeof(int32_t);
+        case DataType::uint32Type:
+            return sizeof(uint32_t);
+        case DataType::int16Type:
+            return sizeof(int16_t);
+        case DataType::uint16Type:
+            return sizeof(uint16_t);
+        case DataType::int8Type:
+            return sizeof(int8_t);
+        case DataType::uint8Type:
+            return sizeof(uint8_t);
+        case DataType::boolType:
+            return sizeof(bool);
+        default:
+            return 0; // Taille inconnue pour les types non scalaires
+        }
+    }
+
     inline bool VariableValueFromJson(JsonVariantConst v, VariableValue &out)
     {
         // bool en premier (sinon true → 1)

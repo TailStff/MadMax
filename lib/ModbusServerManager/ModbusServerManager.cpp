@@ -118,6 +118,10 @@ namespace MadMax
 
         // Set up response
         *(modbusServerMemoryManager.AssociateHoldingRegister<uint16_t>(addr)) = val;
+
+        // 👉 Notification unique
+        NotifyWrite(addr, 1);
+
         response.add(request.getServerID(), request.getFunctionCode(), addr, val);
 
         // Send response back
@@ -158,16 +162,30 @@ namespace MadMax
             *(modbusServerMemoryManager.AssociateHoldingRegister<uint16_t>(addr + i)) = val;
         }
 
+        // 👉 Notification unique
+        NotifyWrite(addr, words);
+
         // Set up response
         response.add(request.getServerID(), request.getFunctionCode(), addr, words);
         return response;
     }
 
+    void ModbusServerManager::RegisterWriteCallback(WriteCallback cb)
+    {
+        writeCallbacks.push_back(cb);
+    }
+
     void ModbusServerManager::RegisterWorkers()
     {
-        RegisterWorker(1, READ_COIL, [this](auto req) { return FC01(req); });            // FC=01 for serverID = 1
-        RegisterWorker(1, READ_HOLD_REGISTER, [this](auto req) { return FC03(req); });   // FC=03 for serverID = 1
-        RegisterWorker(1, READ_INPUT_REGISTER, [this](auto req) { return FC04(req); });  // FC=04 for serverID = 1
-        RegisterWorker(1, WRITE_MULT_REGISTERS, [this](auto req) { return FC16(req); }); // FC=16 for serverID = 1
+        RegisterWorker(1, READ_COIL, [this](auto req)
+                       { return FC01(req); }); // FC=01 for serverID = 1
+        RegisterWorker(1, READ_HOLD_REGISTER, [this](auto req)
+                       { return FC03(req); }); // FC=03 for serverID = 1
+        RegisterWorker(1, READ_INPUT_REGISTER, [this](auto req)
+                       { return FC04(req); }); // FC=04 for serverID = 1
+        RegisterWorker(1, WRITE_HOLD_REGISTER, [this](auto req)
+                       { return FC06(req); }); // FC=06 for serverID = 1
+        RegisterWorker(1, WRITE_MULT_REGISTERS, [this](auto req)
+                       { return FC16(req); }); // FC=16 for serverID = 1
     }
 }

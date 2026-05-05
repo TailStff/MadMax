@@ -64,6 +64,7 @@ namespace MadMax
     bool SetVariantValue(const VariableValue &v) override;
 
     // TBD
+    bool ReadFromModbus(int32_t address) override;
     void WriteToModbus(int32_t address) override;
 
 #pragma endregion IVariableValue

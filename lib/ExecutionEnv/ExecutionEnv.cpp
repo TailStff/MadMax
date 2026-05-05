@@ -4,13 +4,14 @@
 
 #define PREFSAPPID "MadMaxApp"
 
-ExecutionEnv::ExecutionEnv(unsigned int _cycle, RTCWrapper *rtcWrapper, Preferences *prefs, MiniPrefs *miniPrefs, Adafruit_SH1107 *display, MadMax::ModbusServerMemoryManager *modbusServerManager, std::function<void(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit)
+ExecutionEnv::ExecutionEnv(unsigned int _cycle, RTCWrapper *rtcWrapper, Preferences *prefs, MiniPrefs *miniPrefs, Adafruit_SH1107 *display, MadMax::ModbusServerManager *modbusServerManager, MadMax::ModbusServerMemoryManager *modbusServerMemoryManager, std::function<void(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit)
 {
   cycle = _cycle;
   tickNumber = -1;
   lastOperatingTime = 0;
   this->rtcWrapper = rtcWrapper;
   this->modbusServerManager = modbusServerManager;
+  this->modbusServerMemoryManager = modbusServerMemoryManager;
   this->prefs = prefs;
   this->miniPrefs = miniPrefs;
   this->display = display;
@@ -148,7 +149,12 @@ MiniPrefs *ExecutionEnv::GetMiniPrefs()
   return miniPrefs;
 }
 
-MadMax::ModbusServerMemoryManager *ExecutionEnv::GetModbusServerManager()
+MadMax::ModbusServerMemoryManager *ExecutionEnv::GetModbusServerMemoryManager()
+{
+  return modbusServerMemoryManager;
+}
+
+MadMax::ModbusServerManager *ExecutionEnv::GetModbusServerManager()
 {
   return modbusServerManager;
 }

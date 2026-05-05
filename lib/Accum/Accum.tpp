@@ -117,6 +117,12 @@ namespace MadMax
     }
 
     template <class T>
+    bool Accum<T>::ReadFromModbus(int32_t address)
+    {
+        return false;
+    }
+
+    template <class T>
     void Accum<T>::WriteToModbus(int32_t address)
     {
     }

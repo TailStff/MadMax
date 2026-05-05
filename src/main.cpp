@@ -357,7 +357,7 @@ void setup()
   myPrefs = new MiniPrefs(fram, 32 * 1024);
   myPrefs->begin();
 
-  executionEnv = new ExecutionEnv(MMCYCLE, &rtcWrapper, &prefs, myPrefs, &display, &modbusServerMemoryManager, onNetworkInit);
+  executionEnv = new ExecutionEnv(MMCYCLE, &rtcWrapper, &prefs, myPrefs, &display, &mbServerManager, &modbusServerMemoryManager, onNetworkInit);
 
 #ifdef SERIALDEBUG
   Serial.println("ExecutionEnv object created");
@@ -369,7 +369,7 @@ void setup()
   Serial.println("ExecutionEnv::NetworksInitialization() executed");
 #endif
 
-  myApp = new MyApp(executionEnv, MBRTU, &modbusServerMemoryManager, &digitalInputs, &digitalOutputs);
+  myApp = new MyApp(executionEnv, MBRTU, &mbServerManager, &modbusServerMemoryManager, &digitalInputs, &digitalOutputs);
 
 #ifdef SERIALDEBUG
   Serial.println("MyApp object created");

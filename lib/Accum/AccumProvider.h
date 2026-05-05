@@ -33,13 +33,40 @@ namespace MadMax
         {
             GetPersistencyValuesFromMem(name, reinterpret_cast<uint8_t *>(&data), sizeof(AccumPersistencyValues<T>));
 
+            //WriteValueToModbusSpace(address, data);
+
             // mmAccum<T> varies per T, so we cannot use ObjectProvider<mmAccum<T>> as base.
             // We must inject via the fixed base interface ObjectProvider<ISerializableBase>
             // to store all typed instances in a single polymorphic collection.
             auto *obj = new Accum<T>(executionEnv, data);
             ObjectProvider<IPrimitive>::inject(name, address, obj);
+
+            obj->WriteToModbus(address);
+
             return obj;
         }
+
+        // Fonction must be used from variable object now, deprecated to avoid misuse
+        /*template <class T>
+        void WriteValueToModbusSpace(int32_t address, MadMax::AccumPersistencyValues<T> &data)
+        {
+            // Copy the last saved value to modbus memory space, if it's valid, we consider that an address of -1 is an invalid address that mean that the variable is not associated to any Modbus register, this allow to create variable that are not exposed through Modbus if we want to
+            if (address != -1)
+            {
+                // We consider that the address is a 32 bits integer where the 16 most significant bits represent the Modbus memory space (for example, holding registers, input registers, coils, discrete inputs) and the 16 least significant bits represent the Modbus address in that memory space, this allow to associate variables to different types of Modbus registers and not only holding registers
+                uint8_t modbusMemorySpace = (address & 0x00FF0000) >> 16;
+
+                // Holding registers
+                if (modbusMemorySpace == 4)
+                {
+                    // We associate the variable to the Modbus register using the modbus server manager, we also store the Modbus address in the provider to be able to retrieve it later if needed
+                    uint16_t modbusAddress = address & 0x0000FFFF;
+
+                    T *value = executionEnv->GetModbusServerMemoryManager()->AssociateHoldingRegister<T>(modbusAddress);
+                    *value = data.value;
+                }
+            }
+        }*/
 
         template <class T>
         Accum<T> *Get(const std::string &name)
@@ -63,9 +90,14 @@ namespace MadMax
             if (!obj)
                 return;
 
+            //WriteValueToModbusSpace(address, value);
+
             // If the old value is different from the new one, we save persistency values to memory, otherwise we do nothing to avoid unnecessary write operations to memory
             if (obj->SetValue(value))
+            {
+                obj->WriteToModbus(address);
                 writePersistencyData(name, obj);
+            }
         }
 
         void SetValue(const std::string &name, const VariableValue &value)
@@ -82,6 +114,8 @@ namespace MadMax
 
             if (obj->SetVariantValue(value))
             {
+                obj->WriteToModbus(address);
+
                 if (auto *serializable = base->AsSerializable())
                     writePersistencyData(name, serializable);
             }

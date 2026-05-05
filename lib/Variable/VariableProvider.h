@@ -22,12 +22,66 @@ namespace MadMax
             executionEnv->GetMiniPrefs()->Put(name.c_str(), dataToWrite.data(), dataToWrite.size());
         }
 
+        bool checkCollision(uint16_t variableModbusAddress, uint16_t variableLength, uint16_t addr, uint16_t count)
+        {
+            uint16_t varStart = variableModbusAddress;
+            uint16_t varLengthWords = (variableLength + 1) / 2;
+            uint16_t varEnd = varStart + varLengthWords;
+
+            uint16_t writeStart = addr;
+            uint16_t writeEnd = addr + count;
+
+            return (writeStart < varEnd && writeEnd > varStart);
+        }
+
     public:
         VariableProvider(ExecutionEnv *executionEnv)
         {
             this->executionEnv = executionEnv;
 
             dtoMappers = std::make_unique<VariableDTOMapper>();
+
+            executionEnv->GetModbusServerManager()->RegisterWriteCallback(
+                [this](const ModbusWriteEvent &evt)
+                {
+                    this->OnModbusWrite(evt.startAddr, evt.count);
+                });
+        }
+
+        void OnModbusWrite(uint16_t addr, uint16_t count)
+        {
+            // We consider that only variables that are associated to Modbus registers need to be refreshed from Modbus registers, if the variable is not associated to any Modbus register, we consider that its value is managed internally and not updated from Modbus registers, so we skip it
+            this->ForEach(
+                [&](const std::string &name, IPrimitive *base)
+                {
+                    int32_t address;
+                    ObjectProvider<IPrimitive>::Get(name, address);
+
+                    if (address == -1)
+                        return;
+
+                    // We consider that the address is a 32 bits integer where the 16 most significant bits represent the Modbus memory space (for example, holding registers, input registers, coils, discrete inputs) and the 16 least significant bits represent the Modbus address in that memory space, this allow to associate variables to different types of Modbus registers and not only holding registers
+                    uint8_t modbusMemorySpace = (address & 0x00FF0000) >> 16;
+                    uint16_t modbusAddress = address & 0x0000FFFF;
+
+                    if (modbusMemorySpace == 4) // Only consider variables associated to holding registers for now, we can add support for other Modbus memory space later if needed
+                    {
+                        uint16_t length = GetDataTypeSize(GetDataType(base->AsVariableValue()->GetVariantValue()));
+
+                        if (checkCollision(modbusAddress, length, addr, count))
+                        {
+                            IVariableValue *variable = base->AsVariableValue();
+
+                            if (!variable)
+                                return;
+
+                            variable->ReadFromModbus(address);
+
+                            if (auto *serializable = base->AsSerializable())
+                                writePersistencyData(name, serializable);
+                        }
+                    }
+                });
         }
 
         template <class T>
@@ -36,36 +90,17 @@ namespace MadMax
             // We get the last saved value from memory
             GetPersistencyValuesFromMem(name, reinterpret_cast<uint8_t *>(&data), sizeof(VariablePersistencyValues<T>));
 
-            WriteValueToModbusSpace(address, data);
-
             // mmVariable<T> varies per T, so we cannot use ObjectProvider<mmVariable<T>> as base.
             // We must inject via the fixed base interface ObjectProvider<ISerializableBase>
             // to store all typed instances in a single polymorphic collection.
             auto *obj = new Variable<T>(executionEnv, data);
             ObjectProvider<IPrimitive>::inject(name, address, obj);
+
+            // WriteValueToModbusSpace(address, data);
+
+            obj->WriteToModbus(address);
+
             return obj;
-        }
-
-        // Fonction must be used from variable object now, deprecated to avoid misuse
-        template <class T>
-        void WriteValueToModbusSpace(int32_t address, MadMax::VariablePersistencyValues<T> &data)
-        {
-            // Copy the last saved value to modbus memory space, if it's valid, we consider that an address of -1 is an invalid address that mean that the variable is not associated to any Modbus register, this allow to create variable that are not exposed through Modbus if we want to
-            if (address != -1)
-            {
-                // We consider that the address is a 32 bits integer where the 16 most significant bits represent the Modbus memory space (for example, holding registers, input registers, coils, discrete inputs) and the 16 least significant bits represent the Modbus address in that memory space, this allow to associate variables to different types of Modbus registers and not only holding registers
-                uint8_t modbusMemorySpace = (address & 0x00FF0000) >> 16;
-
-                // Holding registers
-                if (modbusMemorySpace == 4)
-                {
-                    // We associate the variable to the Modbus register using the modbus server manager, we also store the Modbus address in the provider to be able to retrieve it later if needed
-                    uint16_t modbusAddress = address & 0x0000FFFF;
-
-                    T *value = executionEnv->GetModbusServerManager()->AssociateHoldingRegister<T>(modbusAddress);
-                    *value = data.value;
-                }
-            }
         }
 
         /// @brief Getter function to get the desired object given by his name
@@ -94,10 +129,14 @@ namespace MadMax
             if (!obj)
                 return;
 
-            WriteValueToModbusSpace(address, value);
+            // WriteValueToModbusSpace(address, value);
 
+            // If the old value is different from the new one, we save persistency values to memory, otherwise we do nothing to avoid unnecessary write operations to memory
             if (obj->SetValue(value))
+            {
+                obj->WriteToModbus(address);
                 writePersistencyData(name, obj);
+            }
         }
 
         void SetValue(const std::string &name, const VariableValue &value)
@@ -119,52 +158,6 @@ namespace MadMax
                 if (auto *serializable = base->AsSerializable())
                     writePersistencyData(name, serializable);
             }
-        }
-
-        // API Parts
-
-        void RefreshFromModbusRegisters()
-        {
-            this->ForEach(
-                [&](const std::string &name, IPrimitive *base)
-                {
-                // We consider that only variables that are associated to Modbus registers need to be refreshed from Modbus registers, if the variable is not associated to any Modbus register, we consider that its value is managed internally and not updated from Modbus registers, so we skip it
-                int32_t address;
-                ObjectProvider<IPrimitive>::Get(name, address);
-
-                if (address == -1)
-                    return;
-
-                IVariableValue* variable = base->AsVariableValue();
-
-                if (!variable)
-                    return;
-
-                // We consider that the address is a 32 bits integer where the 16 most significant bits represent the Modbus memory space (for example, holding registers, input registers, coils, discrete inputs) and the 16 least significant bits represent the Modbus address in that memory space, this allow to associate variables to different types of Modbus registers and not only holding registers
-                uint8_t modbusMemorySpace = (address & 0x00FF0000) >> 16;
-                uint16_t modbusAddress = address & 0x0000FFFF;
-
-                // Holding registers
-                if (modbusMemorySpace == 4)
-                {
-                    // On lit selon le type réel de la variable
-                    VariableValue incoming = std::visit([&](auto &&stored) -> VariableValue {
-                        using TStored = std::decay_t<decltype(stored)>;
-
-                        TStored *reg = executionEnv->GetModbusServerManager()->AssociateHoldingRegister<TStored>(modbusAddress);
-                        if (!reg) return stored; // pas de changement si pas de registre
-
-                        return VariableValue{*reg};
-                    }, variable->GetVariantValue());
-
-                    if (variable->SetVariantValue(incoming))
-                    {
-                        if (const ISerializable *serializable = base->AsSerializable())
-                        {
-                            writePersistencyData(name, serializable);
-                        }
-                    }
-                } });
         }
 
 #pragma region IPersistable
