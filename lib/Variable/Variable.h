@@ -84,7 +84,7 @@ namespace MadMax
 
         // TBD
         bool ReadFromModbus(int32_t address) override;
-        void WriteToModbus(int32_t address) override;
+        bool WriteToModbus(int32_t address) override;
 #pragma endregion IVariableValue
     };
 }

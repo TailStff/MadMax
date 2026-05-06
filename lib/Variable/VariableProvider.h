@@ -38,7 +38,6 @@ namespace MadMax
         VariableProvider(ExecutionEnv *executionEnv)
         {
             this->executionEnv = executionEnv;
-
             dtoMappers = std::make_unique<VariableDTOMapper>();
 
             executionEnv->GetModbusServerManager()->RegisterWriteCallback(
@@ -95,8 +94,6 @@ namespace MadMax
             // to store all typed instances in a single polymorphic collection.
             auto *obj = new Variable<T>(executionEnv, data);
             ObjectProvider<IPrimitive>::inject(name, address, obj);
-
-            // WriteValueToModbusSpace(address, data);
 
             obj->WriteToModbus(address);
 

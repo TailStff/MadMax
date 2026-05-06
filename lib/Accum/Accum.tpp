@@ -24,16 +24,19 @@ namespace MadMax
     /// @tparam T Any types
     /// @param input The Input value to be process
     /// @param increment The value to be added to the internal value at each rising edge of the input, if the increment is negative and the absolute value of the increment is greater than the current internal value, the internal value will be set to 0 to avoid underflow. If the increment is positive and the internal value is greater than the maximum value of T minus the increment, the internal value will be set to the maximum value of T to avoid overflow.
-    /// @param resetTrigger
-    /// @param resetValue
-    /// @return Internal value
+    /// @param resetTrigger The Reset trigger value, when this value has rising edge, the internal value will be reset to resetValue
+    /// @param resetValue The value to reset the internal value when reset trigger has rising edge
+    /// @return True if the internal value was updated, false otherwise
     template <class T>
-    T Accum<T>::Evaluate(bool input, T increment, bool resetTrigger, T resetValue)
+    bool Accum<T>::Evaluate(bool input, T increment, bool resetTrigger, T resetValue)
     {
+        bool updated = false;
+
         // We just reset the value, we don't want to count the increment in the same cycle even if the input is true
         if (resetTrigger && !memResetTrigger)
         {
             Reset(resetValue);
+            updated = true;
         }
         else if (input && !memInput)
         {
@@ -41,12 +44,14 @@ namespace MadMax
                 status.value = std::numeric_limits<T>::max();
             else
                 status.value += increment;
+
+            updated = true;
         }
 
         memInput = input;
         memResetTrigger = resetTrigger;
 
-        return status.value;
+        return updated;
     }
 
     /// @brief Function that SET the internal value to the requested value
@@ -119,12 +124,51 @@ namespace MadMax
     template <class T>
     bool Accum<T>::ReadFromModbus(int32_t address)
     {
+        // Copy the last saved value to modbus memory space, if it's valid, we consider that an address of -1 is an invalid address that mean that the variable is not associated to any Modbus register, this allow to create variable that are not exposed through Modbus if we want to
+        if (address != -1)
+        {
+            // We consider that the address is a 32 bits integer where the 16 most significant bits represent the Modbus memory space (for example, holding registers, input registers, coils, discrete inputs) and the 16 least significant bits represent the Modbus address in that memory space, this allow to associate variables to different types of Modbus registers and not only holding registers
+            uint8_t modbusMemorySpace = (address & 0x00FF0000) >> 16;
+
+            // Holding registers
+            if (modbusMemorySpace == 4)
+            {
+                // We associate the variable to the Modbus register using the modbus server manager, we also store the Modbus address in the provider to be able to retrieve it later if needed
+                uint16_t modbusAddress = address & 0x0000FFFF;
+
+                T *value = executionEnv->GetModbusServerMemoryManager()->AssociateHoldingRegister<T>(modbusAddress);
+
+                this->status.value = *value;
+
+                return true;
+            }
+        }
+
         return false;
     }
 
     template <class T>
-    void Accum<T>::WriteToModbus(int32_t address)
+    bool Accum<T>::WriteToModbus(int32_t address)
     {
+        // Copy the last saved value to modbus memory space, if it's valid, we consider that an address of -1 is an invalid address that mean that the variable is not associated to any Modbus register, this allow to create variable that are not exposed through Modbus if we want to
+        if (address != -1)
+        {
+            // We consider that the address is a 32 bits integer where the 16 most significant bits represent the Modbus memory space (for example, holding registers, input registers, coils, discrete inputs) and the 16 least significant bits represent the Modbus address in that memory space, this allow to associate variables to different types of Modbus registers and not only holding registers
+            uint8_t modbusMemorySpace = (address & 0x00FF0000) >> 16;
+
+            // Holding registers
+            if (modbusMemorySpace == 4)
+            {
+                // We associate the variable to the Modbus register using the modbus server manager, we also store the Modbus address in the provider to be able to retrieve it later if needed
+                uint16_t modbusAddress = address & 0x0000FFFF;
+
+                T *value = executionEnv->GetModbusServerMemoryManager()->AssociateHoldingRegister<T>(modbusAddress);
+                *value = this->status.value;
+
+                return true;
+            }
+        }
+        return false;
     }
 #pragma endregion IVariableValue
 }

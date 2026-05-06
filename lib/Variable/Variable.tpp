@@ -85,6 +85,10 @@ namespace MadMax
             v);
     }
 
+    /// @brief Function that read variable value from Modbus memory space, the address is given by the provider, if the address is valid and the variable is associated to a Modbus register, we copy the value from the Modbus memory space to the variable value, this will allow to update variable value with the last value received from Modbus master
+    /// @tparam T Type of the variable value
+    /// @param address The Modbus address associated to the variable, this address is given by the provider, if it's valid and the variable is associated to a Modbus register, we copy the value from the Modbus memory space to the variable value, this will allow to update variable value with the last value received from Modbus master
+    /// @return Return true if the value was successfully read from Modbus memory space and updated to the variable value, false if the address is invalid or the variable is not associated to any Modbus register
     template <class T>
     bool Variable<T>::ReadFromModbus(int32_t address)
     {
@@ -111,8 +115,12 @@ namespace MadMax
         return false;
     }
 
+    /// @brief Function that write variable value to Modbus memory space, the address is given by the provider, if the address is valid and the variable is associated to a Modbus register, we copy the value from the variable value to the Modbus memory space, this will allow to update Modbus register with the latest value
+    /// @tparam T Type of the variable value
+    /// @param address The Modbus address associated to the variable, this address is given by the provider, if it's valid and the variable is associated to a Modbus register, we copy the value from the variable value to the Modbus memory space, this will allow to update Modbus register with the latest value
+    /// @remarks This function will be called by the provider when we want to update Modbus memory space with the latest variable value, for example when we receive a write request from a Modbus master, we will update the variable value with the new value received from Modbus master and then call this function to update Modbus memory space with the latest variable value, this will allow to keep Modbus memory space updated with the latest variable values and avoid inconsistencies between variable values and Modbus memory space
     template <class T>
-    void Variable<T>::WriteToModbus(int32_t address)
+    bool Variable<T>::WriteToModbus(int32_t address)
     {
         // Copy the last saved value to modbus memory space, if it's valid, we consider that an address of -1 is an invalid address that mean that the variable is not associated to any Modbus register, this allow to create variable that are not exposed through Modbus if we want to
         if (address != -1)
@@ -128,8 +136,12 @@ namespace MadMax
 
                 T *value = executionEnv->GetModbusServerMemoryManager()->AssociateHoldingRegister<T>(modbusAddress);
                 *value = this->status.value;
+
+                return true;
             }
         }
-#pragma endregion IVariableValue
+        return false;
     }
+#pragma endregion IVariableValue
+
 }

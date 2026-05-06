@@ -15,6 +15,6 @@ namespace MadMax
 
         // TBD
         virtual bool ReadFromModbus(int32_t address) = 0;
-        virtual void WriteToModbus(int32_t address) = 0;
+        virtual bool WriteToModbus(int32_t address) = 0;
     };
 }

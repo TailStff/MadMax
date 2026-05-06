@@ -45,7 +45,7 @@ namespace MadMax
     /// @return Size in bytes of the serialized data of the object
     static size_t GetSerializedSize() { return sizeof(T); }
 
-    T Evaluate(bool input, T increment, bool resetTrigger = false, T resetValue = static_cast<T>(0));
+    bool Evaluate(bool input, T increment, bool resetTrigger = false, T resetValue = static_cast<T>(0));
 
     void Reset(T resetValue = static_cast<T>(0));
 
@@ -65,7 +65,7 @@ namespace MadMax
 
     // TBD
     bool ReadFromModbus(int32_t address) override;
-    void WriteToModbus(int32_t address) override;
+    bool WriteToModbus(int32_t address) override;
 
 #pragma endregion IVariableValue
 

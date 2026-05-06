@@ -21,11 +21,65 @@ namespace MadMax
             executionEnv->GetMiniPrefs()->Put(name.c_str(), dataToWrite.data(), dataToWrite.size());
         }
 
+        bool checkCollision(uint16_t variableModbusAddress, uint16_t variableLength, uint16_t addr, uint16_t count)
+        {
+            uint16_t varStart = variableModbusAddress;
+            uint16_t varLengthWords = (variableLength + 1) / 2;
+            uint16_t varEnd = varStart + varLengthWords;
+
+            uint16_t writeStart = addr;
+            uint16_t writeEnd = addr + count;
+
+            return (writeStart < varEnd && writeEnd > varStart);
+        }
+
+        void OnModbusWrite(uint16_t addr, uint16_t count)
+        {
+            // We consider that only variables that are associated to Modbus registers need to be refreshed from Modbus registers, if the variable is not associated to any Modbus register, we consider that its value is managed internally and not updated from Modbus registers, so we skip it
+            this->ForEach(
+                [&](const std::string &name, IPrimitive *base)
+                {
+                    int32_t address;
+                    ObjectProvider<IPrimitive>::Get(name, address);
+
+                    if (address == -1)
+                        return;
+
+                    // We consider that the address is a 32 bits integer where the 16 most significant bits represent the Modbus memory space (for example, holding registers, input registers, coils, discrete inputs) and the 16 least significant bits represent the Modbus address in that memory space, this allow to associate variables to different types of Modbus registers and not only holding registers
+                    uint8_t modbusMemorySpace = (address & 0x00FF0000) >> 16;
+                    uint16_t modbusAddress = address & 0x0000FFFF;
+
+                    if (modbusMemorySpace == 4) // Only consider variables associated to holding registers for now, we can add support for other Modbus memory space later if needed
+                    {
+                        uint16_t length = GetDataTypeSize(GetDataType(base->AsVariableValue()->GetVariantValue()));
+
+                        if (checkCollision(modbusAddress, length, addr, count))
+                        {
+                            IVariableValue *variable = base->AsVariableValue();
+
+                            if (!variable)
+                                return;
+
+                            variable->ReadFromModbus(address);
+
+                            if (auto *serializable = base->AsSerializable())
+                                writePersistencyData(name, serializable);
+                        }
+                    }
+                });
+        }
+
     public:
         AccumProvider(ExecutionEnv *executionEnv)
         {
             this->executionEnv = executionEnv;
             dtoMappers = std::make_unique<AccumDTOMapper>();
+
+            executionEnv->GetModbusServerManager()->RegisterWriteCallback(
+                [this](const ModbusWriteEvent &evt)
+                {
+                    this->OnModbusWrite(evt.startAddr, evt.count);
+                });
         }
 
         template <class T>
@@ -33,7 +87,7 @@ namespace MadMax
         {
             GetPersistencyValuesFromMem(name, reinterpret_cast<uint8_t *>(&data), sizeof(AccumPersistencyValues<T>));
 
-            //WriteValueToModbusSpace(address, data);
+            // WriteValueToModbusSpace(address, data);
 
             // mmAccum<T> varies per T, so we cannot use ObjectProvider<mmAccum<T>> as base.
             // We must inject via the fixed base interface ObjectProvider<ISerializableBase>
@@ -45,28 +99,6 @@ namespace MadMax
 
             return obj;
         }
-
-        // Fonction must be used from variable object now, deprecated to avoid misuse
-        /*template <class T>
-        void WriteValueToModbusSpace(int32_t address, MadMax::AccumPersistencyValues<T> &data)
-        {
-            // Copy the last saved value to modbus memory space, if it's valid, we consider that an address of -1 is an invalid address that mean that the variable is not associated to any Modbus register, this allow to create variable that are not exposed through Modbus if we want to
-            if (address != -1)
-            {
-                // We consider that the address is a 32 bits integer where the 16 most significant bits represent the Modbus memory space (for example, holding registers, input registers, coils, discrete inputs) and the 16 least significant bits represent the Modbus address in that memory space, this allow to associate variables to different types of Modbus registers and not only holding registers
-                uint8_t modbusMemorySpace = (address & 0x00FF0000) >> 16;
-
-                // Holding registers
-                if (modbusMemorySpace == 4)
-                {
-                    // We associate the variable to the Modbus register using the modbus server manager, we also store the Modbus address in the provider to be able to retrieve it later if needed
-                    uint16_t modbusAddress = address & 0x0000FFFF;
-
-                    T *value = executionEnv->GetModbusServerMemoryManager()->AssociateHoldingRegister<T>(modbusAddress);
-                    *value = data.value;
-                }
-            }
-        }*/
 
         template <class T>
         Accum<T> *Get(const std::string &name)
@@ -89,8 +121,6 @@ namespace MadMax
             // If the object doesn't exist, we can't save its persistency values
             if (!obj)
                 return;
-
-            //WriteValueToModbusSpace(address, value);
 
             // If the old value is different from the new one, we save persistency values to memory, otherwise we do nothing to avoid unnecessary write operations to memory
             if (obj->SetValue(value))
@@ -119,6 +149,35 @@ namespace MadMax
                 if (auto *serializable = base->AsSerializable())
                     writePersistencyData(name, serializable);
             }
+        }
+
+        /// @brief Function that increment internal value by increment value when input value has rising edge
+        /// @tparam T Any types
+        /// @param name Name of the object to be updated
+        /// @param input The Input value to be process
+        /// @param increment The value to be added to the internal value at each rising edge of the input, if the increment is negative and the absolute value of the increment is greater than the current internal value, the internal value will be set to 0 to avoid underflow. If the increment is positive and the internal value is greater than the maximum value of T minus the increment, the internal value will be set to the maximum value of T to avoid overflow.
+        /// @param resetTrigger The Reset trigger value, when this value has rising edge, the internal value will be reset to resetValue
+        /// @param resetValue The value to reset the internal value when reset trigger has rising edge
+        /// @return True if the internal value was updated, false otherwise
+        template <class T>
+        T Evaluate(const std::string &name, bool input, T increment, bool resetTrigger = false, T resetValue = static_cast<T>(0))
+        {
+            int32_t address;
+
+            // Get the object to be serialized
+            Accum<T> *obj = static_cast<Accum<T> *>(ObjectProvider<IPrimitive>::Get(name, address));
+
+            // If the object doesn't exist, we can't save its persistency values
+            if (!obj)
+                return static_cast<T>(0);
+
+            if (obj->Evaluate(input, increment, resetTrigger, resetValue))
+            {
+                obj->WriteToModbus(address);
+                writePersistencyData(name, obj);
+            }
+
+            return obj->GetValue();
         }
 
 #pragma region IPersistable

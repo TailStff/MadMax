@@ -264,9 +264,12 @@ void MyApp::Loop()
     bool *myBool = this->modbusServerManager->AssociateHoldingRegister<bool>(39);
     mmVariables->SetValue("myBool", *myBool);*/
 
-    auto accum1 = mmAccums->Get<uint64_t>("accum1");
-    uint64_t *Accum1 = this->modbusServerMemoryManager->AssociateHoldingRegister<uint64_t>(40);
-    *Accum1 = accum1->Evaluate(memMinute != minute, 1, false);
+    //auto accum1 = mmAccums->Get<uint64_t>("accum1");
+    //uint64_t *Accum1 = this->modbusServerMemoryManager->AssociateHoldingRegister<uint64_t>(40);
+    //*Accum1 = accum1->Evaluate(memMinute != minute, 1, false);
+    //accum1->Evaluate(memMinute != minute, 1, false);
+
+    mmAccums->Evaluate<uint64_t>("accum1", memMinute != minute, 1, false);
 
     if (memMinute != minute)
     {
@@ -275,8 +278,6 @@ void MyApp::Loop()
 
         mmPumpSwaps->SavePersistencyValuesToMem("4pmp");
         Serial.println(F("Saved '4pmp' persistancy values to memory"));
-        mmAccums->SavePersistencyValuesToMem("accum1");
-        Serial.println(F("Saved 'accum1' persistancy values to memory"));
 
 #ifdef SERIALDEBUG
         Serial.println(F("Saved persistancy values successfully"));
