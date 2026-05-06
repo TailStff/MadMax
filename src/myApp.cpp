@@ -10,18 +10,11 @@
 
 void MyApp::cbShortPress()
 {
-#ifdef SERIALDEBUG
-    Serial.println("short press");
-#endif
     screenPages->IncPage();
-    Serial.println("!short press");
 }
 
 void MyApp::cbLongPress()
 {
-#ifdef SERIALDEBUG
-    Serial.println("LONG PRESS");
-#endif
     if (screenPages->GetPage() == 4)
     {
         auto permut4 = mmPumpSwaps->Get("4pmp");
@@ -247,27 +240,6 @@ void MyApp::Loop()
     auto delay0 = mmDelayOnOffs->Get("delay0")->Evaluate(true, 60000, 0);
 
     mmRunTimes->Get("rt0")->Evaluate(true);
-
-    /*// on créer un alias vers le registre 32 et on écrit sa valeur sur la variable persistante Float1
-    float *Float1 = this->modbusServerManager->AssociateHoldingRegister<float>(32);
-    mmVariables->SetValue("varFloat1", *Float1);
-
-    float *AB = this->modbusServerManager->AssociateHoldingRegister<float>(34);
-    mmVariables->SetValue("AB", *AB);
-
-    float *XW = this->modbusServerManager->AssociateHoldingRegister<float>(36);
-    mmVariables->SetValue("XW", *XW);
-
-    uint8_t *myChar = this->modbusServerManager->AssociateHoldingRegister<uint8_t>(38);
-    mmVariables->SetValue("myChar", *myChar);
-
-    bool *myBool = this->modbusServerManager->AssociateHoldingRegister<bool>(39);
-    mmVariables->SetValue("myBool", *myBool);*/
-
-    //auto accum1 = mmAccums->Get<uint64_t>("accum1");
-    //uint64_t *Accum1 = this->modbusServerMemoryManager->AssociateHoldingRegister<uint64_t>(40);
-    //*Accum1 = accum1->Evaluate(memMinute != minute, 1, false);
-    //accum1->Evaluate(memMinute != minute, 1, false);
 
     mmAccums->Evaluate<uint64_t>("accum1", memMinute != minute, 1, false);
 

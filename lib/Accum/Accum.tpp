@@ -23,7 +23,7 @@ namespace MadMax
     /// @brief Function that increment internal value by increment value when input value has rising edge
     /// @tparam T Any types
     /// @param input The Input value to be process
-    /// @param increment The value to be added to the internal value at each rising edge of the input, if the increment is negative and the absolute value of the increment is greater than the current internal value, the internal value will be set to 0 to avoid underflow. If the increment is positive and the internal value is greater than the maximum value of T minus the increment, the internal value will be set to the maximum value of T to avoid overflow.
+    /// @param increment The value to be added to the internal value at each rising edge of the input. If the increment is positive and the internal value is greater than the maximum value of T minus the increment, the internal value will be set to the maximum value of T to avoid overflow.
     /// @param resetTrigger The Reset trigger value, when this value has rising edge, the internal value will be reset to resetValue
     /// @param resetValue The value to reset the internal value when reset trigger has rising edge
     /// @return True if the internal value was updated, false otherwise
