@@ -36,8 +36,8 @@ namespace MadMax
 
         this->status.runTimeValue = runTimeObj->Evaluate(feedback);
 
-        if (accumObj->Evaluate(feedback, 1))
-            this->status.startCountValue = accumObj->GetValue();
+        accumObj->Evaluate(feedback, 1);
+        this->status.startCountValue = accumObj->GetValue();
 
         bool tmpFault = this->status.feedbackFault || fault;
 

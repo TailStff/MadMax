@@ -80,11 +80,11 @@ void MyApp::Init()
     // Au démarrage de l'application, on crée les objets nécessaires et on charge leurs valeurs depuis la base de données de persistance et on les associe à des adresses de registres Modbus
 
     mmVariables->Create<float>("varFloat1", 4 << 16 | 32, {.value = 0.0f});
-    mmVariables->Create<float>("AB", 4 << 16 | 34, {.value = 10.0f});
-    mmVariables->Create<float>("XW", 4 << 16 | 36, {.value = 12.0f});
+    mmVariables->Create<float>("AB", 4 << 16 | 34, {.value = 0.0f});
+    mmVariables->Create<float>("XW", 4 << 16 | 36, {.value = 0.0f});
     mmVariables->Create<int8_t>("myChar", 4 << 16 | 38, {.value = 0});
-    mmVariables->Create<bool>("myBool", 4 << 16 | 39, {.value = true});
-    mmVariables->Create<uint8_t>("pumps_nbr", 4 << 16 | 50, {.value = 3});
+    mmVariables->Create<bool>("myBool", 4 << 16 | 39, {.value = false});
+    mmVariables->Create<uint8_t>("pumps_nbr", 4 << 16 | 50, {.value = 0});
 
     mmPumpSwaps->Create("4pmp", 4, 4, 10000);
 
@@ -92,13 +92,13 @@ void MyApp::Init()
 
     mmDigitalEquipments->Create("de0", 4 << 16 | 40, {.runTime = 10, .startCount = 1});
 
-    mmTPulses->Create("tp0", 0, false);
+    mmTPulses->Create("tp0", -1, false);
 
-    mmFeedbackErrors->Create("fe0", 0);
+    mmFeedbackErrors->Create("fe0", -1);
 
-    mmDelayOnOffs->Create("delay0", 0, false);
+    mmDelayOnOffs->Create("delay0", -1, false);
 
-    mmRunTimes->Create("rt0", 0, {.value = 100});
+    mmRunTimes->Create("rt0", -1, {.value = 100});
 
     /*
         // Tache modbus 1: lecture de 2 registres à l'adresse 0 du slave 1 toutes les secondes

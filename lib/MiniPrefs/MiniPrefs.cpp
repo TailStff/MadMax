@@ -209,11 +209,13 @@ bool MiniPrefs::Put(const char *key, const uint8_t *data, uint16_t length)
             writeEntry(existingAddr, h, key, data);
             return true;
         }
+        else
+        {
+            // Taille différente : supprimer l'ancienne entrée et en écrire une nouvelle
+            // remove(key);
+            removeAddress(key, existingAddr);
+        }
     }
-
-    // Taille différente : supprimer l'ancienne entrée et en écrire une nouvelle
-    // remove(key);
-    removeAddress(key, existingAddr);
 
     FramEntryHeader h;
     h.keyLength = keyLen;
@@ -239,12 +241,12 @@ bool MiniPrefs::Put(const char *key, const uint8_t *data, uint16_t length)
 
     if (indexCount >= MAX_INDEX_ENTRIES)
     {
-        Serial.println("MiniPrefs: index full");
+        Serial.println("MiniPrefs: indexCount limit reached (> MAX_INDEX_ENTRIES), cannot add new entry");
         return false;
     }
 
 #ifdef SERIALDEBUG
-    Serial.printf("Writing entry at addr %u: keyLength=%u, dataLength=%u\n", writePointer, h.keyLength, h.dataLength);
+    Serial.printf("Writing new entry at addr %u: keyLength=%u, dataLength=%u\n", writePointer, h.keyLength, h.dataLength);
 #endif
 
     writeEntry(writePointer, h, key, data);

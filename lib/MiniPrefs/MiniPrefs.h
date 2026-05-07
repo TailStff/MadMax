@@ -18,7 +18,7 @@ static constexpr uint16_t DEFRAG_BUF_SIZE = 512;
 
 #define FRAM_SIZE 32768            // taille FRAM en bytes
 #define MINIPREFS_MAGIC 0x504D5246 // "MPRF"
-#define MINIPREFS_VERSION 1
+#define MINIPREFS_VERSION 2
 
 class MiniPrefs;
 

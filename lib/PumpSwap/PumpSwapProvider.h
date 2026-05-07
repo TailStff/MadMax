@@ -36,6 +36,13 @@ namespace MadMax
             // We resize our vector to be able to receive persistency values
             data.data.resize(count);
 
+            // Reset all persistency values to 0 before getting real values from memory, to avoid any issue with unserialization if the data in memory is corrupted (for example, if the count of pumps is changed and we have more pumps than before, we will have more persistency values to unserialize than before, so we need to be sure that all those new persistency values are initialized to 0 before unserialization to avoid any issue with unserialization of thoses new values)
+            for (auto &entry : data.data)
+            {
+                entry.runTime = 0;
+                entry.startCount = 0;
+            }
+
             // Get values from memory to be able to create the object with his previous persistency values
             GetPersistencyValuesFromMem(name, reinterpret_cast<uint8_t *>(data.data.data()), PumpSwap::GetSerializedSize(count));
 
