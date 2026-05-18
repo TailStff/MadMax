@@ -288,10 +288,11 @@ $(function () {
 
                 let button = $(`<button action='${pumpSwap.actions[i]}'>${pumpSwap.actions[i]}</button></div>`).appendTo(buttons);
                 button.on("click", () => {
+                
 
-                    console.log(`Action ${pumpSwap.actions[i]} triggered on pumpSwap ${pumpSwap.name}`);
                     self.setPumpSwapTriggerAction(pumpSwap.name, pumpSwap.actions[i])
                         .then(() => {
+                            console.log(`Action ${pumpSwap.actions[i]} triggered on pumpSwap ${pumpSwap.name}`);
                         })
                         .catch((error: string) => {
                             console.error("Error while triggering action in pumpSwap:", error);

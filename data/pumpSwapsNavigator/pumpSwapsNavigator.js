@@ -125,6 +125,7 @@ $(function () {
             }
         },
         uiPreparePumpSwapDetail: function (pumpSwap, detail) {
+            let self = this;
             detail.html('');
             detail.append(`<div class="title">Propriété de la pumpSwap</div>`);
             detail.append(`<div class="property name"><span>Désignation :</span><span id="pumpSwap-name">${pumpSwap.name}</span></div>`);
@@ -154,7 +155,13 @@ $(function () {
             for (let i = 0; i < pumpSwap.actions.length; i++) {
                 let button = $(`<button action='${pumpSwap.actions[i]}'>${pumpSwap.actions[i]}</button></div>`).appendTo(buttons);
                 button.on("click", () => {
-                    console.log(`Action ${pumpSwap.actions[i]} triggered on pumpSwap ${pumpSwap.name}`);
+                    self.setPumpSwapTriggerAction(pumpSwap.name, pumpSwap.actions[i])
+                        .then(() => {
+                        console.log(`Action ${pumpSwap.actions[i]} triggered on pumpSwap ${pumpSwap.name}`);
+                    })
+                        .catch((error) => {
+                        console.error("Error while triggering action in pumpSwap:", error);
+                    });
                 });
             }
         },
@@ -239,6 +246,24 @@ $(function () {
             }
             catch (error) {
                 console.error("Error in setPumpSwapValue: ", error);
+                throw error;
+            }
+        },
+        setPumpSwapTriggerAction: async function (pumpSwapName, actionName) {
+            try {
+                const response = await fetch(`/API/PumpSwaps/${pumpSwapName}/actions/${actionName}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({})
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            }
+            catch (error) {
+                console.error("Error in setPumpSwapTriggerAction: ", error);
                 throw error;
             }
         }
