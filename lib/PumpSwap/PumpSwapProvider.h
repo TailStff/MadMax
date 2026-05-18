@@ -127,6 +127,24 @@ namespace MadMax
             return true;
         }
 
+        bool TriggerAction(const std::string &name, const std::string &action, DTOBase &dto) const
+        {
+            auto *obj = ObjectProvider<PumpSwap>::Get(name);
+
+            if (!obj)
+                return false;
+
+            if (action == "Reset")
+            {
+                obj->TriggerResetAction();
+
+                // After triggering action, we update dto with new values to be able to return them in the response of the API call
+                return GetDetailDTO(name, dto);
+            }
+
+            return false;
+        }
+
 #pragma endregion IProviderDTO
     };
 }

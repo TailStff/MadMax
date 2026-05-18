@@ -43,6 +43,7 @@ private:
 
     void getPumpSwapsList(AsyncWebServerRequest *request);
     void getPumpSwapDetail(const std::string &name, AsyncWebServerRequest *request);
+    void triggerPumpSwapAction(const std::string &name, const std::string &action, AsyncWebServerRequest *request);
 
     void getTPulsesList(AsyncWebServerRequest *request);
     void getTPulseDetail(const std::string &name, AsyncWebServerRequest *request);

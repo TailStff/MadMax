@@ -115,6 +115,7 @@ namespace MadMax
 
         void ResetAllRuntimes();
         void ResetAllStartCounts();
+        void TriggerResetAction();
 
         void GetPersistencyValues(PumpSwapPersistencyValues &persistencyValues) const; // override;
         void GetBytesFromData(std::vector<uint8_t> &data) const override;

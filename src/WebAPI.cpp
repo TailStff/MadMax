@@ -205,6 +205,14 @@ void WebAPI::handleAPI(AsyncWebServerRequest *request)
                     return;
             }
         }
+        else if (parts.size() == 4)
+        {
+            if (parts[0] == "PumpSwaps")
+            {
+                if (parts[2] == "actions")
+                    return triggerPumpSwapAction(parts[1].c_str(), parts[3].c_str(), request);
+            }
+        }
 
         /*
         // Get a specific interface
@@ -453,7 +461,7 @@ void WebAPI::getDigitalEquipmentDetail(const std::string &name, AsyncWebServerRe
     }
 }
 
-// Pump Swaps
+#pragma region PumpSwap
 void WebAPI::getPumpSwapsList(AsyncWebServerRequest *request)
 {
     auto ps = myApp->GetPumpSwapProvider()->GetDTOs();
@@ -507,6 +515,20 @@ void WebAPI::getPumpSwapDetail(const std::string &name, AsyncWebServerRequest *r
         request->send(404, "text/plain", "Object not found");
     }
 }
+
+void WebAPI::triggerPumpSwapAction(const std::string &name, const std::string &action, AsyncWebServerRequest *request)
+{
+    MadMax::DTOBase dto;
+    if (myApp->GetPumpSwapProvider()->TriggerAction(name.c_str(), action.c_str(), dto))
+    {
+        request->send(200, "text/plain", "OK");
+    }
+    else
+    {
+        request->send(404, "text/plain", "Object not found");
+    }
+}
+#pragma endregion PumpSwap
 
 // TPulses
 void WebAPI::getTPulsesList(AsyncWebServerRequest *request)

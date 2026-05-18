@@ -7,6 +7,7 @@ $(function () {
 
         name: string;
         values: boolean[];
+        actions: string[];
     };
 
     type PumpState = {
@@ -23,6 +24,7 @@ $(function () {
 
         name: string;
         values: boolean[];
+        actions: string[];
         availablePumps: number;
         capacityState: number;
         requestedPumps: number;
@@ -168,7 +170,7 @@ $(function () {
 
                     const mock: PumpSwaps = [
 
-                        { name: "test_4pump", values: [false, false, false, false] }
+                        { name: "test_4pump", values: [false, false, false, false], actions: ["Reset"] }
                     ];
 
                     // petit délai pour simuler un vrai fetch (optionnel)
@@ -206,12 +208,13 @@ $(function () {
                 // Simulate API response with mock data in development, otherwise fetch from the server
                 if (isDev()) {
 
-                    let mock: PumpSwapDetail = { name: name, values: [], availablePumps: 0, capacityState: 0, requestedPumps: 0, runningPumps: 0, totalPumps: 0 };
+                    let mock: PumpSwapDetail = { name: name, values: [], actions: [], availablePumps: 0, capacityState: 0, requestedPumps: 0, runningPumps: 0, totalPumps: 0 };
 
                     switch (name) {
 
                         case "test_4pump":
                             mock.values = [false, false, false, false];
+                            mock.actions = ["Reset"];
                             mock.name = "test_4pump";
                             break;
                     };
@@ -239,6 +242,8 @@ $(function () {
         },
 
         uiPreparePumpSwapDetail: function (pumpSwap: PumpSwap, detail: any) {
+
+            let self = this;
 
             detail.html(''); // Clear previous content
             detail.append(`<div class="title">Propriété de la pumpSwap</div>`);
@@ -275,6 +280,25 @@ $(function () {
                 $(`<div class='value' property='value'>Valeur</div>`).appendTo(properties);
             }
 
+            detail.append(`<div class="title">Actions</div>`);
+
+            let buttons = $("<div class='buttons'>").appendTo(detail);
+
+            for (let i = 0; i < pumpSwap.actions.length; i++) {
+
+                let button = $(`<button action='${pumpSwap.actions[i]}'>${pumpSwap.actions[i]}</button></div>`).appendTo(buttons);
+                button.on("click", () => {
+
+                    console.log(`Action ${pumpSwap.actions[i]} triggered on pumpSwap ${pumpSwap.name}`);
+                    self.setPumpSwapTriggerAction(pumpSwap.name, pumpSwap.actions[i])
+                        .then(() => {
+                        })
+                        .catch((error: string) => {
+                            console.error("Error while triggering action in pumpSwap:", error);
+                        });
+                });
+
+            }
 
         },
 
@@ -299,8 +323,6 @@ $(function () {
 
                 let newValue: any = { value: null };
                 let newDisplayedValue: any = null;
-
-
 
                 console.log("Updating pumpSwap with new value:", JSON.stringify(newValue));
 
@@ -395,6 +417,25 @@ $(function () {
                 }
             } catch (error) {
                 console.error("Error in setPumpSwapValue: ", error);
+                throw error;
+            }
+        },
+
+        setPumpSwapTriggerAction: async function (pumpSwapName: string, actionName: string): Promise<void> {
+
+            try {
+                const response = await fetch(`/API/PumpSwaps/${pumpSwapName}/actions/${actionName}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({})
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                console.error("Error in setPumpSwapTriggerAction: ", error);
                 throw error;
             }
         }

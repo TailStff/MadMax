@@ -266,6 +266,12 @@ namespace MadMax
             nodes[i]->SetRuntime(0);
     }
 
+    void PumpSwap::TriggerResetAction()
+    {
+        ResetAllRuntimes();
+        ResetAllStartCounts();
+    }
+
     /// @brief Serialize persistency values into a byte vector
     /// @param data Output vector that will receive the serialized bytes
     void PumpSwap::GetBytesFromData(std::vector<uint8_t> &data) const

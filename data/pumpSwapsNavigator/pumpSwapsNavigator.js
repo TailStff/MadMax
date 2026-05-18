@@ -75,7 +75,7 @@ $(function () {
             try {
                 if (isDev()) {
                     const mock = [
-                        { name: "test_4pump", values: [false, false, false, false] }
+                        { name: "test_4pump", values: [false, false, false, false], actions: ["Reset"] }
                     ];
                     await new Promise(r => setTimeout(r, 100));
                     return mock;
@@ -99,10 +99,11 @@ $(function () {
             this.getData_busy = true;
             try {
                 if (isDev()) {
-                    let mock = { name: name, values: [], availablePumps: 0, capacityState: 0, requestedPumps: 0, runningPumps: 0, totalPumps: 0 };
+                    let mock = { name: name, values: [], actions: [], availablePumps: 0, capacityState: 0, requestedPumps: 0, runningPumps: 0, totalPumps: 0 };
                     switch (name) {
                         case "test_4pump":
                             mock.values = [false, false, false, false];
+                            mock.actions = ["Reset"];
                             mock.name = "test_4pump";
                             break;
                     }
@@ -147,6 +148,14 @@ $(function () {
                 $(`<div class='value' property='feedback'>Retour de marche</div>`).appendTo(properties);
                 $(`<div class='value' property='fault'>Défaut</div>`).appendTo(properties);
                 $(`<div class='value' property='value'>Valeur</div>`).appendTo(properties);
+            }
+            detail.append(`<div class="title">Actions</div>`);
+            let buttons = $("<div class='buttons'>").appendTo(detail);
+            for (let i = 0; i < pumpSwap.actions.length; i++) {
+                let button = $(`<button action='${pumpSwap.actions[i]}'>${pumpSwap.actions[i]}</button></div>`).appendTo(buttons);
+                button.on("click", () => {
+                    console.log(`Action ${pumpSwap.actions[i]} triggered on pumpSwap ${pumpSwap.name}`);
+                });
             }
         },
         uiDisplayPumpSwapValueEditor: function (pumpSwap, container) {
