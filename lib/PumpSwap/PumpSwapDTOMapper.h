@@ -15,7 +15,9 @@ namespace MadMax
                 return false;
 
             dto.objectName = name;
+
             dto.fields.push_back({"values", primitive->GetPhysicalValues()});
+            dto.actions.push_back({"Reset"});
             return true;
         }
 

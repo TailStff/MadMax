@@ -12,10 +12,16 @@ namespace MadMax
         VariableValue value;
     };
 
+    struct Action
+    {
+        std::string key;
+    };
+
     struct DTOBase
     {
         std::string objectName;
         std::vector<FieldValue> fields;
+        std::vector<Action> actions;
         std::vector<DTOBase> children;
     };
 

@@ -257,6 +257,14 @@ void WriteJson(JsonObject obj, const MadMax::DTOBase &dto)
     for (const auto &field : dto.fields)
         WriteJson(obj, field);
 
+    if (!dto.actions.empty())
+    {
+        JsonArray arr = obj.createNestedArray("actions");
+
+        for (const auto &action : dto.actions)
+            arr.add(action.key);
+    }
+
     // Objets enfants
     for (const auto &childDto : dto.children)
     {
@@ -453,6 +461,7 @@ void WebAPI::getPumpSwapsList(AsyncWebServerRequest *request)
     JsonDocument doc;
     JsonArray arr = doc.to<JsonArray>();
 
+    /// We serialize the list of pump swaps, but not their details (to avoid potentially big response if there are many pump swaps), the details can be retrieved with a specific request for each pump swap
     for (const auto &dto : ps)
     {
         JsonObject obj = arr.add<JsonObject>();
@@ -461,6 +470,14 @@ void WebAPI::getPumpSwapsList(AsyncWebServerRequest *request)
         for (auto &field : dto.fields)
         {
             WriteJson(obj, field);
+        }
+
+        if (!dto.actions.empty())
+        {
+            JsonArray arr = obj.createNestedArray("actions");
+
+            for (const auto &action : dto.actions)
+                arr.add(action.key);
         }
     }
 
