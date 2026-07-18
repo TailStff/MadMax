@@ -47,8 +47,10 @@ struct IPConfigSTA : public IPConfigDhcp
 
 class ExecutionEnv
 {
-
 private:
+  // Flag to indicate if a restart is pending
+  bool RestartPending = false;
+
   // Store the number of cycles of the application
   int64_t tickNumber;
 
@@ -99,6 +101,9 @@ public:
 
   // Destructor
   ~ExecutionEnv();
+
+  bool isRestartPending() { return RestartPending; }
+  void SetRestart() { RestartPending = true; }
 
   void RetreiveHeapSize();
 

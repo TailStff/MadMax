@@ -17,6 +17,7 @@ class App {
         self.navigationContainer.append("<div class='navButton' id='navVariables'>Variables</div>");
         self.navigationContainer.append("<div class='navButton' id='navAccums'>Accums</div>");
         self.navigationContainer.append("<div class='navButton' id='navPumpSwaps'>Pump Swaps</div>");
+        self.navigationContainer.append("<div class='navButton' id='navSystem'>System</div>");
 
         self.navVariables = $("#navVariables");
         self.navVariables.on("click", function () {
@@ -57,6 +58,19 @@ class App {
             container.PumpSwapsNavigator({});
         });
 
+        self.navSystem = $("#navSystem");
+        self.navSystem.on("click", function () {
+
+            let container = $(self.contentContainer);
+
+            self.removeAllWidget(container);
+
+            container.empty();
+
+            // Recréation
+            container.MadMaxSystem({});
+        });
+
     };
 
     removeAllWidget(container) {
@@ -74,6 +88,11 @@ class App {
         // Détruire proprement l'ancien widget
         if (container.data("custom-PumpSwapsNavigator")) {
             container.PumpSwapsNavigator("destroy");
+        }
+
+        // Détruire proprement l'ancien widget
+        if (container.data("custom-MadMaxSystem")) {
+            container.MadMaxSystem("destroy");
         }
     }
 

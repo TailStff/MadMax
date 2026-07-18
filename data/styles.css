@@ -45,6 +45,13 @@ div#contentContainer {
     display: flex;
 }
 
+input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #2ba725;
+}
+
+
 /*
 
 div.title-container {

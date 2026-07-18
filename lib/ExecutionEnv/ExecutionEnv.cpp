@@ -34,19 +34,19 @@ void ExecutionEnv::GetfromPrefs()
 
   mDNS = prefs->getString("mDNS", "madmax");
 
-  ETH.Ip = GetIPAddressFromPrefs("ethIp", IPAddress(0, 0, 0, 0));
-  ETH.Netmask = GetIPAddressFromPrefs("ethNetmask", IPAddress(0, 0, 0, 0));
-  ETH.Gateway = GetIPAddressFromPrefs("ethGateway", IPAddress(0, 0, 0, 0));
+  ETH.Ip = GetIPAddressFromPrefs("ethIp", IPAddress(192, 168, 10, 244));
+  ETH.Netmask = GetIPAddressFromPrefs("ethNetmask", IPAddress(255, 255, 255, 0));
+  ETH.Gateway = GetIPAddressFromPrefs("ethGateway", IPAddress(192, 168, 10, 252));
   ETH.Dns1 = GetIPAddressFromPrefs("ethDns1", IPAddress(0, 0, 0, 0));
   ETH.Dns2 = GetIPAddressFromPrefs("ethDns2", IPAddress(0, 0, 0, 0));
-  ETH.Dhcp = prefs->getBool("ethDhcp", true);
+  ETH.Dhcp = prefs->getBool("ethDhcp", false);
 
   STA.Ip = GetIPAddressFromPrefs("staIp", IPAddress(0, 0, 0, 0));
   STA.Netmask = GetIPAddressFromPrefs("staNetmask", IPAddress(0, 0, 0, 0));
   STA.Gateway = GetIPAddressFromPrefs("staGateway", IPAddress(0, 0, 0, 0));
   STA.Dns1 = GetIPAddressFromPrefs("staDns1", IPAddress(0, 0, 0, 0));
   STA.Dns2 = GetIPAddressFromPrefs("staDns2", IPAddress(0, 0, 0, 0));
-  STA.SSID = prefs->getString("staSSID", "TailS");
+  STA.SSID = prefs->getString("staSSID", "Galaxy A33 5G7C18");
   STA.Password = prefs->getString("staPassword", "T41l5l0v3r43v3r");
   STA.Dhcp = prefs->getBool("staDhcp", true);
 

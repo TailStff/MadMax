@@ -237,11 +237,15 @@ void networkOnEvent(arduino_event_id_t event, arduino_event_info_t info)
     break;
 
   case ARDUINO_EVENT_WIFI_STA_GOT_IP:
+  {
 #ifdef SERIALDEBUG
     Serial.printf("STA Got IP: '%s'\n", esp_netif_get_desc(info.got_ip.esp_netif));
+    IPAddress _ip(info.got_ip.ip_info.ip.addr);
+    Serial.printf("STA IP is: '%s'\n", _ip.toString().c_str());
 #endif
     executionEnv->RefreshActualSTAInfo(info.got_ip.ip_info.ip.addr, info.got_ip.ip_info.netmask.addr, info.got_ip.ip_info.gw.addr, WiFi.dnsIP(0), WiFi.dnsIP(1));
-    break;
+  }
+  break;
 
   default:
     break;
@@ -505,6 +509,11 @@ void callbackExecution()
 
     // Outputs refresh ///////////////////////////////////////////////////////////////////////////
     digitalOutputs.RefreshDigitalOutputs(pcf8574_R1, pcf8574_R2, *modbusServerMemoryManager.GetCoilsPtr());
+
+    if (executionEnv->isRestartPending())
+    {
+      ESP.restart();
+    }
   }
   catch (const std::exception &ex)
   {

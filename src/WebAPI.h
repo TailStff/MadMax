@@ -58,11 +58,18 @@ private:
     void getRunTimeDetail(const std::string &name, AsyncWebServerRequest *request);
 
     // -------- Interfaces --------
+    void getInterfacesList(AsyncWebServerRequest *request);
+    void getInterfaceEthProperties(JsonObject obj);
+    void getInterfaceStaProperties(JsonObject obj);
+    void getInterfaceWapProperties(JsonObject obj);
+
     void getInterfaceEth(AsyncWebServerRequest *request);
     void getInterfaceSta(AsyncWebServerRequest *request);
     void getInterfaceWap(AsyncWebServerRequest *request);
-    void setInterfaceEth(const char *jsonBuffer, AsyncWebServerRequest *request);
-    void setInterfaceSta(const char *jsonBuffer, AsyncWebServerRequest *request);
+
+    void setInterfaceEth(JsonDocument doc, AsyncWebServerRequest *request);
+    void setInterfaceSta(JsonDocument doc, AsyncWebServerRequest *request);
+    void setInterfaceWap(JsonDocument doc, AsyncWebServerRequest *request);
 
 public:
     WebAPI(AsyncWebServer &server, MyApp *app, ExecutionEnv *env);

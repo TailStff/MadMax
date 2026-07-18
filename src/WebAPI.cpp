@@ -6,80 +6,9 @@
 
 WebAPI::WebAPI(AsyncWebServer &server, MyApp *app, ExecutionEnv *env) : server(server), myApp(app), executionEnv(env) {}
 
-// -------- Pages --------
-/*
-void WebAPI::jquery(AsyncWebServerRequest *request)
-{
-    request->send(LittleFS, "/jquery-4.0.0.min.js", "application/javascript");
-}
-
-void WebAPI::jqueryUI(AsyncWebServerRequest *request)
-{
-    request->send(LittleFS, "/jquery-ui.min.js", "application/javascript");
-}
-
-void WebAPI::jqueryUICSS(AsyncWebServerRequest *request)
-{
-    request->send(LittleFS, "/jquery-ui.min.css", "text/css");
-}
-
-void WebAPI::homePage(AsyncWebServerRequest *request)
-{
-    request->send(LittleFS, "/index.html", "text/html");
-}
-
-void WebAPI::styles(AsyncWebServerRequest *request)
-{
-    request->send(LittleFS, "/styles.css", "text/css");
-}
-
-void WebAPI::application(AsyncWebServerRequest *request)
-{
-    request->send(LittleFS, "/app.js", "application/javascript");
-}
-
-void WebAPI::variablesNavigator(AsyncWebServerRequest *request)
-{
-    request->send(LittleFS, "/variablesNavigator.js", "application/javascript");
-}
-
-void WebAPI::variablesNavigatorCSS(AsyncWebServerRequest *request)
-{
-    request->send(LittleFS, "/variablesNavigator.css", "text/css");
-}*/
-
 /// Setup the web server routes and handlers
 void WebAPI::Setup()
 {
-    // Files
-    /*server.on("/", HTTP_GET, [this](AsyncWebServerRequest *r)
-              { homePage(r); });*/
-
-    /*
-server.on("/index.html", HTTP_GET, [this](AsyncWebServerRequest *r)
-    { homePage(r); });
-
-server.on("/jquery-4.0.0.min.js", HTTP_GET, [this](AsyncWebServerRequest *r)
-    { jquery(r); });
-
-server.on("/jquery-ui.min.js", HTTP_GET, [this](AsyncWebServerRequest *r)
-    { jqueryUI(r); });
-
-server.on("/jquery-ui.min.css", HTTP_GET, [this](AsyncWebServerRequest *r)
-    { jqueryUICSS(r); });
-
-server.on("/styles.css", HTTP_GET, [this](AsyncWebServerRequest *r)
-    { styles(r); });
-
-server.on("/variablesNavigator.css", HTTP_GET, [this](AsyncWebServerRequest *r)
-    { variablesNavigatorCSS(r); });
-
-server.on("/app.js", HTTP_GET, [this](AsyncWebServerRequest *r)
-    { application(r); });
-
-server.on("/variablesNavigator.js", HTTP_GET, [this](AsyncWebServerRequest *r)
-    { variablesNavigator(r); });*/
-
     // API
     server.on("/API/*", HTTP_GET, [this](AsyncWebServerRequest *r)
               { handleAPI(r); });
@@ -87,18 +16,6 @@ server.on("/variablesNavigator.js", HTTP_GET, [this](AsyncWebServerRequest *r)
     server.on("/API/*", HTTP_POST, [this](AsyncWebServerRequest *r)
               { handleAPI(r); }, NULL, [this](AsyncWebServerRequest *r, uint8_t *data, size_t len, size_t index, size_t total)
               { apiBodyHandler(r, data, len, index, total); });
-
-    /*
-            server.on("/API", HTTP_GET, [this](AsyncWebServerRequest *r)
-                      { apiRouter(r); });
-
-            server.on("/API", HTTP_POST, [this](AsyncWebServerRequest *r)
-                      { apiRouter(r); }, NULL, [this](AsyncWebServerRequest *r, uint8_t *data, size_t len, size_t index, size_t total)
-                      { apiBodyHandler(r, data, len, index, total); });*/
-
-    // server.on("/API/interfaces", HTTP_GET, apiGetInterfaces);
-
-    // server.on("/API/interfaces/:int", HTTP_GET, apiGetInterface);
 
     /*
     server.on("/INFOS", HTTP_GET, SendInfos);
@@ -110,8 +27,7 @@ server.on("/variablesNavigator.js", HTTP_GET, [this](AsyncWebServerRequest *r)
 
     // server.onNotFound(notFound);
 
-    server.serveStatic("/", LittleFS, "/")
-        .setDefaultFile("index.html");
+    server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
 
     server.begin();
 }
@@ -156,6 +72,8 @@ void WebAPI::handleAPI(AsyncWebServerRequest *request)
                 return getDelayOnOffsList(request);
             else if (parts[0] == "RunTimes")
                 return getRunTimesList(request);
+            else if (parts[0] == "Interfaces")
+                return getInterfacesList(request);
         }
         else if (parts.size() == 2)
         {
@@ -175,6 +93,15 @@ void WebAPI::handleAPI(AsyncWebServerRequest *request)
                 return getDelayOnOffDetail(parts[1].c_str(), request);
             else if (parts[0] == "RunTimes")
                 return getRunTimeDetail(parts[1].c_str(), request);
+            else if (parts[0] == "Interfaces")
+            {
+                if (parts[1] == "eth")
+                    return getInterfaceEth(request);
+                else if (parts[1] == "sta")
+                    return getInterfaceSta(request);
+                else if (parts[1] == "wap")
+                    return getInterfaceWap(request);
+            }
         }
         else if (parts.size() == 3)
         {
@@ -204,6 +131,13 @@ void WebAPI::handleAPI(AsyncWebServerRequest *request)
                 if (myApp->GetAccumsProvider()->GetDetailDTO(parts[1].c_str(), dto))
                     return;
             }
+
+            if (parts[0] == "Interfaces")
+            {
+                // We check Interface existence before reading the body, to avoid reading a potentially big body if the Interface doesn't exist or is not writable
+                if (parts[1] == "eth" || parts[1] == "sta" || parts[1] == "wap")
+                    return;
+            }
         }
         else if (parts.size() == 4)
         {
@@ -213,24 +147,6 @@ void WebAPI::handleAPI(AsyncWebServerRequest *request)
                     return triggerPumpSwapAction(parts[1].c_str(), parts[3].c_str(), request);
             }
         }
-
-        /*
-        // Get a specific interface
-        if (url.startsWith("/API/Interfaces/"))
-        {
-            String guid = url.substring(16);
-
-            if (guid == "eth")
-            {
-                r->send(200, "text/plain", "Settings eth interface…");
-                return;
-            }
-            if (guid == "sta")
-            {
-                r->send(200, "text/plain", "Settings sta interface…");
-                return;
-            }
-        }*/
     }
 
     request->send(404, "text/plain", "Not found");
@@ -714,69 +630,112 @@ void WebAPI::getRunTimeDetail(const std::string &name, AsyncWebServerRequest *re
     }
 }
 
-// -------- Interfaces --------
+// Interfaces
+#pragma region Interfaces
+
+void WebAPI::getInterfacesList(AsyncWebServerRequest *request)
+{
+    JsonDocument doc;
+    JsonArray arr = doc.to<JsonArray>();
+
+    std::vector<std::string> _list = {"ETH", "STA", "WAP"};
+
+    for (const auto &dto : _list)
+    {
+        JsonObject obj = arr.add<JsonObject>();
+        obj["name"] = dto;
+
+        if (dto == "ETH")
+            getInterfaceEthProperties(obj);
+        else if (dto == "STA")
+            getInterfaceStaProperties(obj);
+        else if (dto == "WAP")
+            getInterfaceWapProperties(obj);
+    }
+
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
+    serializeJson(doc, *response);
+    request->send(response);
+}
 
 void WebAPI::getInterfaceEth(AsyncWebServerRequest *request)
 {
-    AsyncResponseStream *response = request->beginResponseStream("application/json");
-
-    auto eth = executionEnv->GetETHProperties();
     JsonDocument doc;
-    doc["dhcp"] = eth.Dhcp;
-    doc["ip"] = eth.Ip.toString();
-    doc["netmask"] = eth.Netmask.toString();
-    doc["gateway"] = eth.Gateway.toString();
-    doc["dns1"] = eth.Dns1.toString();
-    doc["dns2"] = eth.Dns2.toString();
+    JsonObject obj = doc.to<JsonObject>();
 
+    obj["name"] = "ETH";
+    getInterfaceEthProperties(obj);
+
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
     serializeJson(doc, *response);
     request->send(response);
 }
 
 void WebAPI::getInterfaceSta(AsyncWebServerRequest *request)
 {
-    AsyncResponseStream *response = request->beginResponseStream("application/json");
-
-    auto sta = executionEnv->GetSTAProperties();
     JsonDocument doc;
-    doc["dhcp"] = sta.Dhcp;
-    doc["ip"] = sta.Ip.toString();
-    doc["netmask"] = sta.Netmask.toString();
-    doc["gateway"] = sta.Gateway.toString();
-    doc["dns1"] = sta.Dns1.toString();
-    doc["dns2"] = sta.Dns2.toString();
-    doc["ssid"] = sta.SSID.c_str();
-    doc["password"] = sta.Password.c_str();
+    JsonObject obj = doc.to<JsonObject>();
 
+    obj["name"] = "STA";
+    getInterfaceStaProperties(obj);
+
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
     serializeJson(doc, *response);
     request->send(response);
 }
 
 void WebAPI::getInterfaceWap(AsyncWebServerRequest *request)
 {
-    AsyncResponseStream *response = request->beginResponseStream("application/json");
-
-    auto wap = executionEnv->GetWAPProperties();
     JsonDocument doc;
-    doc["ip"] = wap.Ip.toString();
-    doc["netmask"] = wap.Netmask.toString();
-    doc["gateway"] = wap.Gateway.toString();
-    doc["ssid"] = wap.SSID.c_str();
-    doc["password"] = wap.Password.c_str();
+    JsonObject obj = doc.to<JsonObject>();
 
+    obj["name"] = "WAP";
+    getInterfaceWapProperties(obj);
+
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
     serializeJson(doc, *response);
     request->send(response);
 }
 
-void WebAPI::setInterfaceEth(const char *jsonBuffer, AsyncWebServerRequest *request)
+void WebAPI::getInterfaceEthProperties(JsonObject obj)
 {
-    JsonDocument doc;
-    if (deserializeJson(doc, jsonBuffer))
-    {
-        request->send(400, "text/plain", "Invalid JSON");
-        return;
-    }
+    auto eth = executionEnv->GetETHProperties();
 
+    obj["dhcp"] = eth.Dhcp;
+    obj["ip"] = eth.Ip.toString();
+    obj["netmask"] = eth.Netmask.toString();
+    obj["gateway"] = eth.Gateway.toString();
+    obj["dns1"] = eth.Dns1.toString();
+    obj["dns2"] = eth.Dns2.toString();
+}
+
+void WebAPI::getInterfaceStaProperties(JsonObject obj)
+{
+    auto sta = executionEnv->GetSTAProperties();
+
+    obj["dhcp"] = sta.Dhcp;
+    obj["ip"] = sta.Ip.toString();
+    obj["netmask"] = sta.Netmask.toString();
+    obj["gateway"] = sta.Gateway.toString();
+    obj["dns1"] = sta.Dns1.toString();
+    obj["dns2"] = sta.Dns2.toString();
+    obj["ssid"] = sta.SSID.c_str();
+    obj["password"] = sta.Password.c_str();
+}
+
+void WebAPI::getInterfaceWapProperties(JsonObject obj)
+{
+    auto wap = executionEnv->GetWAPProperties();
+
+    obj["ip"] = wap.Ip.toString();
+    obj["netmask"] = wap.Netmask.toString();
+    obj["gateway"] = wap.Gateway.toString();
+    obj["ssid"] = wap.SSID.c_str();
+    obj["password"] = wap.Password.c_str();
+}
+
+void WebAPI::setInterfaceEth(JsonDocument doc, AsyncWebServerRequest *request)
+{
     IPAddress ip, netmask, gateway, dns1, dns2;
     if (!ip.fromString(doc["ip"].as<const char *>()))
     {
@@ -814,17 +773,12 @@ void WebAPI::setInterfaceEth(const char *jsonBuffer, AsyncWebServerRequest *requ
 
     executionEnv->SetETHProperties(config);
     request->send(200, "text/plain", "OK");
+
+    executionEnv->SetRestart();
 }
 
-void WebAPI::setInterfaceSta(const char *jsonBuffer, AsyncWebServerRequest *request)
+void WebAPI::setInterfaceSta(JsonDocument doc, AsyncWebServerRequest *request)
 {
-    JsonDocument doc;
-    if (deserializeJson(doc, jsonBuffer))
-    {
-        request->send(400, "text/plain", "Invalid JSON");
-        return;
-    }
-
     IPAddress ip, netmask, gateway, dns1, dns2;
     if (!ip.fromString(doc["ip"].as<const char *>()))
     {
@@ -862,8 +816,42 @@ void WebAPI::setInterfaceSta(const char *jsonBuffer, AsyncWebServerRequest *requ
     config.SSID = doc["ssid"].as<String>();
     config.Password = doc["password"].as<String>();
 
-    executionEnv->SetETHProperties(config);
+    executionEnv->SetSTAProperties(config);
     request->send(200, "text/plain", "OK");
+
+    executionEnv->SetRestart();
+}
+
+void WebAPI::setInterfaceWap(JsonDocument doc, AsyncWebServerRequest *request)
+{
+    IPAddress ip, netmask, gateway;
+    if (!ip.fromString(doc["ip"].as<const char *>()))
+    {
+        request->send(400, "text/plain", "Invalid IP");
+        return;
+    }
+    if (!netmask.fromString(doc["netmask"].as<const char *>()))
+    {
+        request->send(400, "text/plain", "Invalid Netmask");
+        return;
+    }
+    if (!gateway.fromString(doc["gateway"].as<const char *>()))
+    {
+        request->send(400, "text/plain", "Invalid Gateway");
+        return;
+    }
+
+    IPConfigWAP config;
+    config.Ip = ip;
+    config.Netmask = netmask;
+    config.Gateway = gateway;
+    config.SSID = doc["ssid"].as<String>();
+    config.Password = doc["password"].as<String>();
+
+    executionEnv->SetWAPProperties(config);
+    request->send(200, "text/plain", "OK");
+
+    executionEnv->SetRestart();
 }
 
 // -------- Router --------
@@ -913,6 +901,8 @@ void WebAPI::apiRouter(AsyncWebServerRequest *request)
 
     request->send(404);
 }
+
+#pragma endregion Interfaces
 
 void WebAPI::apiBodyHandler(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
 {
@@ -1071,35 +1061,46 @@ void WebAPI::apiBodyHandler(AsyncWebServerRequest *request, uint8_t *data, size_
         return;
     }
 
-    request->send(404, "text/plain", "Ressource not found");
-
-    /*
-    String iface = url.startsWith("/API/Interfaces/") ? url.substring(16) : "";
-
-    if (iface.isEmpty())
-        return;
-
-    if (index == 0)
-        jsonIndex = 0;
-
-    if (jsonIndex + len >= sizeof(jsonBuffer))
+    if (parts[0] == "Interfaces")
     {
-        request->send(413, "text/plain", "Payload too large");
-        return;
+        // check if URL consists of 2 parts -> /API/Interfaces/{name}
+        if (parts.size() != 2)
+        {
+            request->send(400, "text/plain", "Invalid URL");
+            return;
+        }
+
+        // Check if name is provided
+        if (parts[1].isEmpty())
+        {
+            request->send(400, "text/plain", "Interface name is required");
+            return;
+        }
+
+        if (parts[1] == "eth")
+        {
+            setInterfaceEth(doc, request);
+            request->send(200, "text/plain", "OK");
+            return;
+        }
+        else if (parts[1] == "sta")
+        {
+            setInterfaceSta(doc, request);
+            request->send(200, "text/plain", "OK");
+            return;
+        }
+        else if (parts[1] == "wap")
+        {
+            setInterfaceWap(doc, request);
+            request->send(200, "text/plain", "OK");
+            return;
+        }
+        else
+        {
+            request->send(400, "text/plain", "Unsupported interface");
+            return;
+        }
     }
 
-    memcpy(&jsonBuffer[jsonIndex], data, len);
-    jsonIndex += len;
-
-    if (index + len == total)
-    {
-        jsonBuffer[jsonIndex] = '\0';
-
-        if (iface == "eth")
-            setInterfaceEth(jsonBuffer, request);
-        else if (iface == "sta")
-            setInterfaceSta(jsonBuffer, request);
-        else
-            request->send(404);
-    }*/
+    request->send(404, "text/plain", "Ressource not found");
 }
