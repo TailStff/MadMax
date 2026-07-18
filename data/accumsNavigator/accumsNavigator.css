@@ -17,8 +17,8 @@ div#AccumsContainer>ul {
 
 div#AccumsContainer>ul>li {
 
-    height: 32px;
-    line-height: 32px;
+    height: 48px;
+    line-height: 48px;
     color: #FFF;
     cursor: pointer;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -26,25 +26,29 @@ div#AccumsContainer>ul>li {
     display: flex;
     flex-direction: row;
     gap: 2px;
+    opacity: 0.75;
 }
 
 div#AccumsContainer>ul>li:hover {
 
     background-color: #4d4d4d;
+    opacity: 1;
 }
 
 
 div#AccumsContainer>ul>li.selected {
 
     background-color: #34A7DF;
+    opacity: 1;
 }
 
 div#AccumsContainer>ul>li>span.icon {
 
-    background: url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/Pgo8IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8c3ZnIHN0eWxlPSJiYWNrZ3JvdW5kLWNvbG9yOiNmZmZmZmYwMCIgdmVyc2lvbj0iMS4xIiB2aWV3Qm94PSIwIDAgMzIgMzIiIHhtbDpzcGFjZT0icHJlc2VydmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CgkKCQk8cGF0aCBkPSJtMTYgNS41IDkuMDkzMyA1LjI1IDAuMDAxNyA4LjI1aDIuMjdsMC4wMDE2LTkuNTYyNS0xMS4zNjctNi41NjI1LTExLjM2NyA2LjU2MjV2MTMuMTI1bDcuMzY2NiA0LjI1MjV2LTIuNjI1bC01LjA5MzMtMi45NHYtMTAuNWw5LjA5MzMtNS4yNXoiIGZpbGw9IiNmZmYiLz4KCQk8cGF0aCBkPSJtMTMuODc1IDE2YzAtMS4xNzM2IDAuOTUxNC0yLjEyNSAyLjEyNS0yLjEyNXMyLjEyNSAwLjk1MTQgMi4xMjUgMi4xMjUtMC45NTE0IDIuMTI1LTIuMTI1IDIuMTI1LTIuMTI1LTAuOTUxNC0yLjEyNS0yLjEyNXoiIGZpbGw9IiNmZmYiLz4KCQk8cGF0aCBkPSJtMTggMjh2LTNoM3YtMmgtM3YtM2gtMnYzaC0zdjJoM3YzaDJ6IiBmaWxsPSIjZmZmIi8+CgkJPHBhdGggZD0ibTI3IDI4di0zaDN2LTJoLTN2LTNoLTJ2M2gtM3YyaDN2M2gyeiIgZmlsbD0iI2ZmZiIvPgoJCjwvc3ZnPg==") no-repeat center center;
+    background: var(--bg-accum) no-repeat center center;
     width: 32px;
     height: 32px;
     flex: 0 0 40px;
+    align-self: center;
 }
 
 div#AccumsContainer>ul>li>span.text {

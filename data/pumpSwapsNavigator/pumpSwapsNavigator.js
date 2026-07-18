@@ -103,7 +103,7 @@ $(function () {
                     switch (name) {
                         case "test_4pump":
                             mock.values = [false, false, false, false];
-                            mock.actions = ["Reset"];
+                            mock.actions = ["Reset", "Acknowledge"];
                             mock.name = "test_4pump";
                             break;
                     }
@@ -148,6 +148,7 @@ $(function () {
                 $(`<div class='value' property='command'>Commande</div>`).appendTo(properties);
                 $(`<div class='value' property='feedback'>Retour de marche</div>`).appendTo(properties);
                 $(`<div class='value' property='fault'>Défaut</div>`).appendTo(properties);
+                $(`<div class='value' property='feedbackFault'>Défaut discordance</div>`).appendTo(properties);
                 $(`<div class='value' property='value'>Valeur</div>`).appendTo(properties);
             }
             detail.append(`<div class="title">Actions</div>`);
@@ -215,7 +216,8 @@ $(function () {
                     let properties = container.find(`#pumpSwap-${i}-properties`).removeClass("stale");
                     $("div.value[property='command']", properties).toggleClass("on", pumpSwap[i].command);
                     $("div.value[property='feedback']", properties).toggleClass("on", pumpSwap[i].feedback);
-                    $("div.value[property='fault']", properties).toggleClass("on", pumpSwap[i].fault);
+                    $("div.value[property='fault']", properties).toggleClass("fault", pumpSwap[i].fault);
+                    $("div.value[property='feedbackFault']", properties).toggleClass("fault", pumpSwap[i].feedbackFault);
                     $("div.value[property='value']", properties).toggleClass("on", pumpSwap[i].value);
                     container.find(`#pumpSwap-${i}-rt`).removeClass("stale").html(`${Math.round(pumpSwap[i].runTime / 1000)} s`);
                     container.find(`#pumpSwap-${i}-sc`).removeClass("stale").html(pumpSwap[i].startCount);

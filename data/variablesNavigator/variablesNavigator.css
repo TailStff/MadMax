@@ -17,8 +17,8 @@ div#VariablesContainer>ul {
 
 div#VariablesContainer>ul>li {
 
-    height: 32px;
-    line-height: 32px;
+    height: 48px;
+    line-height: 48px;
     color: #FFF;
     cursor: pointer;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -26,25 +26,29 @@ div#VariablesContainer>ul>li {
     display: flex;
     flex-direction: row;
     gap: 2px;
+    opacity: 0.75;
 }
 
 div#VariablesContainer>ul>li:hover {
 
     background-color: #4d4d4d;
+    opacity: 1;
 }
 
 
 div#VariablesContainer>ul>li.selected {
 
-    background-color: #34A7DF;
+    background-color: var(--color-highlight-background);
+    opacity: 1;
 }
 
 div#VariablesContainer>ul>li>span.icon {
 
-    background: url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/Pg0KPHN2ZyBpZD0iVmFyaWFibGVzLmZ3LXBhZ2UlMjAxIiB2aWV3Qm94PSIwIDAgMzIgMzIiIHN0eWxlPSJiYWNrZ3JvdW5kLWNvbG9yOiNmZmZmZmYwMCIgdmVyc2lvbj0iMS4xIg0KCXhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbDpzcGFjZT0icHJlc2VydmUiDQoJeD0iMHB4IiB5PSIwcHgiIHdpZHRoPSIzMnB4IiBoZWlnaHQ9IjMycHgiDQo+DQoJPHBhdGggZD0iTSAxNiA1LjUgTCAyNS4wOTMzIDEwLjc1IEwgMjUuMDkzMyAyMS4yNSBMIDE2IDI2LjUgTCA2LjkwNjcgMjEuMjUgTCA2LjkwNjcgMTAuNzUgTCAxNiA1LjUgWk0gMTYgMi44NzUgTCA0LjYzMzQgOS40Mzc1IEwgNC42MzM0IDIyLjU2MjUgTCAxNiAyOS4xMjUgTCAyNy4zNjY2IDIyLjU2MjUgTCAyNy4zNjY2IDkuNDM3NSBMIDE2IDIuODc1IFoiIGZpbGw9IiNGRkZGRkYiLz4NCgk8cGF0aCBpZD0iRWxsaXBzZSIgZD0iTSAxMy44NzUgMTYgQyAxMy44NzUgMTQuODI2NCAxNC44MjY0IDEzLjg3NSAxNiAxMy44NzUgQyAxNy4xNzM2IDEzLjg3NSAxOC4xMjUgMTQuODI2NCAxOC4xMjUgMTYgQyAxOC4xMjUgMTcuMTczNiAxNy4xNzM2IDE4LjEyNSAxNiAxOC4xMjUgQyAxNC44MjY0IDE4LjEyNSAxMy44NzUgMTcuMTczNiAxMy44NzUgMTYgWiIgZmlsbD0iI0ZGRkZGRiIvPg0KPC9zdmc+") no-repeat center center;
+    background: var(--bg-variable) no-repeat center center;
     width: 32px;
     height: 32px;
     flex: 0 0 40px;
+    align-self: center;
 }
 
 div#VariablesContainer>ul>li>span.text {

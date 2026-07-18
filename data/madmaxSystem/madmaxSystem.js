@@ -37,18 +37,21 @@ $(function () {
             let form1 = $("<form></form>").appendTo(self.madmaxInterfacesContainer);
             self.madmaxSystemInterfacesEth = $("<div class='madmaxSystemInterface' id='madmaxSystemInterfacesEth'></div>").appendTo(form1);
             self.madmaxSystemInterfacesEth.append(`<div class="title">Propriété de l'interface ETH</div>`);
-            self.madmaxSystemInterfacesEth.append(`<div class="property name"><span>Désignation :</span><input disabled='disabled' type="text" id="eth-name" value='ETH' /></div>`);
+            self.madmaxSystemInterfacesEth.append(`<div class="property name"><span>Désignation :</span><input readonly='readonly' type="text" id="eth-name" value='ETH' /></div>`);
             self.madmaxSystemInterfacesEth.append(`<div class="property dhcp"><span>DHCP :</span><input id='eth-dhcp' disabled='disabled' type='checkbox' value='true' /></div>`);
             self.madmaxSystemInterfacesEth.append(`<div class="property ip"><span>Adresse IP :</span><input id='eth-ip' disabled='disabled' type='text' placeholder='xxx.xxx.xxx.xxx' /></div>`);
             self.madmaxSystemInterfacesEth.append(`<div class="property netmask"><span>Masque de sous-réseau :</span><input id='eth-netmask' disabled='disabled' type='text' placeholder='xxx.xxx.xxx.xxx' /></div>`);
             self.madmaxSystemInterfacesEth.append(`<div class="property gateway"><span>Passerelle :</span><input id='eth-gateway' disabled='disabled' type='text' placeholder='xxx.xxx.xxx.xxx' /></div>`);
             self.madmaxSystemInterfacesEth.append(`<div class="property dns1"><span>DNS 1 :</span><input id='eth-dns1' disabled='disabled' type='text' placeholder='xxx.xxx.xxx.xxx' /></div>`);
             self.madmaxSystemInterfacesEth.append(`<div class="property dns2"><span>DNS 2 :</span><input id='eth-dns2' disabled='disabled' type='text' placeholder='xxx.xxx.xxx.xxx' /></div>`);
+            $('div.property input', self.madmaxSystemInterfacesEth).on("input change", function () {
+                $("button[type='submit']", self.madmaxSystemInterfacesEth).removeAttr("disabled");
+            });
             let buttons = $("<div class='buttons'>").appendTo(self.madmaxSystemInterfacesEth);
-            let submitButton = $("<button type='submit'>Mettre à jour</button></div>").appendTo(buttons);
+            $("<button disabled='disabled' type='submit'>Mettre à jour</button></div>").appendTo(buttons);
             form1.on("submit", (e) => {
                 e.preventDefault();
-                submitButton.attr("disabled", "disabled");
+                $("button[type='submit']", self.madmaxSystemInterfacesEth).attr("disabled", "disabled");
                 let newValue = {
                     dhcp: $("#eth-dhcp", self.madmaxSystemContainer).is(":checked"),
                     ip: $("#eth-ip", self.madmaxSystemContainer).val(),
@@ -60,18 +63,18 @@ $(function () {
                 console.log("Updating ETH Interface with new value:", JSON.stringify(newValue));
                 self.setInterfaceProperties("ETH", newValue)
                     .then(() => {
-                    submitButton.removeAttr("disabled");
+                    $("button[type='submit']", self.madmaxSystemInterfacesEth).removeAttr("disabled");
                 })
                     .catch((error) => {
                     console.error("Error updating ETH Interface:", error);
-                    submitButton.removeAttr("disabled");
+                    $("button[type='submit']", self.madmaxSystemInterfacesEth).removeAttr("disabled");
                 });
                 return false;
             });
             let form2 = $("<form></form>").appendTo(self.madmaxInterfacesContainer);
             self.madmaxSystemInterfacesSta = $("<div class='madmaxSystemInterface' id='madmaxSystemInterfacesSta'></div>").appendTo(form2);
             self.madmaxSystemInterfacesSta.append(`<div class="title">Propriété de l'interface Station WiFi</div>`);
-            self.madmaxSystemInterfacesSta.append(`<div class="property name"><span>Désignation :</span><input disabled='disabled' type="text" id="sta-name" value='STA' /></div>`);
+            self.madmaxSystemInterfacesSta.append(`<div class="property name"><span>Désignation :</span><input readonly='readonly' type="text" id="sta-name" value='STA' /></div>`);
             self.madmaxSystemInterfacesSta.append(`<div class="property dhcp"><span>DHCP :</span><input id='sta-dhcp' disabled='disabled' type='checkbox' value='true' /></div>`);
             self.madmaxSystemInterfacesSta.append(`<div class="property ip"><span>Adresse IP :</span><input id='sta-ip' disabled='disabled' type='text' placeholder='xxx.xxx.xxx.xxx' /></div>`);
             self.madmaxSystemInterfacesSta.append(`<div class="property netmask"><span>Masque de sous-réseau :</span><input id='sta-netmask' disabled='disabled' type='text' placeholder='xxx.xxx.xxx.xxx' /></div>`);
@@ -80,11 +83,14 @@ $(function () {
             self.madmaxSystemInterfacesSta.append(`<div class="property dns2"><span>DNS 2 :</span><input id='sta-dns2' disabled='disabled' type='text' placeholder='xxx.xxx.xxx.xxx' /></div>`);
             self.madmaxSystemInterfacesSta.append(`<div class="property ssid"><span>SSID :</span><input id='sta-ssid' disabled='disabled' type='text' placeholder='SSID' /></div>`);
             self.madmaxSystemInterfacesSta.append(`<div class="property password"><span>Password :</span><input id='sta-password' disabled='disabled' type='password' placeholder='********' /></div>`);
+            $('div.property input', self.madmaxSystemInterfacesSta).on("input change", function () {
+                $("button[type='submit']", self.madmaxSystemInterfacesSta).removeAttr("disabled");
+            });
             buttons = $("<div class='buttons'>").appendTo(self.madmaxSystemInterfacesSta);
-            submitButton = $("<button type='submit'>Mettre à jour</button></div>").appendTo(buttons);
+            $("<button disabled='disabled' type='submit'>Mettre à jour</button></div>").appendTo(buttons);
             form2.on("submit", (e) => {
                 e.preventDefault();
-                submitButton.attr("disabled", "disabled");
+                $("button[type='submit']", self.madmaxSystemInterfacesSta).attr("disabled", "disabled");
                 let newValue = {
                     dhcp: $("#sta-dhcp", self.madmaxSystemContainer).is(":checked"),
                     ip: $("#sta-ip", self.madmaxSystemContainer).val(),
@@ -98,28 +104,31 @@ $(function () {
                 console.log("Updating STA Interface with new value:", JSON.stringify(newValue));
                 self.setInterfaceProperties("STA", newValue)
                     .then(() => {
-                    submitButton.removeAttr("disabled");
+                    $("button[type='submit']", self.madmaxSystemInterfacesSta).removeAttr("disabled");
                 })
                     .catch((error) => {
                     console.error("Error updating STA Interface:", error);
-                    submitButton.removeAttr("disabled");
+                    $("button[type='submit']", self.madmaxSystemInterfacesSta).removeAttr("disabled");
                 });
                 return false;
             });
             let form3 = $("<form></form>").appendTo(self.madmaxInterfacesContainer);
             self.madmaxSystemInterfacesWap = $("<div class='madmaxSystemInterface' id='madmaxSystemInterfacesWap'></div>").appendTo(form3);
             self.madmaxSystemInterfacesWap.append(`<div class="title">Propriété de l'interface WiFi Access Point</div>`);
-            self.madmaxSystemInterfacesWap.append(`<div class="property name"><span>Désignation :</span><input disabled='disabled' type="text" id="wap-name" value='WAP' /></div>`);
+            self.madmaxSystemInterfacesWap.append(`<div class="property name"><span>Désignation :</span><input readonly='readonly' type="text" id="wap-name" value='WAP' /></div>`);
             self.madmaxSystemInterfacesWap.append(`<div class="property ip"><span>Adresse IP :</span><input id='wap-ip' disabled='disabled' type='text' placeholder='xxx.xxx.xxx.xxx' /></div>`);
             self.madmaxSystemInterfacesWap.append(`<div class="property netmask"><span>Masque de sous-réseau :</span><input id='wap-netmask' disabled='disabled' type='text' placeholder='xxx.xxx.xxx.xxx' /></div>`);
             self.madmaxSystemInterfacesWap.append(`<div class="property gateway"><span>Passerelle :</span><input id='wap-gateway' disabled='disabled' type='text' placeholder='xxx.xxx.xxx.xxx' /></div>`);
             self.madmaxSystemInterfacesWap.append(`<div class="property ssid"><span>SSID :</span><input id='wap-ssid' disabled='disabled' type='text' placeholder='SSID' /></div>`);
             self.madmaxSystemInterfacesWap.append(`<div class="property password"><span>Password :</span><input id='wap-password' disabled='disabled' type='password' placeholder='********' /></div>`);
+            $('div.property input', self.madmaxSystemInterfacesWap).on("input change", function () {
+                $("button[type='submit']", self.madmaxSystemInterfacesWap).removeAttr("disabled");
+            });
             buttons = $("<div class='buttons'>").appendTo(self.madmaxSystemInterfacesWap);
-            submitButton = $("<button type='submit'>Mettre à jour</button></div>").appendTo(buttons);
+            $("<button disabled='disabled' type='submit'>Mettre à jour</button></div>").appendTo(buttons);
             form3.on("submit", (e) => {
                 e.preventDefault();
-                submitButton.attr("disabled", "disabled");
+                $("button[type='submit']", self.madmaxSystemInterfacesWap).attr("disabled", "disabled");
                 let newValue = {
                     ip: $("#wap-ip", self.madmaxSystemContainer).val(),
                     netmask: $("#wap-netmask", self.madmaxSystemContainer).val(),
@@ -130,11 +139,11 @@ $(function () {
                 console.log("Updating WAP Interface with new value:", JSON.stringify(newValue));
                 self.setInterfaceProperties("WAP", newValue)
                     .then(() => {
-                    submitButton.removeAttr("disabled");
+                    $("button[type='submit']", self.madmaxSystemInterfacesWap).removeAttr("disabled");
                 })
                     .catch((error) => {
                     console.error("Error updating WAP Interface:", error);
-                    submitButton.removeAttr("disabled");
+                    $("button[type='submit']", self.madmaxSystemInterfacesWap).removeAttr("disabled");
                 });
                 return false;
             });

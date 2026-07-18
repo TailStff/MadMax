@@ -81,6 +81,8 @@ namespace MadMax
     /// @return mmPumpSwap value that give all pumps informations
     PumpSwapResult PumpSwap::Evaluate(std::function<void(std::vector<SetPumpValue *> &)> callbackFunction, std::initializer_list<bool> logicalValues, bool reevaluation, bool acknowledge)
     {
+        bool _needToAcknowledge = acknowledgeBit;
+
         // We compute the number of pumps that are needed for optimal operation
         uint8_t requestedPumps = HelpersVectors::countTrue(logicalValues);
 
@@ -111,7 +113,7 @@ namespace MadMax
 
         for (uint8_t i = 0; i < count; i++)
         {
-            nodes[i]->Evaluate(physicalValues[i], inputsValues[i]->Feedback, inputsValues[i]->Fault, acknowledge, feedbackDelay, statuses[i].get());
+            nodes[i]->Evaluate(physicalValues[i], inputsValues[i]->Feedback, inputsValues[i]->Fault, acknowledge || acknowledgeBit, feedbackDelay, statuses[i].get());
 
             bool synDef = statuses[i]->fault || statuses[i]->feedbackFault;
 
@@ -141,6 +143,11 @@ namespace MadMax
         enumCapacityState capacityState = GetCapacityState(availablePumps, requestedPumps);
 
         memReevaluation = reevaluation;
+
+        if (_needToAcknowledge && acknowledgeBit)
+        {
+            acknowledgeBit = false;
+        }
 
         rawStatuses.clear();
         for (auto &ptr : statuses)
@@ -176,9 +183,12 @@ namespace MadMax
         {
             for (uint8_t i = 0; i < count; i++)
             {
+                if (indexes[i] == -1)
+                    continue;
+
                 bool synDef = this->statuses[indexes[i]]->fault || this->statuses[indexes[i]]->feedbackFault;
 
-                if (indexes[i] != -1 && statuses[indexes[i]]->output && !synDef && !selectedIndex[indexes[i]])
+                if (this->statuses[indexes[i]]->output && !synDef && !selectedIndex[indexes[i]])
                 {
                     indexes[startSearch++] = indexes[i];
                     selectedIndex[indexes[i]] = true;

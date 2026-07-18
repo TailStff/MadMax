@@ -18,6 +18,7 @@ namespace MadMax
 
             dto.fields.push_back({"values", primitive->GetPhysicalValues()});
             dto.actions.push_back({"Reset"});
+            dto.actions.push_back({"Acknowledge"});
             return true;
         }
 

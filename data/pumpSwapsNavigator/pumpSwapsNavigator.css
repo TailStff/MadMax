@@ -17,8 +17,8 @@ div#PumpSwapsContainer>ul {
 
 div#PumpSwapsContainer>ul>li {
 
-    height: 32px;
-    line-height: 32px;
+    height: 48px;
+    line-height: 48px;
     color: #FFF;
     cursor: pointer;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -26,25 +26,29 @@ div#PumpSwapsContainer>ul>li {
     display: flex;
     flex-direction: row;
     gap: 2px;
+    opacity: 0.75;
 }
 
 div#PumpSwapsContainer>ul>li:hover {
 
     background-color: #4d4d4d;
+    opacity: 1;
 }
 
 
 div#PumpSwapsContainer>ul>li.selected {
 
-    background-color: #34A7DF;
+    background-color: var(--color-highlight-background);
+    opacity: 1;
 }
 
 div#PumpSwapsContainer>ul>li>span.icon {
 
-    background: url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCFET0NUWVBFIHN2ZyAgUFVCTElDICctLy9XM0MvL0RURCBTVkcgMS4xLy9FTicgICdodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQnPgo8c3ZnIHN0eWxlPSJiYWNrZ3JvdW5kLWNvbG9yOiNmZmZmZmYwMCIgdmVyc2lvbj0iMS4xIiB2aWV3Qm94PSIwIDAgMzIgMzIiIHhtbDpzcGFjZT0icHJlc2VydmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+Cgk8ZyBmaWxsPSIjZmZmIj4KCQk8cGF0aCBkPSJtNiA5aDF2MTNoLTFjLTEuNjU2OSAwLTMtMS4zNDMxLTMtM3YtN2MwLTEuNjU2OSAxLjM0MzEtMyAzLTN6bTE0LTFoLTZ2LTFjMC0wLjU1MjMgMC40NDc3LTEgMS0xaDRjMC41NTIzIDAgMSAwLjQ0NzcgMSAxdjF6bTYgM2MwLjU1MjMgMCAxIDAuNDQ3NyAxIDF2N2MwIDAuNTUyMy0wLjQ0NzcgMS0xIDFoMS43M2MwLjE3MDItMC4yOTQyIDAuMjctMC42MzU3IDAuMjctMXYtMWgydi0xLTMtMWgtMS0xdi0xYzAtMS4xMDQ2LTAuODk1NC0yLTItMmgtMmMwLTEuMTA0Ni0wLjg5NTQtMi0yLTJoLTF2LTFjMC0xLjEwNDYtMC44OTU0LTItMi0yaC00Yy0xLjEwNDYgMC0yIDAuODk1NC0yIDJ2MWgtN2MtMi4yMDkyIDAtNCAxLjc5MDgtNCA0djdjMCAyLjIwOTIgMS43OTA4IDQgNCA0aDEzdi0xaC0xMXYtMTNoMTRjMC41NTIzIDAgMSAwLjQ0NzcgMSAxdjEwaDF2LTloMnptMiA2di0zaDF2M2gtMXptLTE2LjUtNWMtMC4yNzYxIDAtMC41IDAuMjIzOS0wLjUgMC41czAuMjIzOSAwLjUgMC41IDAuNWg4YzAuMjc2MSAwIDAuNS0wLjIyMzkgMC41LTAuNXMtMC4yMjM5LTAuNS0wLjUtMC41aC04em0wIDNjLTAuMjc2MSAwLTAuNSAwLjIyMzktMC41IDAuNXMwLjIyMzkgMC41IDAuNSAwLjVoOGMwLjI3NjEgMCAwLjUtMC4yMjM5IDAuNS0wLjVzLTAuMjIzOS0wLjUtMC41LTAuNWgtOHptMCAzYy0wLjI3NjEgMC0wLjUgMC4yMjM5LTAuNSAwLjVzMC4yMjM5IDAuNSAwLjUgMC41aDhjMC4yNzYxIDAgMC41LTAuMjIzOSAwLjUtMC41cy0wLjIyMzktMC41LTAuNS0wLjVoLTh6Ii8+CgkJPHBhdGggZD0ibTI4IDI3di02aC0zdjFoMnY0aC0ydjFoM3ptLTggMGgzdi0xaC0ydi00aDJ2LTFoLTN2NnoiLz4KCTwvZz4KPC9zdmc+Cg==") no-repeat center center;
+    background: var(--bg-pump) no-repeat center center;
     width: 32px;
     height: 32px;
     flex: 0 0 40px;
+    align-self: center;
 }
 
 div#PumpSwapsContainer>ul>li>span.text {
@@ -183,8 +187,8 @@ span.pumpSwap-properties>div.value.on {
     border-color: #00ff99;
 }
 
-span.pumpSwap-properties>div.defaut.on {
+span.pumpSwap-properties>div.value.fault {
 
-    background: #00bb70;
-    border-color: #00ff99;
+    background: #bd0000;
+    border-color: #ff0000;
 }

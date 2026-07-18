@@ -65,6 +65,8 @@ namespace MadMax
         // Delay before mark equipment in fault
         uint32_t feedbackDelay;
 
+        bool acknowledgeBit = false;
+
         std::vector<std::unique_ptr<DigitalEquipment>> nodes;
         std::vector<std::unique_ptr<SetPumpValue>> inputsValues;
         std::vector<std::unique_ptr<DigitalEquipmentStatus>> statuses;
@@ -116,6 +118,9 @@ namespace MadMax
         void ResetAllRuntimes();
         void ResetAllStartCounts();
         void TriggerResetAction();
+
+        /// @brief Function that allow to acknowledge all feedback faults of the pumps, this function will be called by the user when he want to acknowledge all faults and feedback faults
+        void TriggerAcknowledge() { acknowledgeBit = true; }
 
         void GetPersistencyValues(PumpSwapPersistencyValues &persistencyValues) const; // override;
         void GetBytesFromData(std::vector<uint8_t> &data) const override;

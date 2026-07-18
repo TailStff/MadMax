@@ -14,15 +14,17 @@ class App {
         self.navigationContainer.appendTo("#appContainer");
         self.contentContainer.appendTo("#appContainer");
 
-        self.navigationContainer.append("<div class='navButton' id='navVariables'>Variables</div>");
-        self.navigationContainer.append("<div class='navButton' id='navAccums'>Accums</div>");
-        self.navigationContainer.append("<div class='navButton' id='navPumpSwaps'>Pump Swaps</div>");
-        self.navigationContainer.append("<div class='navButton' id='navSystem'>System</div>");
+        self.navigationContainer.append("<div class='navButton' id='navVariables'><span class='icon'></span><span class='text'>Variables</span></div>");
+        self.navigationContainer.append("<div class='navButton' id='navAccums'><span class='icon'></span><span class='text'>Accums</span></div>");
+        self.navigationContainer.append("<div class='navButton' id='navPumpSwaps'><span class='icon'></span><span class='text'>Pump Swaps</span></div>");
+        self.navigationContainer.append("<div class='navButton' id='navSystem'><span class='icon'></span><span class='text'>Système</span></div>");
 
         self.navVariables = $("#navVariables");
-        self.navVariables.on("click", function () {
+        self.navVariables.on("click", function (item) {
 
             let container = $(self.contentContainer);
+
+            $(item.currentTarget).addClass("active").siblings().removeClass("active");
 
             self.removeAllWidget(container);
 
@@ -33,9 +35,11 @@ class App {
         });
 
         self.navAccums = $("#navAccums");
-        self.navAccums.on("click", function () {
+        self.navAccums.on("click", function (item) {
 
             let container = $(self.contentContainer);
+
+            $(item.currentTarget).addClass("active").siblings().removeClass("active");
 
             self.removeAllWidget(container);
 
@@ -46,9 +50,11 @@ class App {
         });
 
         self.navPumpSwaps = $("#navPumpSwaps");
-        self.navPumpSwaps.on("click", function () {
+        self.navPumpSwaps.on("click", function (item) {
 
             let container = $(self.contentContainer);
+
+            $(item.currentTarget).addClass("active").siblings().removeClass("active");
 
             self.removeAllWidget(container);
 
@@ -59,9 +65,11 @@ class App {
         });
 
         self.navSystem = $("#navSystem");
-        self.navSystem.on("click", function () {
+        self.navSystem.on("click", function (item) {
 
             let container = $(self.contentContainer);
+
+            $(item.currentTarget).addClass("active").siblings().removeClass("active");
 
             self.removeAllWidget(container);
 

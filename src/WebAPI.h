@@ -12,18 +12,6 @@ private:
     MyApp *myApp;
     ExecutionEnv *executionEnv;
 
-    // -------- Pages --------
-    /*
-    void jquery(AsyncWebServerRequest *request);
-    void jqueryUI(AsyncWebServerRequest *request);
-    void jqueryUICSS(AsyncWebServerRequest *request);
-    void homePage(AsyncWebServerRequest *request);
-    void styles(AsyncWebServerRequest *request);
-    void application(AsyncWebServerRequest *request);
-    void variablesNavigator(AsyncWebServerRequest *request);
-    void variablesNavigatorCSS(AsyncWebServerRequest *request);
-    */
-
     // -------- Routing --------
     void apiRouter(AsyncWebServerRequest *request);
     void apiBodyHandler(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total);

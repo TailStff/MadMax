@@ -141,6 +141,13 @@ namespace MadMax
                 // After triggering action, we update dto with new values to be able to return them in the response of the API call
                 return GetDetailDTO(name, dto);
             }
+            else if (action == "Acknowledge")
+            {
+                obj->TriggerAcknowledge();
+
+                // After triggering action, we update dto with new values to be able to return them in the response of the API call
+                return GetDetailDTO(name, dto);
+            }
 
             return false;
         }

@@ -86,6 +86,8 @@ void MyApp::Init()
     mmVariables->Create<bool>("myBool", 4 << 16 | 39, {.value = false});
     mmVariables->Create<uint8_t>("pumps_nbr", 4 << 16 | 50, {.value = 0});
 
+    mmVariables->Create<bool>("Acquittement", 4 << 16 | 80, {.value = false});
+
     mmPumpSwaps->Create("4pmp", 4, 4, 10000);
 
     mmAccums->Create<uint64_t>("accum1", 4 << 16 | 64, {.value = 0});
@@ -205,7 +207,7 @@ void MyApp::Loop()
          (this->mmVariables->Get<uint8_t>("pumps_nbr")->GetValue() > 1),
          (this->mmVariables->Get<uint8_t>("pumps_nbr")->GetValue() > 2),
          (this->mmVariables->Get<uint8_t>("pumps_nbr")->GetValue() > 3)},
-        false, this->digitalInputs->Get(0));
+        false, this->digitalInputs->Get(0) || this->mmVariables->Get<bool>("Acquittement")->GetValue());
 
     digitalOutputs->Set(0, result.PumpsStatus[0]->output);
     digitalOutputs->Set(1, result.PumpsStatus[1]->output);
