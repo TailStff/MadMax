@@ -63,10 +63,6 @@ namespace MadMax
     /// @return Return true if setted value is different from the previous, false if there is no changes or if the type of the variant value is not compatible with the variable type
     bool SetVariantValue(const VariableValue &v) override;
 
-    // TBD
-    bool ReadFromModbus(int32_t address) override;
-    bool WriteToModbus(int32_t address) override;
-
 #pragma endregion IVariableValue
 
     const ISerializable *AsSerializable() const override { return this; }

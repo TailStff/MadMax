@@ -4,13 +4,15 @@
 #include "Variable.h"
 #include "DataType.h"
 #include "VariableDTOMapper.h"
+#include "VariableModbusMapper.h"
 
 namespace MadMax
 {
     class VariableProvider : public ObjectProvider<IPrimitive>, public IPersistable, public IProviderDTO
     {
     private:
-        std::unique_ptr<IDTOMapperBase> dtoMappers;
+        std::unique_ptr<IDTOMapperBase> dtoMapper;
+        std::unique_ptr<VariableModbusMapper> modbusMapper;
 
         /// @brief Function to write persistency values of the given ISerializable object to persistancy memory
         /// @param name Name of the object to be serialized
@@ -40,7 +42,8 @@ namespace MadMax
         VariableProvider(ExecutionEnv *executionEnv)
         {
             this->executionEnv = executionEnv;
-            dtoMappers = std::make_unique<VariableDTOMapper>();
+            dtoMapper = std::make_unique<VariableDTOMapper>();
+            modbusMapper = std::make_unique<VariableModbusMapper>(executionEnv);
 
             executionEnv->GetModbusServerManager()->RegisterWriteCallback(
                 [this](const ModbusWriteEvent &evt)
@@ -76,7 +79,7 @@ namespace MadMax
                             if (!variable)
                                 return;
 
-                            variable->ReadFromModbus(address);
+                            modbusMapper && modbusMapper->GetFromModbus(*base, address);
 
                             if (auto *serializable = base->AsSerializable())
                                 writePersistencyData(name, serializable);
@@ -97,7 +100,7 @@ namespace MadMax
             auto *obj = new Variable<T>(executionEnv, data);
             ObjectProvider<IPrimitive>::inject(name, address, obj);
 
-            obj->WriteToModbus(address);
+            modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
 
             return obj;
         }
@@ -127,13 +130,11 @@ namespace MadMax
             // If the object doesn't exist, we can't save its persistency values
             if (!obj)
                 return;
-
-            // WriteValueToModbusSpace(address, value);
-
+                
             // If the old value is different from the new one, we save persistency values to memory, otherwise we do nothing to avoid unnecessary write operations to memory
             if (obj->SetValue(value))
             {
-                obj->WriteToModbus(address);
+                modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
                 writePersistencyData(name, obj);
             }
         }
@@ -152,7 +153,7 @@ namespace MadMax
 
             if (obj->SetVariantValue(value))
             {
-                obj->WriteToModbus(address);
+                modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
 
                 if (auto *serializable = base->AsSerializable())
                     writePersistencyData(name, serializable);
@@ -207,7 +208,7 @@ namespace MadMax
                 [&](const std::string &name, IPrimitive *base)
                 {
                     DTOBase dto;
-                    if (dtoMappers && dtoMappers->ToDTO(*base, dto, name))
+                    if (dtoMapper && dtoMapper->ToDTO(*base, dto, name))
                         result.emplace_back(std::move(dto)); // like result.push_back(dto) but faster
                 });
 
@@ -221,7 +222,7 @@ namespace MadMax
             if (!obj)
                 return false;
 
-            if (dtoMappers && dtoMappers->ToDTO(*obj, dto, name))
+            if (dtoMapper && dtoMapper->ToDTO(*obj, dto, name))
                 dto.objectName = name;
 
             return true;
@@ -238,7 +239,7 @@ namespace MadMax
             if (!obj)
                 return false;
 
-            if (dtoMappers && dtoMappers->ToDetailDTO(*obj, dto, name))
+            if (dtoMapper && dtoMapper->ToDetailDTO(*obj, dto, name))
                 dto.objectName = name;
 
             return true;

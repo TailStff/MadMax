@@ -4,6 +4,7 @@
 #include "IObjectDTO.h"
 #include "Accum.h"
 #include "AccumDTOMapper.h"
+#include "AccumModbusMapper.h"
 
 namespace MadMax
 {
@@ -11,6 +12,7 @@ namespace MadMax
     {
     private:
         std::unique_ptr<IDTOMapperBase> dtoMappers;
+        std::unique_ptr<AccumModbusMapper> modbusMapper;
 
         void writePersistencyData(const std::string &name, const ISerializable *obj)
         {
@@ -60,7 +62,7 @@ namespace MadMax
                             if (!variable)
                                 return;
 
-                            variable->ReadFromModbus(address);
+                            modbusMapper && modbusMapper->GetFromModbus(*base, address);
 
                             if (auto *serializable = base->AsSerializable())
                                 writePersistencyData(name, serializable);
@@ -74,6 +76,7 @@ namespace MadMax
         {
             this->executionEnv = executionEnv;
             dtoMappers = std::make_unique<AccumDTOMapper>();
+            modbusMapper = std::make_unique<AccumModbusMapper>(executionEnv);
 
             executionEnv->GetModbusServerManager()->RegisterWriteCallback(
                 [this](const ModbusWriteEvent &evt)
@@ -95,7 +98,7 @@ namespace MadMax
             auto *obj = new Accum<T>(executionEnv, data);
             ObjectProvider<IPrimitive>::inject(name, address, obj);
 
-            obj->WriteToModbus(address);
+            modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
 
             return obj;
         }
@@ -125,7 +128,7 @@ namespace MadMax
             // If the old value is different from the new one, we save persistency values to memory, otherwise we do nothing to avoid unnecessary write operations to memory
             if (obj->SetValue(value))
             {
-                obj->WriteToModbus(address);
+                modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
                 writePersistencyData(name, obj);
             }
         }
@@ -144,7 +147,7 @@ namespace MadMax
 
             if (obj->SetVariantValue(value))
             {
-                obj->WriteToModbus(address);
+                modbusMapper && modbusMapper->ExposeToModbus(*base, address);
 
                 if (auto *serializable = base->AsSerializable())
                     writePersistencyData(name, serializable);
@@ -173,7 +176,7 @@ namespace MadMax
 
             if (obj->Evaluate(input, increment, resetTrigger, resetValue))
             {
-                obj->WriteToModbus(address);
+                modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
                 writePersistencyData(name, obj);
             }
 

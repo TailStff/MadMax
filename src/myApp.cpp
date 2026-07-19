@@ -24,8 +24,7 @@ void MyApp::cbLongPress()
 
     if (screenPages->GetPage() == 5)
     {
-        auto float1 = this->mmVariables->Get<float>("varFloat1");
-        float1->SetValue(50.0f);
+        mmVariables->SetValue<float>("varFloat1", 50.0f);
     }
 }
 
