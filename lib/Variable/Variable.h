@@ -66,10 +66,14 @@ namespace MadMax
         /// @remarks This function override the GetPersistencyValues function of the ISerialize interface, it will be called by the provider when we want to save persistency values of the object
         void GetPersistencyValues(VariablePersistencyValues<T> &persistencyValues) const; // override;
 
-        /// @brief Function that fill the given byte vector with the serialized persistency values of the object
+        /// @brief ISerializable implementation, Serialize persistency values into a byte vector
         /// @param data Output vector that will receive the serialized bytes
+        /// @tparam T Type of the variable value
         void GetBytesFromData(std::vector<uint8_t> &data) const override;
 
+        /// @brief ISerializable implementation, Deserialize persistency values from a byte vector
+        /// @param data Input vector that contains the serialized bytes
+        /// @tparam T Type of the variable value
         void SetDataFromBytes(std::vector<uint8_t> &data) override;
 
 #pragma region IVariableValue

@@ -18,10 +18,11 @@ private:
 
     void handleAPI(AsyncWebServerRequest *r);
 
-    // -------- Variables --------
+#pragma region Variables
     void getVariablesList(AsyncWebServerRequest *request);
     void getVariableDetail(const std::string &name, AsyncWebServerRequest *request);
     void getVariableProperty(const std::string &name, const std::string &property, AsyncWebServerRequest *request);
+#pragma endregion Variables
 
     void getAccumsList(AsyncWebServerRequest *request);
     void getAccumDetail(const std::string &name, AsyncWebServerRequest *request);
@@ -45,7 +46,7 @@ private:
     void getRunTimesList(AsyncWebServerRequest *request);
     void getRunTimeDetail(const std::string &name, AsyncWebServerRequest *request);
 
-    // -------- Interfaces --------
+#pragma region Interfaces
     void getInterfacesList(AsyncWebServerRequest *request);
     void getInterfaceEthProperties(JsonObject obj);
     void getInterfaceStaProperties(JsonObject obj);
@@ -58,6 +59,7 @@ private:
     void setInterfaceEth(JsonDocument doc, AsyncWebServerRequest *request);
     void setInterfaceSta(JsonDocument doc, AsyncWebServerRequest *request);
     void setInterfaceWap(JsonDocument doc, AsyncWebServerRequest *request);
+#pragma endregion Interfaces
 
 public:
     WebAPI(AsyncWebServer &server, MyApp *app, ExecutionEnv *env);

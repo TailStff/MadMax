@@ -772,9 +772,10 @@ void WebAPI::setInterfaceEth(JsonDocument doc, AsyncWebServerRequest *request)
     config.Dns2 = dns2;
 
     executionEnv->SetETHProperties(config);
-    request->send(200, "text/plain", "OK");
 
     executionEnv->SetRestart();
+
+    request->send(200, "text/plain", "OK");
 }
 
 void WebAPI::setInterfaceSta(JsonDocument doc, AsyncWebServerRequest *request)
@@ -817,9 +818,10 @@ void WebAPI::setInterfaceSta(JsonDocument doc, AsyncWebServerRequest *request)
     config.Password = doc["password"].as<String>();
 
     executionEnv->SetSTAProperties(config);
-    request->send(200, "text/plain", "OK");
 
     executionEnv->SetRestart();
+
+    request->send(200, "text/plain", "OK");
 }
 
 void WebAPI::setInterfaceWap(JsonDocument doc, AsyncWebServerRequest *request)
@@ -849,9 +851,10 @@ void WebAPI::setInterfaceWap(JsonDocument doc, AsyncWebServerRequest *request)
     config.Password = doc["password"].as<String>();
 
     executionEnv->SetWAPProperties(config);
-    request->send(200, "text/plain", "OK");
 
     executionEnv->SetRestart();
+
+    request->send(200, "text/plain", "OK");
 }
 
 // -------- Router --------
@@ -1080,19 +1083,16 @@ void WebAPI::apiBodyHandler(AsyncWebServerRequest *request, uint8_t *data, size_
         if (parts[1] == "eth")
         {
             setInterfaceEth(doc, request);
-            request->send(200, "text/plain", "OK");
             return;
         }
         else if (parts[1] == "sta")
         {
             setInterfaceSta(doc, request);
-            request->send(200, "text/plain", "OK");
             return;
         }
         else if (parts[1] == "wap")
         {
             setInterfaceWap(doc, request);
-            request->send(200, "text/plain", "OK");
             return;
         }
         else

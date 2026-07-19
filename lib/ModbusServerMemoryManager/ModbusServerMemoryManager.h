@@ -11,6 +11,8 @@
 
 namespace MadMax
 {
+    /// @brief Constructor for ModbusServerMemoryManager class. Initializes the memory for coils, discrete inputs, holding registers, and input registers.
+    /// @details This class manages the memory for a Modbus server, including coils, discrete inputs, holding registers, and input registers. It provides methods to access and manipulate these memory areas.
     class ModbusServerMemoryManager
     {
 

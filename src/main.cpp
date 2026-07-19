@@ -512,6 +512,8 @@ void callbackExecution()
 
     if (executionEnv->isRestartPending())
     {
+      WiFi.disconnect();
+      delay(10000);
       ESP.restart();
     }
   }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ObjectProvider.h"
-// #include "IPersistency.h"
 #include "Variable.h"
 #include "DataType.h"
 #include "VariableDTOMapper.h"
@@ -13,6 +12,9 @@ namespace MadMax
     private:
         std::unique_ptr<IDTOMapperBase> dtoMappers;
 
+        /// @brief Function to write persistency values of the given ISerializable object to persistancy memory
+        /// @param name Name of the object to be serialized
+        /// @param obj Pointer to the object to be serialized
         void writePersistencyData(const std::string &name, const ISerializable *obj)
         {
             // Get the bytes vector that represent the object persistency values

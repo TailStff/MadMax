@@ -24,8 +24,9 @@ namespace MadMax
         persistencyValues.value = this->status.value;
     }
 
-    /// @brief Serialize persistency values into a byte vector
+    /// @brief ISerializable implementation, Serialize persistency values into a byte vector
     /// @param data Output vector that will receive the serialized bytes
+    /// @tparam T Type of the variable value
     template <class T>
     void Variable<T>::GetBytesFromData(std::vector<uint8_t> &data) const
     {
@@ -38,6 +39,9 @@ namespace MadMax
         memcpy(data.data(), &persistencyValues, size);
     }
 
+    /// @brief ISerializable implementation, Deserialize persistency values from a byte vector
+    /// @param data Input vector that contains the serialized bytes
+    /// @tparam T Type of the variable value
     template <class T>
     void Variable<T>::SetDataFromBytes(std::vector<uint8_t> &data)
     {
