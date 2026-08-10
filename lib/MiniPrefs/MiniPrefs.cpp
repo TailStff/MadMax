@@ -1,6 +1,5 @@
-#define SERIALDEBUG
-
 #include "MiniPrefs.h"
+#include "mmLogger.h"
 
 /////////////////////////
 // CRC16 Modbus
@@ -46,43 +45,35 @@ MiniPrefs::MiniPrefs(Adafruit_FRAM_I2C &f, uint16_t size)
       _defragBufLen(0),
       _defragCorrupted(false)
 {
-#ifdef SERIALDEBUG
-    Serial.println("MiniPrefs constructor called");
-#endif
+    MM_LOG_TRACE("MiniPrefs", "Entering constructor");
 }
 
 /////////////////////////
 // Scan FRAM pour trouver writePointer + construire l'index RAM
-void MiniPrefs::begin()
+bool MiniPrefs::begin()
 {
-#ifdef SERIALDEBUG
-    Serial.println("MiniPrefs::begin() called");
-#endif
+    MM_LOG_TRACE("MiniPrefs", "Entering begin()");
 
     FramHeader header;
     fram.read(0, (uint8_t *)&header, sizeof(header));
 
     if (header.magic != MINIPREFS_MAGIC || header.version != MINIPREFS_VERSION)
     {
-#ifdef SERIALDEBUG
-        Serial.println("MiniPrefs: FRAM not initialized -> reinit");
-#endif
+        MM_LOG_WARN("MiniPrefs", "FRAM not initialized or version mismatch, reinitializing FRAM");
+
         Reinit(header);
-        return;
+        return true;
     }
 
-#ifdef SERIALDEBUG
-    Serial.println("MiniPrefs: FRAM header found, validating CRC");
-#endif
+    MM_LOG_TRACE("MiniPrefs", "FRAM header found, validating CRC");
 
     uint16_t check = crc16((uint8_t *)&header, sizeof(header) - 2);
     if (check != header.crc)
     {
-#ifdef SERIALDEBUG
-        Serial.println("MiniPrefs: header CRC invalid -> reinit");
-#endif
+        MM_LOG_WARN("MiniPrefs", "Header CRC invalid, reinitializing FRAM");
+
         Reinit(header);
-        return;
+        return true;
     }
 
     writePointer = header.writePointer;
@@ -91,9 +82,9 @@ void MiniPrefs::begin()
     // Après ce scan, remove()/Get() n'ont plus besoin de parcourir la FRAM
     buildIndex();
 
-#ifdef SERIALDEBUG
-    Serial.printf("MiniPrefs ready, writePointer=%u, indexCount=%u\n", writePointer, indexCount);
-#endif
+    MM_LOG_TRACE("MiniPrefs", "MiniPrefs ready, writePointer=%u, indexCount=%u", writePointer, indexCount);
+
+    return true;
 }
 
 void MiniPrefs::Reinit(FramHeader &header)
@@ -165,9 +156,7 @@ void MiniPrefs::writeEntry(uint16_t addr, FramEntryHeader &h, const char *key, c
 // Ajout / mise à jour
 bool MiniPrefs::Put(const char *key, const uint8_t *data, uint16_t length)
 {
-#ifdef SERIALDEBUG
-    Serial.printf("MiniPrefs::Put(key=%s, length=%u) called\n", key, length);
-#endif
+    MM_LOG_TRACE("MiniPrefs", "Put(key=%s, length=%u) called", key, length);
 
     uint8_t keyLen = strlen(key);
     uint8_t keyHash = crc8((uint8_t *)key, keyLen);
@@ -184,9 +173,7 @@ bool MiniPrefs::Put(const char *key, const uint8_t *data, uint16_t length)
         if (Get(key, existing, MAX_DATA_BUFFER, existingAddr, existingLength))
             if (existingLength == length && memcmp(existing, data, length) == 0)
             {
-#ifdef SERIALDEBUG
-                Serial.printf("Entry with key '%s' already exists with identical data, skipping FRAM write\n", key);
-#endif
+                MM_LOG_TRACE("MiniPrefs", "Entry with key '%s' already exists with identical data, skipping FRAM write", key);
                 return true; // Donnée identique, aucune écriture FRAM
             }
     }
@@ -203,9 +190,8 @@ bool MiniPrefs::Put(const char *key, const uint8_t *data, uint16_t length)
 
         if (h.dataLength == length)
         {
-#ifdef SERIALDEBUG
-            Serial.printf("Updating entry in place at addr %u\n", existingAddr);
-#endif
+            MM_LOG_TRACE("MiniPrefs", "Updating entry in place at addr %u", existingAddr);
+
             writeEntry(existingAddr, h, key, data);
             return true;
         }
@@ -230,24 +216,24 @@ bool MiniPrefs::Put(const char *key, const uint8_t *data, uint16_t length)
     // est appelé régulièrement (seuil à DEFRAG_THRESHOLD).
     if (writePointer + entrySize > framSize)
     {
-        Serial.println("MiniPrefs: DEFRAGMENTATION (emergency blocking)");
+        MM_LOG_TRACE("MiniPrefs", "DEFRAGMENTATION (emergency blocking)");
+
         defragment();
+
         if (writePointer + entrySize > framSize)
         {
-            Serial.println("MiniPrefs: not enough space even after defragmentation");
+            MM_LOG_ERROR("MiniPrefs", "Not enough space even after defragmentation");
             return false;
         }
     }
 
     if (indexCount >= MAX_INDEX_ENTRIES)
     {
-        Serial.println("MiniPrefs: indexCount limit reached (> MAX_INDEX_ENTRIES), cannot add new entry");
+        MM_LOG_ERROR("MiniPrefs", "indexCount limit reached (> MAX_INDEX_ENTRIES), cannot add new entry");
         return false;
     }
 
-#ifdef SERIALDEBUG
-    Serial.printf("Writing new entry at addr %u: keyLength=%u, dataLength=%u\n", writePointer, h.keyLength, h.dataLength);
-#endif
+    MM_LOG_TRACE("MiniPrefs", "Writing new entry at addr %u: keyLength=%u, dataLength=%u", writePointer, h.keyLength, h.dataLength);
 
     writeEntry(writePointer, h, key, data);
 
@@ -266,9 +252,7 @@ bool MiniPrefs::Put(const char *key, const uint8_t *data, uint16_t length)
 // Lecture
 bool MiniPrefs::Get(const char *key, uint8_t *buffer, uint16_t maxLength, uint16_t &addr, uint16_t &outLength)
 {
-#ifdef SERIALDEBUG
-    Serial.printf("MiniPrefs::Get(key=%s, maxLength=%u) called\n", key, maxLength);
-#endif
+    MM_LOG_TRACE("MiniPrefs", "Get(key=%s, maxLength=%u) called", key, maxLength);
 
     uint8_t keyLen = strlen(key);
     uint8_t keyHash = crc8((uint8_t *)key, keyLen);
@@ -320,9 +304,7 @@ bool MiniPrefs::Get(const char *key, uint8_t *buffer, uint16_t maxLength, uint16
 /// @return True if the entry was found and marked as deleted, false otherwise
 bool MiniPrefs::remove(const char *key)
 {
-#ifdef SERIALDEBUG
-    Serial.printf("MiniPrefs::remove(key=%s) called\n", key);
-#endif
+    MM_LOG_TRACE("MiniPrefs", "remove(key=%s) called", key);
 
     uint8_t keyLen = strlen(key);
     uint8_t keyHash = crc8((uint8_t *)key, keyLen);
@@ -359,9 +341,7 @@ bool MiniPrefs::remove(const char *key)
 /// @return True if the entry was found and marked as deleted, false otherwise
 bool MiniPrefs::removeAddress(const char *key, uint16_t addr)
 {
-#ifdef SERIALDEBUG
-    Serial.printf("MiniPrefs::remove(key=%s, addr=%u) called\n", key, addr);
-#endif
+    MM_LOG_TRACE("MiniPrefs", "removeAddress(key=%s, addr=%u) called", key, addr);
 
     if (addr == 0xFFFF)
     {
@@ -507,10 +487,7 @@ bool MiniPrefs::defragStep()
         _defragCorrupted = false;
         _defragRunning = true;
 
-#ifdef SERIALDEBUG
-        Serial.printf("MiniPrefs: incremental defrag started (usage=%.1f%%, endPtr=%u)\n",
-                      usage * 100.0f, _defragEndPtr);
-#endif
+        MM_LOG_TRACE("MiniPrefs", "Starting incremental defragmentation (usage=%.1f%%, endPtr=%u)", usage * 100.0f, _defragEndPtr);
     }
 
     // --- Fin de défrag ---
@@ -545,10 +522,8 @@ bool MiniPrefs::defragStep()
         updateHeader();
         buildIndex();
 
-#ifdef SERIALDEBUG
-        Serial.printf("MiniPrefs: incremental defrag done, writePointer=%u, indexCount=%u\n",
-                      writePointer, indexCount);
-#endif
+        MM_LOG_TRACE("MiniPrefs", "Incremental defragmentation done, writePointer=%u, indexCount=%u", writePointer, indexCount);
+        
         return true;
     }
 

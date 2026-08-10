@@ -1,3 +1,5 @@
+#define SERIALDEBUG
+
 #include "RTCWrapper.h"
 
 uint8_t RTCWrapper::getDayOfWeek(uint16_t year, uint8_t month, uint8_t day)

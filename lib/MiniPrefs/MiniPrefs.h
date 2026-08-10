@@ -104,7 +104,7 @@ public:
     MiniPrefs(Adafruit_FRAM_I2C &f, uint16_t size = FRAM_SIZE);
 
     bool isDefragRunning() const;
-    void begin(); // scan initial writePointer
+    bool begin(); // scan initial writePointer
     void Reinit(FramHeader &header);
     bool Put(const char *key, const uint8_t *data, uint16_t length);
     bool Get(const char *key, uint8_t *buffer, uint16_t maxLength, uint16_t &addr, uint16_t &outLength);

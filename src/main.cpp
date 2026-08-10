@@ -26,7 +26,7 @@
 #define SCREEN_HEIGHT 128 // OLED display height, in pixels
 
 #define OLED_RESET -1       // Reset pin # (or -1 if sharing Arduino reset pin)
-#define SCREEN_ADDRESS 0x3C // See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32 (Here my OLED 128x64 SSD1306 is 0x3C ^^')
+#define SCREEN_ADDRESS 0x3C // See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32, 0x3C for 128x128 (SH1107)
 
 #define MMCYCLE 100 // Define application cycle duration in ms
 
@@ -48,6 +48,8 @@
 
 // #include <Adafruit_SSD1306.h>
 #include <Adafruit_SH110X.h>
+
+#include "mmLogger.h"
 
 #include "MiniPrefs.h"
 
@@ -99,6 +101,10 @@ DigitalOutputs digitalOutputs;
 
 // Global variable used to indicate if ETH is connected
 static bool eth_connected = false;
+// Global variable used to indicate if STA is connected
+static bool sta_connected = false;
+// Global variable used to indicate if RTC sync is needed
+static bool triggerRTCsync = false;
 
 // Default IP values
 IPAddress WAP_ipAddress;
@@ -216,7 +222,7 @@ void networkOnEvent(arduino_event_id_t event, arduino_event_info_t info)
     executionEnv->RefreshActualEthInfo(info.got_ip.ip_info.ip.addr, info.got_ip.ip_info.netmask.addr, info.got_ip.ip_info.gw.addr, ETH.dnsIP(0), ETH.dnsIP(1));
 
     eth_connected = true;
-    rtcWrapper.SyncDateTimeFromNTP();
+    triggerRTCsync = true;
     break;
 
   case ARDUINO_EVENT_ETH_DISCONNECTED:
@@ -244,6 +250,9 @@ void networkOnEvent(arduino_event_id_t event, arduino_event_info_t info)
     Serial.printf("STA IP is: '%s'\n", _ip.toString().c_str());
 #endif
     executionEnv->RefreshActualSTAInfo(info.got_ip.ip_info.ip.addr, info.got_ip.ip_info.netmask.addr, info.got_ip.ip_info.gw.addr, WiFi.dnsIP(0), WiFi.dnsIP(1));
+
+    sta_connected = true;
+    triggerRTCsync = true;
   }
   break;
 
@@ -279,6 +288,17 @@ void SetupInputsOutputs()
     pcf8574_R1.digitalWrite(i, HIGH);
     pcf8574_R2.digitalWrite(i, HIGH);
   }
+}
+
+void SerialLoggerCallback(
+    MadMax::LogLevel level,
+    const char *category,
+    const char *message)
+{
+  Serial.printf("[%s] [%s] %s\n",
+                MadMax::Logger::LevelToString(level),
+                category,
+                message);
 }
 
 /*
@@ -321,42 +341,42 @@ uint16_t *s = nullptr;
 
 void setup()
 {
-#ifdef SERIALDEBUG
-  Serial.println("Entering main::setup() function");
-#endif
-
   Serial.begin(115200);
+
+  MadMax::Logger::Begin(SerialLoggerCallback);
+  MadMax::Logger::SetLevel(MadMax::LogLevel::Trace);
+
+  delay(1000);
+
+  MM_LOG_TRACE("SYSTEM", "Entering main::setup() function");
 
   if (!LittleFS.begin())
   {
     Serial.println("Erreur LittleFS !");
+    MM_LOG_ERROR("SYSTEM", "Failed to initialize LittleFS");
     return;
   }
 
   pinMode(GPIO0, INPUT_PULLUP);
 
   // Initialise I2C bus
+  MM_LOG_TRACE("SYSTEM", "Initializing I2C bus (I2Cone) for Digital Inputs/Outputs, RTC and OLED display");
   I2Cone.begin(PIN_SDA, PIN_SCL);
   // speeds are 10000, 100000, 400000, 1000000
   I2Cone.setClock(1000000);
 
   // Initialise I2C bus
+  MM_LOG_TRACE("SYSTEM", "Initializing I2C bus (I2Ctwo) for FRAM");
   I2Ctwo.begin(PIN_SDA2, PIN_SCL2);
   // speeds are 10000, 100000, 400000, 1000000
   I2Ctwo.setClock(1000000);
 
   if (fram.begin(0x50, &I2Ctwo))
-  {
-#ifdef SERIALDEBUG
-    Serial.println("FRAM initialized successfully");
-#endif
-  }
+    MM_LOG_TRACE("SYSTEM", "FRAM initialized successfully");
   else
-  {
-    Serial.println("ERROR while initializing FRAM");
-  }
+    MM_LOG_ERROR("SYSTEM", "Failed to initialize FRAM");
 
-  delay(1000);
+  delay(100);
 
   myPrefs = new MiniPrefs(fram, 32 * 1024);
   myPrefs->begin();
@@ -482,6 +502,12 @@ void loop()
 {
   intervalCallback.Tick();
   delay(10);
+
+  if (triggerRTCsync)
+  {
+    triggerRTCsync = false;
+    rtcWrapper.SyncDateTimeFromNTP();
+  }
 }
 
 void callbackExecution()
