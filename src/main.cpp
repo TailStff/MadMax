@@ -167,11 +167,9 @@ MyModbusClientRTU MBRTU(Serial2);
 Adafruit_SH1107 display = Adafruit_SH1107(SCREEN_WIDTH, SCREEN_HEIGHT, &I2Cone, OLED_RESET, 1000000, 1000000);
 #endif
 
-void onNetworkInit(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)
+bool onNetworkInit(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)
 {
-#ifdef SERIALDEBUG
-  Serial.println("Network initialization");
-#endif
+  MM_LOG_TRACE("SYSTEM", "Entering onNetworkInit()");
 
   WiFi.onEvent(networkOnEvent);
 
@@ -191,6 +189,9 @@ void onNetworkInit(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mD
 
   // Start Multicast DNS
   MDNS.begin(mDNS);
+
+  MM_LOG_TRACE("SYSTEM", "Exiting onNetworkInit()");
+  return true;
 }
 
 void networkOnEvent(arduino_event_id_t event, arduino_event_info_t info)
@@ -200,24 +201,19 @@ void networkOnEvent(arduino_event_id_t event, arduino_event_info_t info)
   {
 
   case ARDUINO_EVENT_ETH_START:
-#ifdef SERIALDEBUG
-    Serial.println("ETH Started");
-#endif
+    MM_LOG_TRACE("SYSTEM::NETWORK", "ETH Started");
+
     // The hostname must be set after the interface is started, but needs
     // to be set before DHCP, so set it from the event handler thread.
     ETH.setHostname("esp32-ethernet");
     break;
 
   case ARDUINO_EVENT_ETH_CONNECTED:
-#ifdef SERIALDEBUG
-    Serial.println("ETH Connected");
-#endif
+    MM_LOG_TRACE("SYSTEM::NETWORK", "ETH Connected");
     break;
 
   case ARDUINO_EVENT_ETH_GOT_IP:
-#ifdef SERIALDEBUG
-    Serial.printf("ETH Got IP: '%s'\n", esp_netif_get_desc(info.got_ip.esp_netif));
-#endif
+    MM_LOG_TRACE("SYSTEM::NETWORK", "ETH Got IP: '%s'", esp_netif_get_desc(info.got_ip.esp_netif));
 
     executionEnv->RefreshActualEthInfo(info.got_ip.ip_info.ip.addr, info.got_ip.ip_info.netmask.addr, info.got_ip.ip_info.gw.addr, ETH.dnsIP(0), ETH.dnsIP(1));
 
@@ -226,9 +222,7 @@ void networkOnEvent(arduino_event_id_t event, arduino_event_info_t info)
     break;
 
   case ARDUINO_EVENT_ETH_DISCONNECTED:
-#ifdef SERIALDEBUG
-    Serial.println("ETH Disconnected");
-#endif
+    MM_LOG_TRACE("SYSTEM::NETWORK", "ETH Disconnected");
 
     executionEnv->RefreshActualEthInfo(IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0));
 
@@ -236,19 +230,16 @@ void networkOnEvent(arduino_event_id_t event, arduino_event_info_t info)
     break;
 
   case ARDUINO_EVENT_ETH_STOP:
-#ifdef SERIALDEBUG
-    Serial.println("ETH Stopped");
-#endif
+    MM_LOG_TRACE("SYSTEM::NETWORK", "ETH Stopped");
     eth_connected = false;
     break;
 
   case ARDUINO_EVENT_WIFI_STA_GOT_IP:
   {
-#ifdef SERIALDEBUG
-    Serial.printf("STA Got IP: '%s'\n", esp_netif_get_desc(info.got_ip.esp_netif));
+    MM_LOG_TRACE("SYSTEM::NETWORK", "STA Got IP: '%s'", esp_netif_get_desc(info.got_ip.esp_netif));
     IPAddress _ip(info.got_ip.ip_info.ip.addr);
-    Serial.printf("STA IP is: '%s'\n", _ip.toString().c_str());
-#endif
+    MM_LOG_TRACE("SYSTEM::NETWORK", "STA IP is: '%s'", _ip.toString().c_str());
+
     executionEnv->RefreshActualSTAInfo(info.got_ip.ip_info.ip.addr, info.got_ip.ip_info.netmask.addr, info.got_ip.ip_info.gw.addr, WiFi.dnsIP(0), WiFi.dnsIP(1));
 
     sta_connected = true;
@@ -383,21 +374,15 @@ void setup()
 
   executionEnv = new ExecutionEnv(MMCYCLE, &rtcWrapper, &prefs, myPrefs, &display, &mbServerManager, &modbusServerMemoryManager, onNetworkInit);
 
-#ifdef SERIALDEBUG
-  Serial.println("ExecutionEnv object created");
-#endif
+  MM_LOG_TRACE("SYSTEM", "ExecutionEnv object created");
 
   executionEnv->NetworksInitialization();
 
-#ifdef SERIALDEBUG
-  Serial.println("ExecutionEnv::NetworksInitialization() executed");
-#endif
+  MM_LOG_TRACE("SYSTEM", "ExecutionEnv::NetworksInitialization() executed");
 
   myApp = new MyApp(executionEnv, MBRTU, &mbServerManager, &modbusServerMemoryManager, &digitalInputs, &digitalOutputs);
 
-#ifdef SERIALDEBUG
-  Serial.println("MyApp object created");
-#endif
+  MM_LOG_TRACE("SYSTEM", "MyApp object created");
 
   myTick = modbusServerMemoryManager.AssociateHoldingRegister<int64_t>(0);
   y = modbusServerMemoryManager.AssociateHoldingRegister<uint16_t>(4);

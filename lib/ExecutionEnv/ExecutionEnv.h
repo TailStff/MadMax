@@ -78,7 +78,7 @@ private:
   MadMax::ModbusServerMemoryManager *modbusServerMemoryManager;
 
   /// @brief Callback function for Initialize network interfaces
-  std::function<void(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit;
+  std::function<bool(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit;
   /// @brief  Configuration object for ETH interface
   IPConfigDhcp ETH;
   /// @brief  Configuration object for Wifi station/client interface
@@ -97,7 +97,7 @@ private:
 
 public:
   // Constructor
-  ExecutionEnv(unsigned int _cycle, RTCWrapper *rtcWrapper, Preferences *prefs, MiniPrefs *miniPrefs, Adafruit_SH1107 *display, MadMax::ModbusServerManager *modbusServerManager, MadMax::ModbusServerMemoryManager *modbusServerMemoryManager, std::function<void(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit);
+  ExecutionEnv(unsigned int _cycle, RTCWrapper *rtcWrapper, Preferences *prefs, MiniPrefs *miniPrefs, Adafruit_SH1107 *display, MadMax::ModbusServerManager *modbusServerManager, MadMax::ModbusServerMemoryManager *modbusServerMemoryManager, std::function<bool(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit);
 
   // Destructor
   ~ExecutionEnv();
@@ -107,7 +107,7 @@ public:
 
   void RetreiveHeapSize();
 
-  void NetworksInitialization();
+  bool NetworksInitialization();
 
   // Function to call when starting a new cycle
   int64_t Execute();
@@ -128,9 +128,6 @@ public:
 
   MadMax::ModbusServerManager *GetModbusServerManager();
   MadMax::ModbusServerMemoryManager *GetModbusServerMemoryManager();
-
-  // Get I2C mini prefs object
-  // Adafruit_FRAM_I2C *GetMiniPrefs() { return this->fram; }
 
   uint8_t getSecond();
   uint8_t getMinute();
