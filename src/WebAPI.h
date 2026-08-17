@@ -63,5 +63,5 @@ private:
 
 public:
     WebAPI(AsyncWebServer &server, MyApp *app, ExecutionEnv *env);
-    void Setup();
+    bool Setup();
 };

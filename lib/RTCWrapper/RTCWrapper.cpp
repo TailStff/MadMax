@@ -1,5 +1,3 @@
-#define SERIALDEBUG
-
 #include "RTCWrapper.h"
 
 uint8_t RTCWrapper::getDayOfWeek(uint16_t year, uint8_t month, uint8_t day)
@@ -23,12 +21,15 @@ void RTCWrapper::begin()
 {
   if (!this->rtc.begin(i2cbus))
   {
-    Serial.println("RTC not detected");
-    while (1)
-      ;
+    MM_LOG_ERROR("RTCWrapper", "RTC not detected");
+    rtcInitialized = true;
   }
+  else
+  {
+    MM_LOG_TRACE("RTCWrapper", "RTC detected");
 
-  configTime(this->gmtOffset_sec, this->daylightOffset_sec, this->ntpServer);
+    configTime(this->gmtOffset_sec, this->daylightOffset_sec, this->ntpServer);
+  }
 }
 
 // Destructor
@@ -38,6 +39,12 @@ RTCWrapper::~RTCWrapper()
 
 void RTCWrapper::SyncDateTimeFromNTP()
 {
+  if (!rtcInitialized)
+  {
+    MM_LOG_WARN("RTCWrapper", "Synchronization from NTP servers could not be done");
+    return;
+  }
+
   struct tm timeinfo;
 
   if (!getNtpTime(timeinfo))
@@ -54,11 +61,9 @@ void RTCWrapper::SyncDateTimeFromNTP()
       timeinfo.tm_min,
       timeinfo.tm_sec);
 
-#ifdef SERIALDEBUG
-  Serial.println("NTP sync OK");
-#endif
-
   rtc.adjust(ntpTime);
+
+  MM_LOG_TRACE("RTCWrapper", "Synchronization from NTP servers successfully done");
 }
 
 /// Function that SET Date/Time ///

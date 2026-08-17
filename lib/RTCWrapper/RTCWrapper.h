@@ -3,6 +3,7 @@
 
 #include <RTClib.h>
 #include <time.h>
+#include "mmLogger.h"
 
 class RTCWrapper {
 
@@ -10,6 +11,8 @@ private:
 
   TwoWire* i2cbus;
   RTC_DS1307 rtc;
+  
+  bool rtcInitialized = false;
 
   const char* ntpServer = "pool.ntp.org";
   long gmtOffset_sec = 3600;      // France

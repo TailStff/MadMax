@@ -30,7 +30,7 @@ namespace MadMax
 
         void RegisterWorkers();
 
-        void Start(uint16_t port, uint16_t maxClients, uint16_t timeout);
+        bool Start(uint16_t port, uint16_t maxClients, uint16_t timeout);
 
     private:
         ModbusServerMemoryManager &modbusServerMemoryManager;

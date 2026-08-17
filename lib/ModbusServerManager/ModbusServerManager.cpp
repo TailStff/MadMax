@@ -15,9 +15,9 @@ namespace MadMax
         MBserver.registerWorker(serverID, functionCode, worker);
     }
 
-    void ModbusServerManager::Start(uint16_t port, uint16_t maxClients, uint16_t timeout)
+    bool ModbusServerManager::Start(uint16_t port, uint16_t maxClients, uint16_t timeout)
     {
-        MBserver.start(port, maxClients, timeout);
+        return MBserver.start(port, maxClients, timeout);
     }
 
     // Some functions to be called when function codes 0x01, 0x05 or 0x15 are requested

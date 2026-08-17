@@ -395,18 +395,14 @@ void setup()
   RTUutils::prepareHardwareSerial(Serial2);
   Serial2.begin(RS485_BAUDRATE, RS485_PARITY, PIN_RS485_RX, PIN_RS485_TX);
 
-#ifdef SERIALDEBUG
-  Serial.println("RS485 interface setted successfully");
-#endif
+  MM_LOG_TRACE("SYSTEM", "RS485 interface setted successfully");
 
   // Set up ModbusRTU client.
   MBRTU.setTimeout(100);
   MBRTU.setQueueLimit(200);
   MBRTU.begin(Serial2);
 
-#ifdef SERIALDEBUG
-  Serial.println("RS485 client setted successfully");
-#endif
+  MM_LOG_TRACE("SYSTEM", "RS485 client setted successfully");
 
   /*
     I2Cone.beginTransmission(0x50);
@@ -457,19 +453,19 @@ void setup()
   // Prepare hardware to manage Inputs and Outputs
   SetupInputsOutputs();
 
+  // Start ModbusTCP server
   mbServerManager.RegisterWorkers();
-  mbServerManager.Start(MBserver_Port, MBserver_MaxClient, MBserver_Timeout);
+  if (mbServerManager.Start(MBserver_Port, MBserver_MaxClient, MBserver_Timeout))
+    MM_LOG_TRACE("SYSTEM", "Modbus server successfully created");
+  else
+    MM_LOG_ERROR("SYSTEM", "Modbus server creation failed");
 
-#ifdef SERIALDEBUG
-  Serial.println("Modbus server successfully started");
-#endif
-
+  // Start Web server
   webAPI = new WebAPI(server, myApp, executionEnv);
-  webAPI->Setup();
-
-#ifdef SERIALDEBUG
-  Serial.println("Web server successfully created");
-#endif
+  if (webAPI->Setup())
+    MM_LOG_TRACE("SYSTEM", "Web server successfully created");
+  else
+    MM_LOG_ERROR("SYSTEM", "Web server creation failed");
 
   // Retreive heap size long time after start because heap size computation didn't take all heap size
   executionEnv->RetreiveHeapSize();
@@ -478,9 +474,7 @@ void setup()
 
   myApp->Init();
 
-#ifdef SERIALDEBUG
-  Serial.println("MyApp::Init() executed");
-#endif
+  MM_LOG_TRACE("SYSTEM", "Exiting main::setup() function");
 }
 
 void loop()

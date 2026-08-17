@@ -7,7 +7,7 @@
 WebAPI::WebAPI(AsyncWebServer &server, MyApp *app, ExecutionEnv *env) : server(server), myApp(app), executionEnv(env) {}
 
 /// Setup the web server routes and handlers
-void WebAPI::Setup()
+bool WebAPI::Setup()
 {
     // API
     server.on("/API/*", HTTP_GET, [this](AsyncWebServerRequest *r)
@@ -17,19 +17,13 @@ void WebAPI::Setup()
               { handleAPI(r); }, NULL, [this](AsyncWebServerRequest *r, uint8_t *data, size_t len, size_t index, size_t total)
               { apiBodyHandler(r, data, len, index, total); });
 
-    /*
-    server.on("/INFOS", HTTP_GET, SendInfos);
-    server.on("/DATAS", HTTP_GET, SendDatas);
-    server.on("/RESET", HTTP_GET, ESPReset);
-    server.on("/IP", HTTP_POST, setIPAddressResponse, NULL, setIPAddressExecute);
-    server.on("/SETTINGS", HTTP_POST, setSettingsResponse, NULL, setSettingsExecute);
-    server.on("/DATETIME", HTTP_POST, setDateTimeResponse, NULL, setDateTimeExecute);*/
-
     // server.onNotFound(notFound);
 
     server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
 
     server.begin();
+
+    return true;
 }
 
 void WebAPI::handleAPI(AsyncWebServerRequest *request)
