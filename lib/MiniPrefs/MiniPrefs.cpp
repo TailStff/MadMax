@@ -341,13 +341,11 @@ bool MiniPrefs::remove(const char *key)
 /// @return True if the entry was found and marked as deleted, false otherwise
 bool MiniPrefs::removeAddress(const char *key, uint16_t addr)
 {
-    MM_LOG_TRACE("MiniPrefs", "removeAddress(key=%s, addr=%u) called", key, addr);
+    MM_LOG_TRACE("MiniPrefs", "Remove address (key='%s', addr=%u) called", key, addr);
 
     if (addr == 0xFFFF)
     {
-#ifdef SERIALDEBUG
-        Serial.println("MiniPrefs::removeAddress: invalid address 0xFFFF");
-#endif
+        MM_LOG_WARN("MiniPrefs", "Removing address could not be done, invalid address 0xFFFF");
         return false;
     }
 
@@ -523,7 +521,7 @@ bool MiniPrefs::defragStep()
         buildIndex();
 
         MM_LOG_TRACE("MiniPrefs", "Incremental defragmentation done, writePointer=%u, indexCount=%u", writePointer, indexCount);
-        
+
         return true;
     }
 
