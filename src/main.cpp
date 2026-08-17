@@ -480,7 +480,7 @@ void setup()
 void loop()
 {
   intervalCallback.Tick();
-  delay(10);
+  delay(50);
 
   if (triggerRTCsync)
   {

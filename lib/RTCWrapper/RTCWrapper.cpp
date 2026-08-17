@@ -19,15 +19,16 @@ RTCWrapper::RTCWrapper(TwoWire *i2cbus)
 // Initialization function
 void RTCWrapper::begin()
 {
+  this->rtcInitialized = false;
+
   if (!this->rtc.begin(i2cbus))
   {
     MM_LOG_ERROR("RTCWrapper", "RTC not detected");
-    rtcInitialized = true;
   }
   else
   {
+    this->rtcInitialized = true;
     MM_LOG_TRACE("RTCWrapper", "RTC detected");
-
     configTime(this->gmtOffset_sec, this->daylightOffset_sec, this->ntpServer);
   }
 }
@@ -39,7 +40,7 @@ RTCWrapper::~RTCWrapper()
 
 void RTCWrapper::SyncDateTimeFromNTP()
 {
-  if (!rtcInitialized)
+  if (!this->rtcInitialized)
   {
     MM_LOG_WARN("RTCWrapper", "Synchronization from NTP servers could not be done");
     return;
