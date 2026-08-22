@@ -42,9 +42,9 @@ namespace MadMax
       {
         uint32_t delay = input ? onDelayFeedbackError : offDelayFeedbackError;
 
-        this->status.value = delayOnOff->Evaluate(feedbackMismatch, delay, 0);
+        this->status.value = delayOnOff->Evaluate(feedbackMismatch, delay, 0, &delayOnOffStatus);
         this->status.state = this->status.value ? FeedbackErrorState::Error : FeedbackErrorState::Transition;
-        this->status.remainingTime = delayOnOff->GetRemainingTime();
+        this->status.remainingTime = delayOnOffStatus.remainingTime;
       }
       else
       {

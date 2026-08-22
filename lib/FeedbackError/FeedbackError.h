@@ -18,6 +18,7 @@ namespace MadMax
   {
   private:
     FeedbackErrorStatus status;
+    DelayOnOffStatus delayOnOffStatus;
 
     ExecutionEnv *executionEnv;
 

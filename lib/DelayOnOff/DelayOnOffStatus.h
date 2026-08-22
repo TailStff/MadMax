@@ -12,6 +12,7 @@ namespace MadMax
         uint32_t delayOn;
         uint32_t delayOff;
         int64_t remainingTime;
+        int64_t elapsedTime;
     };
 }
 

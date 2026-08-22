@@ -29,6 +29,7 @@ namespace MadMax
     int64_t actualTickNumber = executionEnv->GetTicks();
 
     this->status.remainingTime = -1;
+    this->status.elapsedTime = 0;
 
     if (input == this->status.output)
     {
@@ -44,10 +45,12 @@ namespace MadMax
         this->status.output = input;
         tickNumber = actualTickNumber;
         this->status.remainingTime = 0;
+        this->status.elapsedTime = delay;
       }
       else
       {
         this->status.remainingTime = delay - elapsed;
+        this->status.elapsedTime = elapsed;
       }
     }
 
@@ -57,6 +60,7 @@ namespace MadMax
       status->delayOff = this->status.delayOff;
       status->delayOn = this->status.delayOn;
       status->remainingTime = this->status.remainingTime;
+      status->elapsedTime = this->status.elapsedTime;
       status->output = this->status.output;
     }
 
@@ -68,6 +72,7 @@ namespace MadMax
     this->status.output = true;
     this->tickNumber = executionEnv->GetTicks();
     this->status.remainingTime = -1;
+    this->status.elapsedTime = 0;
   }
 
   void DelayOnOff::EmergencyOff()
@@ -75,5 +80,6 @@ namespace MadMax
     this->status.output = false;
     this->tickNumber = executionEnv->GetTicks();
     this->status.remainingTime = -1;
+    this->status.elapsedTime = 0;
   }
 }
