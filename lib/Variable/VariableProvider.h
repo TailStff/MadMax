@@ -6,6 +6,8 @@
 #include "VariableDTOMapper.h"
 #include "VariableModbusMapper.h"
 
+#include "mmLogger.h"
+
 namespace MadMax
 {
     class VariableProvider : public ObjectProvider<IPrimitive>, public IPersistable, public IProviderDTO
@@ -38,21 +40,7 @@ namespace MadMax
             return (writeStart < varEnd && writeEnd > varStart);
         }
 
-    public:
-        VariableProvider(ExecutionEnv *executionEnv)
-        {
-            this->executionEnv = executionEnv;
-            dtoMapper = std::make_unique<VariableDTOMapper>();
-            modbusMapper = std::make_unique<VariableModbusMapper>(executionEnv);
-
-            executionEnv->GetModbusServerManager()->RegisterWriteCallback(
-                [this](const ModbusWriteEvent &evt)
-                {
-                    this->OnModbusWrite(evt.startAddr, evt.count);
-                });
-        }
-
-        void OnModbusWrite(uint16_t addr, uint16_t count)
+        void OnModbusWrite(ModbusServerModbusSpaceCode modbusSpace, uint16_t addr, uint16_t count)
         {
             // We consider that only variables that are associated to Modbus registers need to be refreshed from Modbus registers, if the variable is not associated to any Modbus register, we consider that its value is managed internally and not updated from Modbus registers, so we skip it
             this->ForEach(
@@ -68,23 +56,38 @@ namespace MadMax
                     uint8_t modbusMemorySpace = (address & 0x00FF0000) >> 16;
                     uint16_t modbusAddress = address & 0x0000FFFF;
 
-                    if (modbusMemorySpace == 4) // Only consider variables associated to holding registers for now, we can add support for other Modbus memory space later if needed
+                    // If the variable is not associated to the same Modbus memory space as the write event, we skip it
+                    if (modbusMemorySpace != static_cast<uint8_t>(modbusSpace))
+                        return;
+
+                    uint16_t length = GetDataTypeSize(GetDataType(base->AsVariableValue()->GetVariantValue()));
+
+                    if (checkCollision(modbusAddress, length, addr, count))
                     {
-                        uint16_t length = GetDataTypeSize(GetDataType(base->AsVariableValue()->GetVariantValue()));
+                        IVariableValue *variable = base->AsVariableValue();
 
-                        if (checkCollision(modbusAddress, length, addr, count))
-                        {
-                            IVariableValue *variable = base->AsVariableValue();
+                        if (!variable)
+                            return;
 
-                            if (!variable)
-                                return;
+                        modbusMapper && modbusMapper->GetFromModbus(*base, address);
 
-                            modbusMapper && modbusMapper->GetFromModbus(*base, address);
-
-                            if (auto *serializable = base->AsSerializable())
-                                writePersistencyData(name, serializable);
-                        }
+                        if (auto *serializable = base->AsSerializable())
+                            writePersistencyData(name, serializable);
                     }
+                });
+        }
+
+    public:
+        VariableProvider(ExecutionEnv *executionEnv)
+        {
+            this->executionEnv = executionEnv;
+            dtoMapper = std::make_unique<VariableDTOMapper>();
+            modbusMapper = std::make_unique<VariableModbusMapper>(executionEnv);
+
+            executionEnv->GetModbusServerManager()->RegisterWriteCallback(
+                [this](const ModbusWriteEvent &evt)
+                {
+                    this->OnModbusWrite(evt.modbusSpace, evt.startAddr, evt.count);
                 });
         }
 
@@ -92,7 +95,7 @@ namespace MadMax
         Variable<T> *Create(const std::string &name, int32_t address, VariablePersistencyValues<T> data = {.value = static_cast<T>(0)})
         {
             // We get the last saved value from memory
-            GetPersistencyValuesFromMem(name, reinterpret_cast<uint8_t *>(&data), sizeof(VariablePersistencyValues<T>));
+            GetPersistencyValuesFromStorage(name, reinterpret_cast<uint8_t *>(&data), sizeof(VariablePersistencyValues<T>));
 
             // mmVariable<T> varies per T, so we cannot use ObjectProvider<mmVariable<T>> as base.
             // We must inject via the fixed base interface ObjectProvider<ISerializableBase>
@@ -130,7 +133,7 @@ namespace MadMax
             // If the object doesn't exist, we can't save its persistency values
             if (!obj)
                 return;
-                
+
             // If the old value is different from the new one, we save persistency values to memory, otherwise we do nothing to avoid unnecessary write operations to memory
             if (obj->SetValue(value))
             {
@@ -161,11 +164,9 @@ namespace MadMax
         }
 
 #pragma region IPersistable
-        void SavePersistencyValuesToMem(const std::string &name) override
+        void SavePersistencyValuesToStorage(const std::string &name) override
         {
-            Serial.print(F("Saving persistency values for '"));
-            Serial.print(name.c_str());
-            Serial.println(F("' to memory"));
+            MM_LOG_TRACE("VariableProvider", "Saving persistency values for '%s' to storage", name.c_str());
 
             int32_t address;
 
@@ -186,11 +187,9 @@ namespace MadMax
             writePersistencyData(name, obj);
         }
 
-        void GetPersistencyValuesFromMem(const std::string &name, uint8_t *data, size_t length) override
+        void GetPersistencyValuesFromStorage(const std::string &name, uint8_t *data, size_t length) override
         {
-            Serial.print(F("Getting persistency values for '"));
-            Serial.print(name.c_str());
-            Serial.println(F("' from memory"));
+            MM_LOG_TRACE("VariableProvider", "Getting persistency values for '%s' from storage", name.c_str());
 
             uint16_t readedLength;
             uint16_t addr;

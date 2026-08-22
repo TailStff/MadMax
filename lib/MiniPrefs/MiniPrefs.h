@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_FRAM_I2C.h>

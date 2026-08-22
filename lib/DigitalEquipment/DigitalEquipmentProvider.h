@@ -1,7 +1,13 @@
+
+
+#pragma once
+
 #include "ObjectProvider.h"
 #include "DigitalEquipment.h"
 #include "IPersistable.h"
 #include "DigitalEquipmentDTOMapper.h"
+
+#include "mmLogger.h"
 
 namespace MadMax
 {
@@ -20,16 +26,14 @@ namespace MadMax
         DigitalEquipment *Create(const std::string &name, uint32_t address, DigitalEquipementPersistencyValues data = {})
         {
             // Get values from memory to be able to create the object with his previous persistency values
-            GetPersistencyValuesFromMem(name, reinterpret_cast<uint8_t *>(&data), DigitalEquipment::GetSerializedSize());
+            GetPersistencyValuesFromStorage(name, reinterpret_cast<uint8_t *>(&data), DigitalEquipment::GetSerializedSize());
             return ObjectProvider<DigitalEquipment>::Create(name, address, executionEnv, data);
         }
 
 #pragma region IPersistable
-        void SavePersistencyValuesToMem(const std::string &name) override
+        void SavePersistencyValuesToStorage(const std::string &name) override
         {
-            Serial.print(F("Saving persistency values for '"));
-            Serial.print(name.c_str());
-            Serial.println(F("' to memory"));
+            MM_LOG_TRACE("DigitalEquipmentProvider", "Saving persistency values for '%s' to storage", name.c_str());
 
             int32_t address;
 
@@ -47,11 +51,9 @@ namespace MadMax
             executionEnv->GetMiniPrefs()->Put(name.c_str(), dataToWrite.data(), dataToWrite.size());
         }
 
-        void GetPersistencyValuesFromMem(const std::string &name, uint8_t *data, size_t length) override
+        void GetPersistencyValuesFromStorage(const std::string &name, uint8_t *data, size_t length) override
         {
-            Serial.print(F("Getting persistency values for '"));
-            Serial.print(name.c_str());
-            Serial.println(F("' from memory"));
+            MM_LOG_TRACE("DigitalEquipmentProvider", "Getting persistency values for '%s' from storage", name.c_str());
 
             uint16_t readedLength;
             uint16_t addr;

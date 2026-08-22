@@ -29,11 +29,9 @@ namespace MadMax
         }
 
 #pragma region IPersistable
-        void SavePersistencyValuesToMem(const std::string &name) override
+        void SavePersistencyValuesToStorage(const std::string &name) override
         {
-            Serial.print(F("Saving persistency values for '"));
-            Serial.print(name.c_str());
-            Serial.println(F("' to memory"));
+            MM_LOG_TRACE("RunTimeProvider", "Saving persistency values for '%s' to storage", name.c_str());
 
             int32_t address;
 
@@ -51,11 +49,9 @@ namespace MadMax
             executionEnv->GetMiniPrefs()->Put(name.c_str(), dataToWrite.data(), dataToWrite.size());
         }
 
-        void GetPersistencyValuesFromMem(const std::string &name, uint8_t *data, size_t length) override
+        void GetPersistencyValuesFromStorage(const std::string &name, uint8_t *data, size_t length) override
         {
-            Serial.print(F("Getting persistency values for '"));
-            Serial.print(name.c_str());
-            Serial.println(F("' from memory"));
+            MM_LOG_TRACE("RunTimeProvider", "Getting persistency values for '%s' from storage", name.c_str());
 
             uint16_t readedLength;
             uint16_t addr;

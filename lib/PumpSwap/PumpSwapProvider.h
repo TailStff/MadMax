@@ -1,7 +1,11 @@
+#pragma once
+
 #include "ObjectProvider.h"
 #include "PumpSwap.h"
 #include "IPersistable.h"
 #include "PumpSwapDTOMapper.h"
+
+#include "mmLogger.h"
 
 namespace MadMax
 {
@@ -44,17 +48,15 @@ namespace MadMax
             }
 
             // Get values from memory to be able to create the object with his previous persistency values
-            GetPersistencyValuesFromMem(name, reinterpret_cast<uint8_t *>(data.data.data()), PumpSwap::GetSerializedSize(count));
+            GetPersistencyValuesFromStorage(name, reinterpret_cast<uint8_t *>(data.data.data()), PumpSwap::GetSerializedSize(count));
 
             return ObjectProvider<PumpSwap>::Create(name, address, executionEnv, count, feedbackDelay, data);
         }
 
 #pragma region IPersistable
-        void SavePersistencyValuesToMem(const std::string &name) override
+        void SavePersistencyValuesToStorage(const std::string &name) override
         {
-            Serial.print(F("Saving persistency values for '"));
-            Serial.print(name.c_str());
-            Serial.println(F("' to memory"));
+            MM_LOG_TRACE("PumpSwapProvider", "Saving persistency values for '%s' to storage", name.c_str());
 
             int32_t address;
 
@@ -72,11 +74,9 @@ namespace MadMax
             executionEnv->GetMiniPrefs()->Put(name.c_str(), dataToWrite.data(), dataToWrite.size());
         }
 
-        void GetPersistencyValuesFromMem(const std::string &name, uint8_t *data, size_t length) override
+        void GetPersistencyValuesFromStorage(const std::string &name, uint8_t *data, size_t length) override
         {
-            Serial.print(F("Getting persistency values for '"));
-            Serial.print(name.c_str());
-            Serial.println(F("' from memory"));
+            MM_LOG_TRACE("PumpSwapProvider", "Getting persistency values for '%s' from storage", name.c_str());
 
             uint16_t readedLength;
             uint16_t addr;

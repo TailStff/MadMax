@@ -6,6 +6,8 @@
 #include "AccumDTOMapper.h"
 #include "AccumModbusMapper.h"
 
+#include "mmLogger.h"
+
 namespace MadMax
 {
     class AccumProvider : public ObjectProvider<IPrimitive>, public IPersistable, public IProviderDTO
@@ -35,8 +37,10 @@ namespace MadMax
             return (writeStart < varEnd && writeEnd > varStart);
         }
 
-        void OnModbusWrite(uint16_t addr, uint16_t count)
+        void OnModbusWrite(ModbusServerModbusSpaceCode modbusSpace, uint16_t addr, uint16_t count)
         {
+            MM_LOG_TRACE("AccumProvider", "Modbus write event received for address '%u' with count '%u'", addr, count);
+
             // We consider that only variables that are associated to Modbus registers need to be refreshed from Modbus registers, if the variable is not associated to any Modbus register, we consider that its value is managed internally and not updated from Modbus registers, so we skip it
             this->ForEach(
                 [&](const std::string &name, IPrimitive *base)
@@ -51,22 +55,23 @@ namespace MadMax
                     uint8_t modbusMemorySpace = (address & 0x00FF0000) >> 16;
                     uint16_t modbusAddress = address & 0x0000FFFF;
 
-                    if (modbusMemorySpace == 4) // Only consider variables associated to holding registers for now, we can add support for other Modbus memory space later if needed
+                    // If the variable is not associated to the same Modbus memory space as the write event, we skip it
+                    if (modbusMemorySpace != static_cast<uint8_t>(modbusSpace))
+                        return;
+
+                    uint16_t length = GetDataTypeSize(GetDataType(base->AsVariableValue()->GetVariantValue()));
+
+                    if (checkCollision(modbusAddress, length, addr, count))
                     {
-                        uint16_t length = GetDataTypeSize(GetDataType(base->AsVariableValue()->GetVariantValue()));
+                        IVariableValue *variable = base->AsVariableValue();
 
-                        if (checkCollision(modbusAddress, length, addr, count))
-                        {
-                            IVariableValue *variable = base->AsVariableValue();
+                        if (!variable)
+                            return;
 
-                            if (!variable)
-                                return;
+                        modbusMapper && modbusMapper->GetFromModbus(*base, address);
 
-                            modbusMapper && modbusMapper->GetFromModbus(*base, address);
-
-                            if (auto *serializable = base->AsSerializable())
-                                writePersistencyData(name, serializable);
-                        }
+                        if (auto *serializable = base->AsSerializable())
+                            writePersistencyData(name, serializable);
                     }
                 });
         }
@@ -81,14 +86,14 @@ namespace MadMax
             executionEnv->GetModbusServerManager()->RegisterWriteCallback(
                 [this](const ModbusWriteEvent &evt)
                 {
-                    this->OnModbusWrite(evt.startAddr, evt.count);
+                    this->OnModbusWrite(evt.modbusSpace, evt.startAddr, evt.count);
                 });
         }
 
         template <class T>
         Accum<T> *Create(const std::string &name, int32_t address, AccumPersistencyValues<T> data = {.value = static_cast<T>(0)})
         {
-            GetPersistencyValuesFromMem(name, reinterpret_cast<uint8_t *>(&data), sizeof(AccumPersistencyValues<T>));
+            GetPersistencyValuesFromStorage(name, reinterpret_cast<uint8_t *>(&data), sizeof(AccumPersistencyValues<T>));
 
             // WriteValueToModbusSpace(address, data);
 
@@ -184,11 +189,9 @@ namespace MadMax
         }
 
 #pragma region IPersistable
-        void SavePersistencyValuesToMem(const std::string &name) override
+        void SavePersistencyValuesToStorage(const std::string &name) override
         {
-            Serial.print(F("Saving persistency values for '"));
-            Serial.print(name.c_str());
-            Serial.println(F("' to memory"));
+            MM_LOG_TRACE("AccumProvider", "Saving persistency values for '%s' to storage", name.c_str());
 
             int32_t address;
 
@@ -209,11 +212,9 @@ namespace MadMax
             writePersistencyData(name, obj);
         }
 
-        void GetPersistencyValuesFromMem(const std::string &name, uint8_t *data, size_t length) override
+        void GetPersistencyValuesFromStorage(const std::string &name, uint8_t *data, size_t length) override
         {
-            Serial.print(F("Getting persistency values for '"));
-            Serial.print(name.c_str());
-            Serial.println(F("' from memory"));
+            MM_LOG_TRACE("AccumProvider", "Getting persistency values for '%s' from storage", name.c_str());
 
             uint16_t readedLength;
             uint16_t addr;

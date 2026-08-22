@@ -1,4 +1,5 @@
 #include "ModbusServerManager.h"
+#include "ModbusServerModbusSpaceCode.h"
 
 namespace MadMax
 {
@@ -120,7 +121,7 @@ namespace MadMax
         *(modbusServerMemoryManager.AssociateHoldingRegister<uint16_t>(addr)) = val;
 
         // 👉 Notification unique
-        NotifyWrite(addr, 1);
+        NotifyWrite(ModbusServerModbusSpaceCode::HoldingRegisters, addr, 1);
 
         response.add(request.getServerID(), request.getFunctionCode(), addr, val);
 
@@ -163,7 +164,7 @@ namespace MadMax
         }
 
         // 👉 Notification unique
-        NotifyWrite(addr, words);
+        NotifyWrite(ModbusServerModbusSpaceCode::HoldingRegisters, addr, words);
 
         // Set up response
         response.add(request.getServerID(), request.getFunctionCode(), addr, words);

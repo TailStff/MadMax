@@ -1,5 +1,3 @@
-// #define SERIALDEBUG
-
 #include "myApp.h"
 
 #include <ModbusClientRTU.h>
@@ -246,7 +244,7 @@ void MyApp::Loop()
 
     if (memMinute != minute)
     {
-        mmPumpSwaps->SavePersistencyValuesToMem("4pmp");
+        mmPumpSwaps->SavePersistencyValuesToStorage("4pmp");
     }
     memMinute = minute;
 

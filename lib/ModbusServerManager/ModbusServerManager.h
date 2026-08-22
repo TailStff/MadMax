@@ -39,11 +39,12 @@ namespace MadMax
         ModbusServerTCPasync MBserver;
         void RegisterWorker(uint8_t serverID, uint8_t functionCode, MBSworker worker);
 
+        // List of write callbacks to be called when a write event is received
         std::vector<WriteCallback> writeCallbacks;
 
-        void NotifyWrite(uint16_t addr, uint16_t count)
+        void NotifyWrite(ModbusServerModbusSpaceCode modbusSpace, uint16_t addr, uint16_t count)
         {
-            ModbusWriteEvent evt{addr, count};
+            ModbusWriteEvent evt{modbusSpace, addr, count};
             for (auto &cb : writeCallbacks)
             {
                 cb(evt);
