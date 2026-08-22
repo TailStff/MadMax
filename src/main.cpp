@@ -134,16 +134,8 @@ RTCWrapper rtcWrapper(&I2Cone);
 // Preferences object
 Preferences prefs;
 
-// I2C mini prefs object
-// I2CMiniPrefs myPrefs(MEM_TYPE_FRAM, 0x50, 256L * 1024L, 256, 33, 120, &I2Cone);
-
-// FRAM fram(&I2Cone);
-
 Adafruit_FRAM_I2C fram = Adafruit_FRAM_I2C();
 MiniPrefs *myPrefs;
-
-// Create char buffer for JSON serialization or string concatenation
-char message[128];
 
 class MyModbusClientRTU : public ModbusClientRTU
 {
@@ -341,9 +333,10 @@ void setup()
 
   MM_LOG_TRACE("SYSTEM", "Entering main::setup() function");
 
-  if (!LittleFS.begin())
+  if (LittleFS.begin())
+    MM_LOG_TRACE("SYSTEM", "LittleFS initialized successfully");
+  else
   {
-    Serial.println("Erreur LittleFS !");
     MM_LOG_ERROR("SYSTEM", "Failed to initialize LittleFS");
     return;
   }
@@ -352,13 +345,21 @@ void setup()
 
   // Initialise I2C bus
   MM_LOG_TRACE("SYSTEM", "Initializing I2C bus (I2Cone) for Digital Inputs/Outputs, RTC and OLED display");
-  I2Cone.begin(PIN_SDA, PIN_SCL);
+  if (I2Cone.begin(PIN_SDA, PIN_SCL))
+    MM_LOG_TRACE("SYSTEM", "I2Cone bus initialized successfully");
+  else
+    MM_LOG_ERROR("SYSTEM", "Failed to initialize I2Cone bus");
+
   // speeds are 10000, 100000, 400000, 1000000
   I2Cone.setClock(1000000);
 
   // Initialise I2C bus
   MM_LOG_TRACE("SYSTEM", "Initializing I2C bus (I2Ctwo) for FRAM");
-  I2Ctwo.begin(PIN_SDA2, PIN_SCL2);
+  if (I2Ctwo.begin(PIN_SDA2, PIN_SCL2))
+    MM_LOG_TRACE("SYSTEM", "I2Ctwo bus initialized successfully");
+  else
+    MM_LOG_ERROR("SYSTEM", "Failed to initialize I2Ctwo bus");
+
   // speeds are 10000, 100000, 400000, 1000000
   I2Ctwo.setClock(1000000);
 
