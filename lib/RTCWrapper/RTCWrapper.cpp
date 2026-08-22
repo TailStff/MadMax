@@ -50,7 +50,7 @@ void RTCWrapper::SyncDateTimeFromNTP()
 
   if (!getNtpTime(timeinfo))
   {
-    Serial.println("NTP sync failed");
+    MM_LOG_ERROR("RTCWrapper", "Getting time from NTP servers failed");
     return;
   }
 
@@ -69,17 +69,34 @@ void RTCWrapper::SyncDateTimeFromNTP()
 
 /// Function that SET Date/Time ///
 ///
-bool RTCWrapper::uRTCSet(DateTime &dateTime)
+bool RTCWrapper::RTCSet(DateTime &dateTime)
 {
+  if (!this->rtcInitialized)
+  {
+    MM_LOG_WARN("RTCWrapper", "Setting RTC date/time could not be done");
+    return false;
+  }
 
   this->rtc.adjust(dateTime);
-  return false;
+
+  MM_LOG_TRACE("RTCWrapper", "RTC date/time set successfully");
+
+  return true;
 }
 
-void RTCWrapper::RTCGet(DateTime &now)
+bool RTCWrapper::RTCGet(DateTime &now)
 {
+  if (!this->rtcInitialized)
+  {
+    MM_LOG_WARN("RTCWrapper", "Getting RTC date/time could not be done");
+    return false;
+  }
 
   now = this->rtc.now();
+
+  MM_LOG_TRACE("RTCWrapper", "RTC date/time retrieved successfully");
+
+  return true;
 }
 
 bool RTCWrapper::getNtpTime(struct tm &timeinfo, uint32_t timeoutMs)

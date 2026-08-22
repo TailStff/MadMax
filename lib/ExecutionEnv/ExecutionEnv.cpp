@@ -1,5 +1,3 @@
-// #define SERIALDEBUG
-
 #include "ExecutionEnv.h"
 
 #define PREFSAPPID "MadMaxApp"
@@ -28,9 +26,7 @@ void ExecutionEnv::GetfromPrefs()
 {
   prefs->begin(PREFSAPPID, true);
 
-#ifdef SERIALDEBUG
-  Serial.println("Reading Preferences data");
-#endif
+  MM_LOG_TRACE("ExecutionEnv", "Reading Preferences data");
 
   mDNS = prefs->getString("mDNS", "madmax");
 
@@ -46,7 +42,7 @@ void ExecutionEnv::GetfromPrefs()
   STA.Gateway = GetIPAddressFromPrefs("staGateway", IPAddress(0, 0, 0, 0));
   STA.Dns1 = GetIPAddressFromPrefs("staDns1", IPAddress(0, 0, 0, 0));
   STA.Dns2 = GetIPAddressFromPrefs("staDns2", IPAddress(0, 0, 0, 0));
-  STA.SSID = prefs->getString("staSSID", "Galaxy A33 5G7C18");
+  STA.SSID = prefs->getString("staSSID", "TailS");
   STA.Password = prefs->getString("staPassword", "T41l5l0v3r43v3r");
   STA.Dhcp = prefs->getBool("staDhcp", true);
 
@@ -56,9 +52,7 @@ void ExecutionEnv::GetfromPrefs()
   WAP.SSID = prefs->getString("wapSSID", "AP_Madmax");
   WAP.Password = prefs->getString("wapPassword", "password");
 
-#ifdef SERIALDEBUG
-  Serial.println("Done reading Preferences data");
-#endif
+  MM_LOG_TRACE("ExecutionEnv", "Done reading Preferences data");
 
   prefs->end();
 }
@@ -215,7 +209,7 @@ IPAddress ExecutionEnv::GetIPAddressFromPrefs(const char *stringID, IPAddress de
     return defaultValue;
 }
 
-void ExecutionEnv::PutIPAddressToPrefs(IPAddress ip, char *stringID)
+void ExecutionEnv::PutIPAddressToPrefs(IPAddress ip, const char *stringID)
 {
   byte bytes[4];
   for (int i = 0; i < 4; i++)
@@ -225,9 +219,7 @@ void ExecutionEnv::PutIPAddressToPrefs(IPAddress ip, char *stringID)
 
 void ExecutionEnv::SetETHProperties(IPConfigDhcp config)
 {
-#ifdef SERIALDEBUG
-  Serial.println("Entering ExecutionEnv::SetETHProperties");
-#endif
+  MM_LOG_TRACE("ExecutionEnv", "Entering SetETHProperties()");
 
   ETH.Dhcp = config.Dhcp;
   ETH.Ip = config.Ip;
@@ -247,16 +239,12 @@ void ExecutionEnv::SetETHProperties(IPConfigDhcp config)
 
   prefs->end();
 
-#ifdef SERIALDEBUG
-  Serial.println("Exiting ExecutionEnv::SetETHProperties");
-#endif
+  MM_LOG_TRACE("ExecutionEnv", "Exiting SetETHProperties()");
 }
 
 void ExecutionEnv::SetSTAProperties(IPConfigSTA config)
 {
-#ifdef SERIALDEBUG
-  Serial.println("Entering ExecutionEnv::SetSTAProperties");
-#endif
+  MM_LOG_TRACE("ExecutionEnv", "Entering SetSTAProperties()");
 
   STA.Dhcp = config.Dhcp;
   STA.Ip = config.Ip;
@@ -280,16 +268,12 @@ void ExecutionEnv::SetSTAProperties(IPConfigSTA config)
 
   prefs->end();
 
-#ifdef SERIALDEBUG
-  Serial.println("Exiting ExecutionEnv::SetSTAProperties");
-#endif
+  MM_LOG_TRACE("ExecutionEnv", "Exiting SetSTAProperties()");
 }
 
 void ExecutionEnv::SetWAPProperties(IPConfigWAP config)
 {
-#ifdef SERIALDEBUG
-  Serial.println("Entering ExecutionEnv::SetWAPProperties");
-#endif
+  MM_LOG_TRACE("ExecutionEnv", "Entering SetWAPProperties()");
 
   WAP.Ip = config.Ip;
   WAP.Netmask = config.Netmask;
@@ -307,9 +291,7 @@ void ExecutionEnv::SetWAPProperties(IPConfigWAP config)
 
   prefs->end();
 
-#ifdef SERIALDEBUG
-  Serial.println("Exiting ExecutionEnv::SetWAPProperties");
-#endif
+  MM_LOG_TRACE("ExecutionEnv", "Exiting SetWAPProperties()");
 }
 
 IPConfigDhcp ExecutionEnv::GetETHProperties() { return ETH; }

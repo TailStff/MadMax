@@ -93,7 +93,7 @@ private:
 
   void GetfromPrefs();
   IPAddress GetIPAddressFromPrefs(const char *stringID, IPAddress defaultValue);
-  void PutIPAddressToPrefs(IPAddress ip, char *stringID);
+  void PutIPAddressToPrefs(IPAddress ip, const char *stringID);
 
 public:
   // Constructor

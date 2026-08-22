@@ -246,15 +246,7 @@ void MyApp::Loop()
 
     if (memMinute != minute)
     {
-        // mmDigitalEquipments.SavePersistencyValues("de0", executionEnv);
-        // Serial.println(F("Save 'de0' persistancy values"));
-
         mmPumpSwaps->SavePersistencyValuesToMem("4pmp");
-        Serial.println(F("Saved '4pmp' persistancy values to memory"));
-
-#ifdef SERIALDEBUG
-        Serial.println(F("Saved persistancy values successfully"));
-#endif
     }
     memMinute = minute;
 
