@@ -19,8 +19,6 @@ ExecutionEnv::ExecutionEnv(unsigned int _cycle, RTCWrapper *rtcWrapper, Preferen
   RetreiveHeapSize();
 
   this->networkInit = networkInit;
-
-  heapSize = 0;
 }
 
 void ExecutionEnv::GetfromPrefs()
