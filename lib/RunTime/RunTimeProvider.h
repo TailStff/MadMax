@@ -22,8 +22,7 @@ namespace MadMax
         {
             // Mini prefs method
             uint16_t addr;
-            uint16_t writtenLength;
-            executionEnv->GetMiniPrefs()->Get(name.c_str(), reinterpret_cast<uint8_t *>(&data), RunTime::GetSerializedSize(), addr, writtenLength);
+            executionEnv->GetMiniPrefs()->Get(name.c_str(), reinterpret_cast<uint8_t *>(&data), RunTime::GetSerializedSize(), addr);
 
             return ObjectProvider<RunTime>::Create(name, address, executionEnv, data);
         }
@@ -53,9 +52,8 @@ namespace MadMax
         {
             MM_LOG_TRACE("RunTimeProvider", "Getting persistency values for '%s' from storage", name.c_str());
 
-            uint16_t readedLength;
             uint16_t addr;
-            executionEnv->GetMiniPrefs()->Get(name.c_str(), data, length, addr, readedLength);
+            executionEnv->GetMiniPrefs()->Get(name.c_str(), data, length, addr);
         }
 #pragma endregion IPersistable
 

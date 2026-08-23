@@ -8,6 +8,8 @@
 
 #include "mmLogger.h"
 
+#define MQTT_TOPIC_PREFIX "MadMax2/instance/Variables/"
+
 namespace MadMax
 {
     class VariableProvider : public ObjectProvider<IPrimitive>, public IPersistable, public IProviderDTO
@@ -137,11 +139,22 @@ namespace MadMax
             // If the old value is different from the new one, we save persistency values to memory, otherwise we do nothing to avoid unnecessary write operations to memory
             if (obj->SetValue(value))
             {
+                std::string topic = MQTT_TOPIC_PREFIX;
+                topic += name;
+
+                std::string valueStr = VariableValueToString(value);
+
+                executionEnv->GetMQTTClient()->publish(topic.c_str(), valueStr.c_str(), true);
+
                 modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
+
                 writePersistencyData(name, obj);
             }
         }
 
+        /// @brief Function that SET new variant value to the variable and save persistency values if the value is different from the previous one
+        /// @param name Name of the object to be updated
+        /// @param value The new variant value to SET
         void SetValue(const std::string &name, const VariableValue &value)
         {
             int32_t address;
@@ -156,6 +169,13 @@ namespace MadMax
 
             if (obj->SetVariantValue(value))
             {
+                std::string topic = MQTT_TOPIC_PREFIX;
+                topic += name;
+
+                std::string valueStr = VariableValueToString(value);
+
+                executionEnv->GetMQTTClient()->publish(topic.c_str(), valueStr.c_str(), true);
+
                 modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
 
                 if (auto *serializable = base->AsSerializable())
@@ -180,7 +200,7 @@ namespace MadMax
             // If the object doesn't exist, we can't save its persistency values
             if (!obj)
             {
-                Serial.println(F("Object is not serializable"));
+                MM_LOG_ERROR("VariableProvider", "Object is not serializable");
                 return;
             }
 
@@ -191,9 +211,8 @@ namespace MadMax
         {
             MM_LOG_TRACE("VariableProvider", "Getting persistency values for '%s' from storage", name.c_str());
 
-            uint16_t readedLength;
             uint16_t addr;
-            executionEnv->GetMiniPrefs()->Get(name.c_str(), data, length, addr, readedLength);
+            executionEnv->GetMiniPrefs()->Get(name.c_str(), data, length, addr);
         }
 #pragma endregion IPersistable
 

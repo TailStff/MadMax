@@ -78,9 +78,8 @@ namespace MadMax
         {
             MM_LOG_TRACE("PumpSwapProvider", "Getting persistency values for '%s' from storage", name.c_str());
 
-            uint16_t readedLength;
             uint16_t addr;
-            executionEnv->GetMiniPrefs()->Get(name.c_str(), data, length, addr, readedLength);
+            executionEnv->GetMiniPrefs()->Get(name.c_str(), data, length, addr);
         }
 #pragma endregion IPersistable
 

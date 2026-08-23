@@ -2,12 +2,13 @@
 
 #define PREFSAPPID "MadMaxApp"
 
-ExecutionEnv::ExecutionEnv(unsigned int _cycle, RTCWrapper *rtcWrapper, Preferences *prefs, MiniPrefs *miniPrefs, Adafruit_SH1107 *display, MadMax::ModbusServerManager *modbusServerManager, MadMax::ModbusServerMemoryManager *modbusServerMemoryManager, std::function<bool(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit)
+ExecutionEnv::ExecutionEnv(unsigned int _cycle, RTCWrapper *rtcWrapper, Preferences *prefs, MiniPrefs *miniPrefs, Adafruit_SH1107 *display, MadMax::ModbusServerManager *modbusServerManager, MadMax::ModbusServerMemoryManager *modbusServerMemoryManager, PubSubClient *mqttClient, std::function<bool(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit)
 {
   cycle = _cycle;
   tickNumber = -1;
   lastOperatingTime = 0;
   this->rtcWrapper = rtcWrapper;
+  this->mqttClient = mqttClient;
   this->modbusServerManager = modbusServerManager;
   this->modbusServerMemoryManager = modbusServerMemoryManager;
   this->prefs = prefs;
@@ -297,3 +298,5 @@ void ExecutionEnv::SetWAPProperties(IPConfigWAP config)
 IPConfigDhcp ExecutionEnv::GetETHProperties() { return ETH; }
 IPConfigSTA ExecutionEnv::GetSTAProperties() { return STA; }
 IPConfigWAP ExecutionEnv::GetWAPProperties() { return WAP; }
+
+PubSubClient* ExecutionEnv::GetMQTTClient() { return mqttClient; }

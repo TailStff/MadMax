@@ -152,7 +152,14 @@ namespace MadMax
 
             if (obj->SetVariantValue(value))
             {
-                modbusMapper && modbusMapper->ExposeToModbus(*base, address);
+                std::string topic = "MadMax2/instance/Accums/";
+                topic += name;
+
+                std::string valueStr = VariableValueToString(value);
+
+                executionEnv->GetMQTTClient()->publish(topic.c_str(), valueStr.c_str(), true);
+
+                modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
 
                 if (auto *serializable = base->AsSerializable())
                     writePersistencyData(name, serializable);
@@ -181,8 +188,17 @@ namespace MadMax
 
             if (obj->Evaluate(input, increment, resetTrigger, resetValue))
             {
+                std::string topic = "MadMax2/instance/Accums/";
+                topic += name;
+
+                std::string valueStr = VariableValueToString(obj->GetVariantValue());
+
+                executionEnv->GetMQTTClient()->publish(topic.c_str(), valueStr.c_str(), true);
+
                 modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
-                writePersistencyData(name, obj);
+
+                if (auto *serializable = obj->AsSerializable())
+                    writePersistencyData(name, serializable);
             }
 
             return obj->GetValue();
@@ -205,7 +221,7 @@ namespace MadMax
             // If the object doesn't exist, we can't save its persistency values
             if (!obj)
             {
-                Serial.println(F("Object is not serializable"));
+                MM_LOG_ERROR("AccumProvider", "Object is not serializable");
                 return;
             }
 
@@ -216,9 +232,8 @@ namespace MadMax
         {
             MM_LOG_TRACE("AccumProvider", "Getting persistency values for '%s' from storage", name.c_str());
 
-            uint16_t readedLength;
             uint16_t addr;
-            executionEnv->GetMiniPrefs()->Get(name.c_str(), data, length, addr, readedLength);
+            executionEnv->GetMiniPrefs()->Get(name.c_str(), data, length, addr);
         }
 #pragma endregion IPersistable
 

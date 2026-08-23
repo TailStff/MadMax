@@ -82,13 +82,15 @@ bool MiniPrefs::begin()
     // Après ce scan, remove()/Get() n'ont plus besoin de parcourir la FRAM
     buildIndex();
 
-    MM_LOG_TRACE("MiniPrefs", "MiniPrefs ready, writePointer=%u, indexCount=%u", writePointer, indexCount);
+    MM_LOG_TRACE("MiniPrefs", "Exiting begin(), writePointer=%u, indexCount=%u", writePointer, indexCount);
 
     return true;
 }
 
 void MiniPrefs::Reinit(FramHeader &header)
 {
+    MM_LOG_TRACE("MiniPrefs", "Reinitializing FRAM");
+
     header.magic = MINIPREFS_MAGIC;
     header.version = MINIPREFS_VERSION;
     header.writePointer = sizeof(FramHeader);
@@ -106,19 +108,34 @@ void MiniPrefs::Reinit(FramHeader &header)
 // Appelé une seule fois dans begin(), et à la fin de chaque défrag.
 // @remark Le keyHash peut provoquer des collisions — c'est un compromis accepté.
 //         Get() et remove() vérifient toujours la clé réelle après un match de hash.
+
+/// @brief Builds the in-memory index of valid entries in FRAM for faster lookups.
+/// This function scans the FRAM from the beginning to the current write pointer, reading each entry's header and checking its validity.
+/// Valid entries are added to the index, which is stored in RAM for quick access during Get() and remove() operations.
+/// The index consists of the key hash and the address of each valid entry.
 void MiniPrefs::buildIndex()
 {
+    MM_LOG_TRACE("MiniPrefs", "Building indexes of FRAM");
+
     indexCount = 0;
 
     uint16_t addr = sizeof(FramHeader);
+    bool incorrectEntryFound = false;
 
     while (addr < writePointer)
     {
+        // Lecture du header de l'entrée, on lit d'abord le header pour savoir combien de bytes lire ensuite (key+data)
         FramEntryHeader h;
         fram.read(addr, (uint8_t *)&h, sizeof(h));
 
         if (!sanityCheck(h, addr))
+        {
+            MM_LOG_WARN("MiniPrefs", "Incorrect entry at addr %u: keyLength=%u, dataLength=%u, flags=%u, keyHash=%02X", addr, h.keyLength, h.dataLength, h.flags, h.keyHash);
+            incorrectEntryFound = true;
             break;
+        }
+
+        MM_LOG_TRACE("MiniPrefs", "Finding entry at addr %u: keyLength=%u, dataLength=%u, flags=%u, keyHash=%02X", addr, h.keyLength, h.dataLength, h.flags, h.keyHash);
 
         if (h.flags == 0 && indexCount < MAX_INDEX_ENTRIES)
         {
@@ -128,6 +145,17 @@ void MiniPrefs::buildIndex()
         }
 
         addr += sizeof(h) + h.keyLength + h.dataLength;
+    }
+
+    if (incorrectEntryFound)
+    {
+        MM_LOG_WARN("MiniPrefs", "Incorrect entry found, truncating writePointer to %u", addr);
+        writePointer = addr;
+        updateHeader();
+    }
+    else
+    {
+        MM_LOG_TRACE("MiniPrefs", "Index building complete, indexCount=%u", indexCount);
     }
 }
 
@@ -170,8 +198,8 @@ bool MiniPrefs::Put(const char *key, const uint8_t *data, uint16_t length)
         static uint8_t existing[MAX_DATA_BUFFER];
         uint16_t existingLength = 0;
 
-        if (Get(key, existing, MAX_DATA_BUFFER, existingAddr, existingLength))
-            if (existingLength == length && memcmp(existing, data, length) == 0)
+        if (Get(key, existing, MAX_DATA_BUFFER, existingAddr))
+            if (memcmp(existing, data, length) == 0)
             {
                 MM_LOG_TRACE("MiniPrefs", "Entry with key '%s' already exists with identical data, skipping FRAM write", key);
                 return true; // Donnée identique, aucune écriture FRAM
@@ -248,9 +276,14 @@ bool MiniPrefs::Put(const char *key, const uint8_t *data, uint16_t length)
     return true;
 }
 
-/////////////////////////
-// Lecture
-bool MiniPrefs::Get(const char *key, uint8_t *buffer, uint16_t maxLength, uint16_t &addr, uint16_t &outLength)
+/// @brief              Retrieves a preference entry by its key.
+/// @param key          The key of the entry to retrieve
+/// @param buffer       The buffer to store the retrieved data
+/// @param maxLength    The maximum length of the buffer
+/// @param addr         The address of the retrieved entry
+/// @param outLength    The length of the retrieved data
+/// @return             True if the entry was found, false otherwise
+bool MiniPrefs::Get(const char *key, uint8_t *buffer, uint16_t maxLength, uint16_t &addr)
 {
     MM_LOG_TRACE("MiniPrefs", "Get(key=%s, maxLength=%u) called", key, maxLength);
 
@@ -261,10 +294,10 @@ bool MiniPrefs::Get(const char *key, uint8_t *buffer, uint16_t maxLength, uint16
 
     for (uint8_t i = 0; i < indexCount; i++)
     {
+        // Checking key hash first for a quick filter
         if (index[i].keyHash != keyHash)
             continue;
 
-        // Hash identique — vérification de la clé réelle en FRAM (anti-collision)
         FramEntryHeader h;
         fram.read(index[i].addr, (uint8_t *)&h, sizeof(h));
 
@@ -275,20 +308,27 @@ bool MiniPrefs::Get(const char *key, uint8_t *buffer, uint16_t maxLength, uint16
         fram.read(index[i].addr + sizeof(h), (uint8_t *)storedKey, h.keyLength);
         storedKey[h.keyLength] = 0;
 
+        // Key hash matches, but check the actual key to avoid collisions
         if (strcmp(storedKey, key) != 0)
-            continue; // Collision hash, mauvaise entrée
+            continue;
 
-        outLength = min(h.dataLength, maxLength);
-        fram.read(index[i].addr + sizeof(h) + h.keyLength, buffer, outLength);
+        // here we have a match, now check if the buffer is large enough
+        if (h.dataLength > maxLength)
+        {
+            MM_LOG_ERROR("MiniPrefs", "Buffer too small for key '%s': dataLength=%u, maxLength=%u", key, h.dataLength, maxLength);
+            return false;
+        }
+
+        fram.read(index[i].addr + sizeof(h) + h.keyLength, buffer, h.dataLength);
 
         // Vérification CRC
         memcpy(tmp, storedKey, h.keyLength);
-        memcpy(tmp + h.keyLength, buffer, outLength);
+        memcpy(tmp + h.keyLength, buffer, h.dataLength);
 
         uint16_t check = crc16(tmp, h.keyLength + h.dataLength);
         if (check != h.crc)
         {
-            Serial.println("MiniPrefs: data CRC invalid");
+            MM_LOG_ERROR("MiniPrefs", "CRC mismatch for key '%s' at addr %u: expected=%04X, got=%04X", key, index[i].addr, h.crc, check);
             return false;
         }
 
@@ -366,6 +406,10 @@ bool MiniPrefs::removeAddress(const char *key, uint16_t addr)
     return false;
 }
 
+/// @brief      Sanity check for a FRAM entry header, verifying that the lengths and address are within valid bounds and that the entry does not exceed the FRAM size.
+/// @param h    The FramEntryHeader to check
+/// @param addr The address of the entry to check
+/// @return     True if the entry is valid, false otherwise
 bool MiniPrefs::sanityCheck(FramEntryHeader &h, uint16_t addr)
 {
     if (h.keyLength == (byte)0xFF || h.dataLength == 0xFFFF)

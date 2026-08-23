@@ -6,7 +6,7 @@
 
 // TestDeVariableDe32OctsDeLongueur
 static constexpr uint8_t MAX_KEY_LENGTH = 32;     // à ajuster
-static constexpr uint8_t MAX_INDEX_ENTRIES = 255; // à ajuster, nombre d'objet dont on trace l'adresse en FRAM et son hash de clé pour accélérer les recherches. Avec 255 entrées, on utilise 255*4=1020 bytes de RAM pour l'index, ce qui est déjà pas mal. Si on veut plus d'entrées, il faudrait faire une structure d'index plus compacte (ex: 1 byte de hash + 3 bytes d'adresse) ou faire un index hiérarchique.
+static constexpr uint8_t MAX_INDEX_ENTRIES = 255; // à ajuster, nombre d'objet dont on trace l'adresse en FRAM et son hash de clé pour accélérer les recherches. Avec 255 entrées, on utilise 255*3=765 bytes de RAM pour l'index, ce qui est déjà pas mal. Si on veut plus d'entrées, il faudrait faire une structure d'index plus compacte (ex: 1 byte de hash + 3 bytes d'adresse) ou faire un index hiérarchique.
 static constexpr uint8_t MAX_DATA_BUFFER = 128;   // à ajuster
 
 // Seuil de remplissage à partir duquel la défrag incrémentale démarre (0.0 - 1.0)
@@ -40,14 +40,14 @@ struct __attribute__((packed)) FramEntryHeader
     uint8_t keyHash;     // hash de la clé pour accélérer les recherches
 };
 
-struct IndexEntry
+/// @brief Indexes stored in RAM for faster lookups. Each entry is 4 bytes: 1 byte keyHash, 2 bytes address.
+struct __attribute__((packed)) IndexEntry
 {
     uint8_t keyHash;
-    uint8_t dummy; // pour l'alignement
     uint16_t addr;
 };
 
-/// @brief
+/// @brief Entry for the defragmentation batch buffer.
 struct DefragBatchEntry
 {
     uint8_t keyHash;
@@ -108,7 +108,7 @@ public:
     bool begin(); // scan initial writePointer
     void Reinit(FramHeader &header);
     bool Put(const char *key, const uint8_t *data, uint16_t length);
-    bool Get(const char *key, uint8_t *buffer, uint16_t maxLength, uint16_t &addr, uint16_t &outLength);
+    bool Get(const char *key, uint8_t *buffer, uint16_t maxLength, uint16_t &addr);
     bool defragStep();
     float GetFRAMUsage();
 };

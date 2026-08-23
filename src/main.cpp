@@ -42,6 +42,9 @@
 #include <SPI.h>
 #include <LittleFS.h>
 
+// MQTT protocol library
+#include <PubSubClient.h>
+
 #include <Adafruit_GFX.h>
 
 // #include <Adafruit_SSD1306.h>
@@ -84,6 +87,9 @@ ExecutionEnv *executionEnv;
 MyApp *myApp;
 WebAPI *webAPI = nullptr;
 
+WiFiClient mqttNetworkClient;
+PubSubClient mqttClient(mqttNetworkClient);
+
 void networkOnEvent(arduino_event_id_t event, arduino_event_info_t info);
 
 // Interval to set data memory values
@@ -103,6 +109,8 @@ static bool eth_connected = false;
 static bool sta_connected = false;
 // Global variable used to indicate if RTC sync is needed
 static bool triggerRTCsync = false;
+
+static bool triggerMQTTOnline = false;
 
 // Default IP values
 IPAddress WAP_ipAddress;
@@ -209,6 +217,7 @@ void networkOnEvent(arduino_event_id_t event, arduino_event_info_t info)
 
     eth_connected = true;
     triggerRTCsync = true;
+    triggerMQTTOnline = true;
     break;
 
   case ARDUINO_EVENT_ETH_DISCONNECTED:
@@ -234,6 +243,7 @@ void networkOnEvent(arduino_event_id_t event, arduino_event_info_t info)
 
     sta_connected = true;
     triggerRTCsync = true;
+    triggerMQTTOnline = true;
   }
   break;
 
@@ -371,7 +381,7 @@ void setup()
   myPrefs = new MiniPrefs(fram, 32 * 1024);
   myPrefs->begin();
 
-  executionEnv = new ExecutionEnv(MMCYCLE, &rtcWrapper, &prefs, myPrefs, &display, &mbServerManager, &modbusServerMemoryManager, onNetworkInit);
+  executionEnv = new ExecutionEnv(MMCYCLE, &rtcWrapper, &prefs, myPrefs, &display, &mbServerManager, &modbusServerMemoryManager, &mqttClient, onNetworkInit);
 
   MM_LOG_TRACE("SYSTEM", "ExecutionEnv object created");
 
@@ -469,6 +479,9 @@ void setup()
   // Retreive heap size long time after start because heap size computation didn't take all heap size
   executionEnv->RetreiveHeapSize();
 
+  // MQTT connexion
+  mqttClient.setServer("192.168.10.126", 1883);
+
   intervalCallback.Start(MMCYCLE, true);
 
   myApp->Init();
@@ -486,6 +499,32 @@ void loop()
     triggerRTCsync = false;
     rtcWrapper.SyncDateTimeFromNTP();
   }
+
+  if (eth_connected || sta_connected)
+  {
+    static uint32_t lastMqttAttempt = 0;
+
+    if (!mqttClient.connected() &&
+        millis() - lastMqttAttempt > 5000)
+    {
+      lastMqttAttempt = millis();
+
+      MM_LOG_TRACE("SYSTEM::MQTT", "Connecting to MQTT broker…");
+
+      if (mqttClient.connect("MadMax2"))
+      {
+        MM_LOG_TRACE("SYSTEM::MQTT", "Connected to MQTT broker");
+
+        mqttClient.publish("MadMax2/instance/status", "online", true);
+      }
+      else
+      {
+        MM_LOG_ERROR("SYSTEM::MQTT", "Connexion failed, rc=%d", mqttClient.state());
+      }
+    }
+  }
+
+  mqttClient.loop();
 }
 
 void callbackExecution()

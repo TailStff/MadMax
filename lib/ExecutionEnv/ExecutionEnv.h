@@ -16,6 +16,9 @@
 
 #include "RTCWrapper.h"
 
+// MQTT protocol library
+#include <PubSubClient.h>
+
 struct IPConfigWAP
 {
   IPAddress Ip;
@@ -77,6 +80,8 @@ private:
   MadMax::ModbusServerManager *modbusServerManager;
   MadMax::ModbusServerMemoryManager *modbusServerMemoryManager;
 
+  PubSubClient *mqttClient;
+
   /// @brief Callback function for Initialize network interfaces
   std::function<bool(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit;
   /// @brief  Configuration object for ETH interface
@@ -97,7 +102,7 @@ private:
 
 public:
   // Constructor
-  ExecutionEnv(unsigned int _cycle, RTCWrapper *rtcWrapper, Preferences *prefs, MiniPrefs *miniPrefs, Adafruit_SH1107 *display, MadMax::ModbusServerManager *modbusServerManager, MadMax::ModbusServerMemoryManager *modbusServerMemoryManager, std::function<bool(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit);
+  ExecutionEnv(unsigned int _cycle, RTCWrapper *rtcWrapper, Preferences *prefs, MiniPrefs *miniPrefs, Adafruit_SH1107 *display, MadMax::ModbusServerManager *modbusServerManager, MadMax::ModbusServerMemoryManager *modbusServerMemoryManager, PubSubClient *mqttClient, std::function<bool(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit);
 
   // Destructor
   ~ExecutionEnv();
@@ -156,6 +161,8 @@ public:
   void SetETHProperties(IPConfigDhcp config);
   void SetSTAProperties(IPConfigSTA config);
   void SetWAPProperties(IPConfigWAP config);
+  
+  PubSubClient* GetMQTTClient();
 };
 
 #endif

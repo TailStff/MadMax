@@ -90,6 +90,34 @@ namespace MadMax
         }
     }
 
+    inline std::string VariableValueToString(const VariableValue &value)
+    {
+        return std::visit(
+            [](const auto &v) -> std::string
+            {
+                using T = std::decay_t<decltype(v)>;
+
+                if constexpr (std::is_same_v<T, bool>)
+                {
+                    return v ? "true" : "false";
+                }
+                else if constexpr (std::is_same_v<T, mmUint8tArray>)
+                {
+                    // À adapter selon la représentation souhaitée
+                    return "...";
+                }
+                else if constexpr (std::is_same_v<T, mmBoolArray>)
+                {
+                    return "...";
+                }
+                else
+                {
+                    return std::to_string(v);
+                }
+            },
+            value);
+    }
+
     inline bool VariableValueFromJson(JsonVariantConst v, VariableValue &out)
     {
         // bool en premier (sinon true → 1)
