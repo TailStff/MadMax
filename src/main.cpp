@@ -43,7 +43,7 @@
 #include <LittleFS.h>
 
 // MQTT protocol library
-#include <PubSubClient.h>
+#include "MQTTManager.h"
 
 #include <Adafruit_GFX.h>
 
@@ -87,8 +87,7 @@ ExecutionEnv *executionEnv;
 MyApp *myApp;
 WebAPI *webAPI = nullptr;
 
-WiFiClient mqttNetworkClient;
-PubSubClient mqttClient(mqttNetworkClient);
+std::unique_ptr<MQTTManager> mqttManager;
 
 void networkOnEvent(arduino_event_id_t event, arduino_event_info_t info);
 
@@ -381,7 +380,10 @@ void setup()
   myPrefs = new MiniPrefs(fram, 32 * 1024);
   myPrefs->begin();
 
-  executionEnv = new ExecutionEnv(MMCYCLE, &rtcWrapper, &prefs, myPrefs, &display, &mbServerManager, &modbusServerMemoryManager, &mqttClient, onNetworkInit);
+  mqttManager = std::unique_ptr<MQTTManager>(new MQTTManager("192.168.10.126", 1883, "MadMax2"));
+  mqttManager->Begin();
+
+  executionEnv = new ExecutionEnv(MMCYCLE, &rtcWrapper, &prefs, myPrefs, &display, &mbServerManager, &modbusServerMemoryManager, mqttManager.get(), onNetworkInit);
 
   MM_LOG_TRACE("SYSTEM", "ExecutionEnv object created");
 
@@ -479,9 +481,6 @@ void setup()
   // Retreive heap size long time after start because heap size computation didn't take all heap size
   executionEnv->RetreiveHeapSize();
 
-  // MQTT connexion
-  mqttClient.setServer("192.168.10.126", 1883);
-
   intervalCallback.Start(MMCYCLE, true);
 
   myApp->Init();
@@ -499,32 +498,6 @@ void loop()
     triggerRTCsync = false;
     rtcWrapper.SyncDateTimeFromNTP();
   }
-
-  if (eth_connected || sta_connected)
-  {
-    static uint32_t lastMqttAttempt = 0;
-
-    if (!mqttClient.connected() &&
-        millis() - lastMqttAttempt > 5000)
-    {
-      lastMqttAttempt = millis();
-
-      MM_LOG_TRACE("SYSTEM::MQTT", "Connecting to MQTT broker…");
-
-      if (mqttClient.connect("MadMax2"))
-      {
-        MM_LOG_TRACE("SYSTEM::MQTT", "Connected to MQTT broker");
-
-        mqttClient.publish("MadMax2/instance/status", "online", true);
-      }
-      else
-      {
-        MM_LOG_ERROR("SYSTEM::MQTT", "Connexion failed, rc=%d", mqttClient.state());
-      }
-    }
-  }
-
-  mqttClient.loop();
 }
 
 void callbackExecution()

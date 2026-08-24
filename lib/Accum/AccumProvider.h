@@ -157,7 +157,8 @@ namespace MadMax
 
                 std::string valueStr = VariableValueToString(value);
 
-                executionEnv->GetMQTTClient()->publish(topic.c_str(), valueStr.c_str(), true);
+                // executionEnv->GetMQTTClient()->publish(topic.c_str(), valueStr.c_str(), true);
+                executionEnv->GetMQTTManager()->Publish(topic.c_str(), valueStr.c_str(), true);
 
                 modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
 
@@ -193,7 +194,8 @@ namespace MadMax
 
                 std::string valueStr = VariableValueToString(obj->GetVariantValue());
 
-                executionEnv->GetMQTTClient()->publish(topic.c_str(), valueStr.c_str(), true);
+                // executionEnv->GetMQTTClient()->publish(topic.c_str(), valueStr.c_str(), true);
+                executionEnv->GetMQTTManager()->Publish(topic.c_str(), valueStr.c_str(), true);
 
                 modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
 

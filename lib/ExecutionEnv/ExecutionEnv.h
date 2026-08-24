@@ -17,7 +17,8 @@
 #include "RTCWrapper.h"
 
 // MQTT protocol library
-#include <PubSubClient.h>
+//#include <PubSubClient.h>
+#include "MQTTManager.h"
 
 struct IPConfigWAP
 {
@@ -80,7 +81,7 @@ private:
   MadMax::ModbusServerManager *modbusServerManager;
   MadMax::ModbusServerMemoryManager *modbusServerMemoryManager;
 
-  PubSubClient *mqttClient;
+  MQTTManager *mqttManager;
 
   /// @brief Callback function for Initialize network interfaces
   std::function<bool(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit;
@@ -102,7 +103,7 @@ private:
 
 public:
   // Constructor
-  ExecutionEnv(unsigned int _cycle, RTCWrapper *rtcWrapper, Preferences *prefs, MiniPrefs *miniPrefs, Adafruit_SH1107 *display, MadMax::ModbusServerManager *modbusServerManager, MadMax::ModbusServerMemoryManager *modbusServerMemoryManager, PubSubClient *mqttClient, std::function<bool(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit);
+  ExecutionEnv(unsigned int _cycle, RTCWrapper *rtcWrapper, Preferences *prefs, MiniPrefs *miniPrefs, Adafruit_SH1107 *display, MadMax::ModbusServerManager *modbusServerManager, MadMax::ModbusServerMemoryManager *modbusServerMemoryManager, MQTTManager *mqttManager, std::function<bool(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit);
 
   // Destructor
   ~ExecutionEnv();
@@ -162,7 +163,7 @@ public:
   void SetSTAProperties(IPConfigSTA config);
   void SetWAPProperties(IPConfigWAP config);
   
-  PubSubClient* GetMQTTClient();
+  MQTTManager* GetMQTTManager();
 };
 
 #endif
