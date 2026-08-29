@@ -309,7 +309,7 @@ namespace MadMax
         template <class T>
         bool AddProtocolBinding(const std::string &name, std::unique_ptr<ProtocolBinding> binding)
         {
-            MM_LOG_TRACE("VariableProvider", "AddProtocolBinding: Adding protocol binding for accum '%s'", name.c_str());
+            MM_LOG_TRACE("VariableProvider", "AddProtocolBinding: Adding protocol binding for variable '%s'", name.c_str());
 
             auto *obj = static_cast<Variable<T> *>(ObjectProvider<IPrimitive>::Get(name));
 
