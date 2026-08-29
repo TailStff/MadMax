@@ -16,9 +16,9 @@ namespace MadMax
             dtoMappers = std::make_unique<FeedbackErrorDTOMapper>();
         }
 
-        FeedbackError *Create(const std::string &name, uint32_t address)
+        FeedbackError *Create(const std::string &name)
         {
-            return ObjectProvider<FeedbackError>::Create(name, address, executionEnv);
+            return ObjectProvider<FeedbackError>::Create(name, executionEnv);
         }
 
 #pragma region IProviderDTO

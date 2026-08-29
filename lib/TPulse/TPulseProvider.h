@@ -16,9 +16,9 @@ namespace MadMax
             dtoMappers = std::make_unique<TPulseDTOMapper>();
         }
 
-        TPulse *Create(const std::string &name, uint32_t address, bool initialValue = false)
+        TPulse *Create(const std::string &name, bool initialValue = false)
         {
-            return ObjectProvider<TPulse>::Create(name, address, executionEnv, initialValue);
+            return ObjectProvider<TPulse>::Create(name, executionEnv, initialValue);
         }
 
 #pragma region IProviderDTO

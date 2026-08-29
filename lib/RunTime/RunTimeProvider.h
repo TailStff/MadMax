@@ -18,13 +18,13 @@ namespace MadMax
             dtoMappers = std::make_unique<RunTimeDTOMapper>();
         }
 
-        RunTime *Create(const std::string &name, uint32_t address, RunTimePersistencyValues data = {.value = 0})
+        RunTime *Create(const std::string &name, RunTimePersistencyValues data = {.value = 0})
         {
             // Mini prefs method
             uint16_t addr;
             executionEnv->GetMiniPrefs()->Get(name.c_str(), reinterpret_cast<uint8_t *>(&data), RunTime::GetSerializedSize(), addr);
 
-            return ObjectProvider<RunTime>::Create(name, address, executionEnv, data);
+            return ObjectProvider<RunTime>::Create(name, executionEnv, data);
         }
 
 #pragma region IPersistable
@@ -32,10 +32,8 @@ namespace MadMax
         {
             MM_LOG_TRACE("RunTimeProvider", "Saving persistency values for '%s' to storage", name.c_str());
 
-            int32_t address;
-
             // Get the object to be serialized
-            auto *obj = this->Get(name, address);
+            auto *obj = this->Get(name);
 
             // If the object doesn't exist, we can't save its persistency values
             if (!obj)

@@ -6,6 +6,9 @@
 
 #include "mmScreenPages.h"
 
+#include "ModbusBinding.h"
+#include "BacnetBinding.h"
+
 #include "PIDProvider.h"
 #include "MinOnOffProvider.h"
 #include "DelayOnOffProvider.h"

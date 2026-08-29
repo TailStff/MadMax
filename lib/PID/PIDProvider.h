@@ -12,9 +12,9 @@ namespace MadMax
             this->executionEnv = executionEnv;
         }
 
-        PID *Create(const std::string &name, uint32_t address)
+        PID *Create(const std::string &name)
         {
-            return ObjectProvider<PID>::Create(name, address, executionEnv);
+            return ObjectProvider<PID>::Create(name, executionEnv);
         }
     };
 }

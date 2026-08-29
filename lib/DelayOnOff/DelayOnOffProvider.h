@@ -16,9 +16,9 @@ namespace MadMax
             dtoMappers = std::make_unique<DelayOnOffDTOMapper>();
         }
 
-        DelayOnOff *Create(const std::string &name, uint32_t address, bool initialValue = false)
+        DelayOnOff *Create(const std::string &name, bool initialValue = false)
         {
-            return ObjectProvider<DelayOnOff>::Create(name, address, executionEnv, initialValue);
+            return ObjectProvider<DelayOnOff>::Create(name, executionEnv, initialValue);
         }
 
 #pragma region IProviderDTO

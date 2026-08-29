@@ -12,9 +12,9 @@ namespace MadMax
             this->executionEnv = executionEnv;
         }
 
-        Linear *Create(const std::string &name, uint32_t address)
+        Linear *Create(const std::string &name)
         {
-            return ObjectProvider<Linear>::Create(name, address, executionEnv);
+            return ObjectProvider<Linear>::Create(name, executionEnv);
         }
     };
 }

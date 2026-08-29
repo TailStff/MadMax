@@ -35,7 +35,7 @@ namespace MadMax
             Serial.println("]");
         }
 
-        PumpSwap *Create(const std::string &name, uint32_t address, uint8_t count, uint32_t feedbackDelay, PumpSwapPersistencyValues data = {})
+        PumpSwap *Create(const std::string &name, uint8_t count, uint32_t feedbackDelay, PumpSwapPersistencyValues data = {})
         {
             // We resize our vector to be able to receive persistency values
             data.data.resize(count);
@@ -50,7 +50,7 @@ namespace MadMax
             // Get values from memory to be able to create the object with his previous persistency values
             GetPersistencyValuesFromStorage(name, reinterpret_cast<uint8_t *>(data.data.data()), PumpSwap::GetSerializedSize(count));
 
-            return ObjectProvider<PumpSwap>::Create(name, address, executionEnv, count, feedbackDelay, data);
+            return ObjectProvider<PumpSwap>::Create(name, executionEnv, count, feedbackDelay, data);
         }
 
 #pragma region IPersistable
@@ -58,10 +58,8 @@ namespace MadMax
         {
             MM_LOG_TRACE("PumpSwapProvider", "Saving persistency values for '%s' to storage", name.c_str());
 
-            int32_t address;
-
             // Get the object to be serialized
-            auto *obj = this->Get(name, address);
+            auto *obj = this->Get(name);
 
             // If the object doesn't exist, we can't save its persistency values
             if (!obj)

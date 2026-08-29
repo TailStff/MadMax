@@ -1,11 +1,10 @@
-
-
 #pragma once
 
 #include "ObjectProvider.h"
 #include "DigitalEquipment.h"
 #include "IPersistable.h"
 #include "DigitalEquipmentDTOMapper.h"
+#include "ModbusBinding.h"
 
 #include "mmLogger.h"
 
@@ -23,11 +22,11 @@ namespace MadMax
             dtoMappers = std::make_unique<DigitalEquipmentDTOMapper>();
         }
 
-        DigitalEquipment *Create(const std::string &name, uint32_t address, DigitalEquipementPersistencyValues data = {})
+        DigitalEquipment *Create(const std::string &name, DigitalEquipementPersistencyValues data = {})
         {
             // Get values from memory to be able to create the object with his previous persistency values
             GetPersistencyValuesFromStorage(name, reinterpret_cast<uint8_t *>(&data), DigitalEquipment::GetSerializedSize());
-            return ObjectProvider<DigitalEquipment>::Create(name, address, executionEnv, data);
+            return ObjectProvider<DigitalEquipment>::Create(name, executionEnv, data);
         }
 
 #pragma region IPersistable
@@ -35,10 +34,8 @@ namespace MadMax
         {
             MM_LOG_TRACE("DigitalEquipmentProvider", "Saving persistency values for '%s' to storage", name.c_str());
 
-            int32_t address;
-
             // Get the object to be serialized
-            auto *obj = this->Get(name, address);
+            auto *obj = this->Get(name);
 
             // If the object doesn't exist, we can't save its persistency values
             if (!obj)
@@ -104,5 +101,37 @@ namespace MadMax
         }
 
 #pragma endregion IProviderDTO
+
+        /* New binding part */
+        bool AddProtocolBinding(const std::string &name, std::unique_ptr<ProtocolBinding> binding)
+        {
+            MM_LOG_TRACE("VariableProvider", "AddProtocolBinding: Adding protocol binding for variable '%s'", name.c_str());
+
+            auto *obj = ObjectProvider<DigitalEquipment>::Get(name);
+
+            if (!obj)
+            {
+                MM_LOG_TRACE("VariableProvider", "AddProtocolBinding: Object '%s' not found", name.c_str());
+                return false;
+            }
+
+            if (binding.get()->GetProtocolType() == ProtocolType::Modbus)
+            {
+                MM_LOG_TRACE("VariableProvider", "AddProtocolBinding: Exposing variable '%s' to Modbus", name.c_str());
+            }
+
+            return ObjectProvider<DigitalEquipment>::AddProtocolBinding(obj, std::move(binding));
+        }
+
+        const std::vector<std::unique_ptr<ProtocolBinding>> &GetProtocolBindings(const std::string &name) const
+        {
+            auto *obj = ObjectProvider<DigitalEquipment>::Get(name);
+
+            if (!obj)
+                return std::vector<std::unique_ptr<ProtocolBinding>>{};
+
+            return ObjectProvider<DigitalEquipment>::GetProtocolBindings(obj);
+        }
+
     };
 }

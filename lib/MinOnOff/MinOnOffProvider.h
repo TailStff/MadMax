@@ -16,9 +16,9 @@ namespace MadMax
             dtoMappers = std::make_unique<MinOnOffDTOMapper>();
         }
 
-        MinOnOff *Create(const std::string &name, uint32_t address, bool initialValue = false)
+        MinOnOff *Create(const std::string &name, bool initialValue = false)
         {
-            return ObjectProvider<MinOnOff>::Create(name, address, executionEnv, initialValue);
+            return ObjectProvider<MinOnOff>::Create(name, executionEnv, initialValue);
         }
 
 #pragma region IProviderDTO

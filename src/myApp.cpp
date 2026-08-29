@@ -76,28 +76,43 @@ void MyApp::Init()
 
     // Au démarrage de l'application, on crée les objets nécessaires et on charge leurs valeurs depuis la base de données de persistance et on les associe à des adresses de registres Modbus
 
-    mmVariables->Create<float>("varFloat1", 4 << 16 | 32, {.value = 0.0f});
-    mmVariables->Create<float>("AB", 4 << 16 | 34, {.value = 0.0f});
-    mmVariables->Create<float>("XW", 4 << 16 | 36, {.value = 0.0f});
-    mmVariables->Create<int8_t>("myChar", 4 << 16 | 38, {.value = 0});
-    mmVariables->Create<bool>("myBool", 4 << 16 | 39, {.value = false});
-    mmVariables->Create<uint8_t>("pumps_nbr", 4 << 16 | 50, {.value = 0});
+    mmVariables->Create<float>("varFloat1", {.value = 0.0f});
+    mmVariables->AddProtocolBinding<float>("varFloat1", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 32));
+    mmVariables->AddProtocolBinding<float>("varFloat1", std::make_unique<MadMax::BacnetBinding>("value", 2, 1001));
 
-    mmVariables->Create<bool>("Acquittement", 4 << 16 | 80, {.value = false});
+    mmVariables->Create<float>("AB", {.value = 0.0f});
+    mmVariables->AddProtocolBinding<float>("AB", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 34));
 
-    mmPumpSwaps->Create("4pmp", 4, 4, 10000);
+    mmVariables->Create<float>("XW", {.value = 0.0f});
+    mmVariables->AddProtocolBinding<float>("XW", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 36));
 
-    mmAccums->Create<uint64_t>("accum1", 4 << 16 | 64, {.value = 0});
+    mmVariables->Create<int8_t>("myChar", {.value = 0});
+    mmVariables->AddProtocolBinding<int8_t>("myChar", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 38));
 
-    mmDigitalEquipments->Create("de0", 4 << 16 | 40, {.runTime = 10, .startCount = 1});
+    mmVariables->Create<bool>("myBool", {.value = false});
+    mmVariables->AddProtocolBinding<bool>("myBool", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 39));
 
-    mmTPulses->Create("tp0", -1, false);
+    mmVariables->Create<uint8_t>("pumps_nbr", {.value = 0});
+    mmVariables->AddProtocolBinding<uint8_t>("pumps_nbr", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 50));
 
-    mmFeedbackErrors->Create("fe0", -1);
+    mmVariables->Create<bool>("Acquittement", {.value = false});
+    mmVariables->AddProtocolBinding<bool>("Acquittement", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 80));
 
-    mmDelayOnOffs->Create("delay0", -1, false);
+    mmPumpSwaps->Create("4pmp", 4, 10000);
 
-    mmRunTimes->Create("rt0", -1, {.value = 100});
+    mmAccums->Create<uint64_t>("accum1", {.value = 0});
+    mmAccums->AddProtocolBinding<uint64_t>("accum1", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 64));
+
+    mmDigitalEquipments->Create("de0", {.runTime = 10, .startCount = 1});
+    mmDigitalEquipments->AddProtocolBinding("de0", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 40));
+
+    mmTPulses->Create("tp0", false);
+
+    mmFeedbackErrors->Create("fe0");
+
+    mmDelayOnOffs->Create("delay0", false);
+
+    mmRunTimes->Create("rt0", {.value = 100});
 
     /*
         // Tache modbus 1: lecture de 2 registres à l'adresse 0 du slave 1 toutes les secondes

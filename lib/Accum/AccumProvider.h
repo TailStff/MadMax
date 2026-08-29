@@ -5,6 +5,7 @@
 #include "Accum.h"
 #include "AccumDTOMapper.h"
 #include "AccumModbusMapper.h"
+#include "ModbusBinding.h"
 
 #include "mmLogger.h"
 
@@ -45,33 +46,41 @@ namespace MadMax
             this->ForEach(
                 [&](const std::string &name, IPrimitive *base)
                 {
-                    int32_t address;
-                    ObjectProvider<IPrimitive>::Get(name, address);
+                    const auto &protocolBindings = ObjectProvider<IPrimitive>::GetProtocolBindings(base);
 
-                    if (address == -1)
-                        return;
-
-                    // We consider that the address is a 32 bits integer where the 16 most significant bits represent the Modbus memory space (for example, holding registers, input registers, coils, discrete inputs) and the 16 least significant bits represent the Modbus address in that memory space, this allow to associate variables to different types of Modbus registers and not only holding registers
-                    uint8_t modbusMemorySpace = (address & 0x00FF0000) >> 16;
-                    uint16_t modbusAddress = address & 0x0000FFFF;
-
-                    // If the variable is not associated to the same Modbus memory space as the write event, we skip it
-                    if (modbusMemorySpace != static_cast<uint8_t>(modbusSpace))
-                        return;
-
-                    uint16_t length = GetDataTypeSize(GetDataType(base->AsVariableValue()->GetVariantValue()));
-
-                    if (checkCollision(modbusAddress, length, addr, count))
+                    if (!protocolBindings.empty())
                     {
-                        IVariableValue *variable = base->AsVariableValue();
+                        for (const auto &protocolBinding : protocolBindings)
+                        {
+                            auto *bind = protocolBinding.get();
+                            if (bind->GetProtocolType() == ProtocolType::Modbus)
+                            {
+                                int32_t address = static_cast<ModbusBinding *>(bind)->GetAddress();
 
-                        if (!variable)
-                            return;
+                                // We consider that the address is a 32 bits integer where the 16 most significant bits represent the Modbus memory space (for example, holding registers, input registers, coils, discrete inputs) and the 16 least significant bits represent the Modbus address in that memory space, this allow to associate variables to different types of Modbus registers and not only holding registers
+                                uint8_t modbusMemorySpace = (address & 0x00FF0000) >> 16;
+                                uint16_t modbusAddress = address & 0x0000FFFF;
 
-                        modbusMapper && modbusMapper->GetFromModbus(*base, address);
+                                // If the variable is not associated to the same Modbus memory space as the write event, we skip it
+                                if (modbusMemorySpace != static_cast<uint8_t>(modbusSpace))
+                                    return;
 
-                        if (auto *serializable = base->AsSerializable())
-                            writePersistencyData(name, serializable);
+                                uint16_t length = GetDataTypeSize(GetDataType(base->AsVariableValue()->GetVariantValue()));
+
+                                if (checkCollision(modbusAddress, length, addr, count))
+                                {
+                                    IVariableValue *variable = base->AsVariableValue();
+
+                                    if (!variable)
+                                        return;
+
+                                    modbusMapper && modbusMapper->GetFromModbus(*base, address);
+
+                                    if (auto *serializable = base->AsSerializable())
+                                        writePersistencyData(name, serializable);
+                                }
+                            }
+                        }
                     }
                 });
         }
@@ -91,7 +100,7 @@ namespace MadMax
         }
 
         template <class T>
-        Accum<T> *Create(const std::string &name, int32_t address, AccumPersistencyValues<T> data = {.value = static_cast<T>(0)})
+        Accum<T> *Create(const std::string &name, AccumPersistencyValues<T> data = {.value = static_cast<T>(0)})
         {
             GetPersistencyValuesFromStorage(name, reinterpret_cast<uint8_t *>(&data), sizeof(AccumPersistencyValues<T>));
 
@@ -101,9 +110,9 @@ namespace MadMax
             // We must inject via the fixed base interface ObjectProvider<ISerializableBase>
             // to store all typed instances in a single polymorphic collection.
             auto *obj = new Accum<T>(executionEnv, data);
-            ObjectProvider<IPrimitive>::inject(name, address, obj);
+            ObjectProvider<IPrimitive>::inject(name, obj);
 
-            modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
+            // modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
 
             return obj;
         }
@@ -111,8 +120,7 @@ namespace MadMax
         template <class T>
         Accum<T> *Get(const std::string &name)
         {
-            int32_t address;
-            return static_cast<Accum<T> *>(ObjectProvider<IPrimitive>::Get(name, address));
+            return static_cast<Accum<T> *>(ObjectProvider<IPrimitive>::Get(name));
         }
 
         /// @brief Function that SET new value to the accum output value and save persistency values if the value is different from the previous one
@@ -121,10 +129,8 @@ namespace MadMax
         template <class T>
         void SetValue(const std::string &name, T value)
         {
-            int32_t address;
-
             // Get the object to be serialized
-            Accum<T> *obj = static_cast<Accum<T> *>(ObjectProvider<IPrimitive>::Get(name, address));
+            Accum<T> *obj = static_cast<Accum<T> *>(ObjectProvider<IPrimitive>::Get(name));
 
             // If the object doesn't exist, we can't save its persistency values
             if (!obj)
@@ -133,16 +139,31 @@ namespace MadMax
             // If the old value is different from the new one, we save persistency values to memory, otherwise we do nothing to avoid unnecessary write operations to memory
             if (obj->SetValue(value))
             {
-                modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
+                // Check if the variable has any protocol bindings
+                const auto &protocolBindings = GetProtocolBindings(name);
+                if (!protocolBindings.empty())
+                {
+                    for (const auto &protocolBinding : protocolBindings)
+                    {
+                        auto *bind = protocolBinding.get();
+                        if (bind->GetProtocolType() == ProtocolType::Modbus)
+                        {
+                            modbusMapper && modbusMapper->ExposeToModbus(*obj, static_cast<ModbusBinding *>(bind)->GetAddress());
+                        }
+                        else if (bind->GetProtocolType() == ProtocolType::Bacnet)
+                        {
+                        }
+                    }
+                }
+
+                // modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
                 writePersistencyData(name, obj);
             }
         }
 
         void SetValue(const std::string &name, const VariableValue &value)
         {
-            int32_t address;
-
-            auto *base = ObjectProvider<IPrimitive>::Get(name, address);
+            auto *base = ObjectProvider<IPrimitive>::Get(name);
             if (!base)
                 return;
 
@@ -160,7 +181,24 @@ namespace MadMax
                 // executionEnv->GetMQTTClient()->publish(topic.c_str(), valueStr.c_str(), true);
                 executionEnv->GetMQTTManager()->Publish(topic.c_str(), valueStr.c_str(), true);
 
-                modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
+                // Check if the variable has any protocol bindings
+                const auto &protocolBindings = GetProtocolBindings(name);
+                if (!protocolBindings.empty())
+                {
+                    for (const auto &protocolBinding : protocolBindings)
+                    {
+                        auto *bind = protocolBinding.get();
+                        if (bind->GetProtocolType() == ProtocolType::Modbus)
+                        {
+                            modbusMapper && modbusMapper->ExposeToModbus(*obj, static_cast<ModbusBinding *>(bind)->GetAddress());
+                        }
+                        else if (bind->GetProtocolType() == ProtocolType::Bacnet)
+                        {
+                        }
+                    }
+                }
+
+                // modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
 
                 if (auto *serializable = base->AsSerializable())
                     writePersistencyData(name, serializable);
@@ -178,10 +216,8 @@ namespace MadMax
         template <class T>
         T Evaluate(const std::string &name, bool input, T increment, bool resetTrigger = false, T resetValue = static_cast<T>(0))
         {
-            int32_t address;
-
             // Get the object to be serialized
-            Accum<T> *obj = static_cast<Accum<T> *>(ObjectProvider<IPrimitive>::Get(name, address));
+            Accum<T> *obj = static_cast<Accum<T> *>(ObjectProvider<IPrimitive>::Get(name));
 
             // If the object doesn't exist, we can't save its persistency values
             if (!obj)
@@ -197,7 +233,22 @@ namespace MadMax
                 // executionEnv->GetMQTTClient()->publish(topic.c_str(), valueStr.c_str(), true);
                 executionEnv->GetMQTTManager()->Publish(topic.c_str(), valueStr.c_str(), true);
 
-                modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
+                // Check if the variable has any protocol bindings
+                const auto &protocolBindings = GetProtocolBindings(name);
+                if (!protocolBindings.empty())
+                {
+                    for (const auto &protocolBinding : protocolBindings)
+                    {
+                        auto *bind = protocolBinding.get();
+                        if (bind->GetProtocolType() == ProtocolType::Modbus)
+                        {
+                            modbusMapper && modbusMapper->ExposeToModbus(*obj, static_cast<ModbusBinding *>(bind)->GetAddress());
+                        }
+                        else if (bind->GetProtocolType() == ProtocolType::Bacnet)
+                        {
+                        }
+                    }
+                }
 
                 if (auto *serializable = obj->AsSerializable())
                     writePersistencyData(name, serializable);
@@ -211,10 +262,8 @@ namespace MadMax
         {
             MM_LOG_TRACE("AccumProvider", "Saving persistency values for '%s' to storage", name.c_str());
 
-            int32_t address;
-
             // Get the object to be serialized
-            auto *base = ObjectProvider<IPrimitive>::Get(name, address);
+            auto *base = ObjectProvider<IPrimitive>::Get(name);
             if (!base)
                 return;
 
@@ -290,5 +339,38 @@ namespace MadMax
             return true;
         }
 #pragma endregion IProviderDTO
+
+        /* New binding part */
+        template <class T>
+        bool AddProtocolBinding(const std::string &name, std::unique_ptr<ProtocolBinding> binding)
+        {
+            MM_LOG_TRACE("VariableProvider", "AddProtocolBinding: Adding protocol binding for variable '%s'", name.c_str());
+
+            auto *obj = static_cast<Variable<T> *>(ObjectProvider<IPrimitive>::Get(name));
+
+            if (!obj)
+            {
+                MM_LOG_TRACE("VariableProvider", "AddProtocolBinding: Object '%s' not found", name.c_str());
+                return false;
+            }
+
+            if (binding.get()->GetProtocolType() == ProtocolType::Modbus)
+            {
+                MM_LOG_TRACE("VariableProvider", "AddProtocolBinding: Exposing variable '%s' to Modbus", name.c_str());
+                modbusMapper && modbusMapper->ExposeToModbus(*obj, static_cast<ModbusBinding *>(binding.get())->GetAddress());
+            }
+
+            return ObjectProvider<IPrimitive>::AddProtocolBinding(obj, std::move(binding));
+        }
+
+        const std::vector<std::unique_ptr<ProtocolBinding>> &GetProtocolBindings(const std::string &name) const
+        {
+            auto *obj = ObjectProvider<IPrimitive>::Get(name);
+
+            if (!obj)
+                return std::vector<std::unique_ptr<ProtocolBinding>>{};
+
+            return ObjectProvider<IPrimitive>::GetProtocolBindings(obj);
+        }
     };
 }
