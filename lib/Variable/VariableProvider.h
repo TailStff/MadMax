@@ -321,7 +321,7 @@ namespace MadMax
 
             if (binding.get()->GetProtocolType() == ProtocolType::Modbus)
             {
-                MM_LOG_TRACE("VariableProvider", "AddProtocolBinding: Exposing accum '%s' to Modbus", name.c_str());
+                MM_LOG_TRACE("VariableProvider", "AddProtocolBinding: Exposing variable '%s' to Modbus", name.c_str());
                 modbusMapper && modbusMapper->ExposeToModbus(*obj, static_cast<ModbusBinding *>(binding.get())->GetAddress());
             }
 

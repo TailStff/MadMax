@@ -94,8 +94,6 @@ bool RTCWrapper::RTCGet(DateTime &now)
 
   now = this->rtc.now();
 
-  MM_LOG_TRACE("RTCWrapper", "RTC date/time retrieved successfully");
-
   return true;
 }
 
