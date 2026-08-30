@@ -1,3 +1,5 @@
+#pragma once
+
 enum class ProtocolType
 {
     Modbus = 1,

@@ -84,6 +84,11 @@ private:
 
     // mmPumpSwap *permut4;
 
+    bool AddProtocolBinding(MadMax::IPrimitive &object, std::unique_ptr<MadMax::ProtocolBinding> protocolBinding)
+    {
+        return this->executionEnv->AddProtocolBinding(object, std::move(protocolBinding));
+    }
+
 public:
     // Constructors
     MyApp(ExecutionEnv *executionEnv, ModbusClientRTU &MBRTU,  MadMax::ModbusServerManager *modbusServerManager, MadMax::ModbusServerMemoryManager *modbusServerMemoryManager, DigitalInputs *digitalInputs, DigitalOutputs *digitalOutputs);

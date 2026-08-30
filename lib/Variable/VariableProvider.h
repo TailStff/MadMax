@@ -17,7 +17,6 @@ namespace MadMax
     {
     private:
         std::unique_ptr<IDTOMapperBase> dtoMapper;
-        std::unique_ptr<VariableModbusMapper> modbusMapper;
 
         /// @brief Function to write persistency values of the given ISerializable object to persistancy memory
         /// @param name Name of the object to be serialized
@@ -43,65 +42,11 @@ namespace MadMax
             return (writeStart < varEnd && writeEnd > varStart);
         }
 
-        void OnModbusWrite(ModbusServerModbusSpaceCode modbusSpace, uint16_t addr, uint16_t count)
-        {
-            MM_LOG_TRACE("VariableProvider", "Modbus write event received for address '%u' with count '%u'", addr, count);
-
-            // We consider that only variables that are associated to Modbus registers need to be refreshed from Modbus registers, if the variable is not associated to any Modbus register, we consider that its value is managed internally and not updated from Modbus registers, so we skip it
-            this->ForEach(
-                [&](const std::string &name, IPrimitive *base)
-                {
-                    const auto &protocolBindings = ObjectProvider<IPrimitive>::GetProtocolBindings(base);
-
-                    if (!protocolBindings.empty())
-                    {
-                        for (const auto &protocolBinding : protocolBindings)
-                        {
-                            auto *bind = protocolBinding.get();
-                            if (bind->GetProtocolType() == ProtocolType::Modbus)
-                            {
-                                int32_t address = static_cast<ModbusBinding *>(bind)->GetAddress();
-
-                                // We consider that the address is a 32 bits integer where the 16 most significant bits represent the Modbus memory space (for example, holding registers, input registers, coils, discrete inputs) and the 16 least significant bits represent the Modbus address in that memory space, this allow to associate variables to different types of Modbus registers and not only holding registers
-                                uint8_t modbusMemorySpace = (address & 0x00FF0000) >> 16;
-                                uint16_t modbusAddress = address & 0x0000FFFF;
-
-                                // If the variable is not associated to the same Modbus memory space as the write event, we skip it
-                                if (modbusMemorySpace != static_cast<uint8_t>(modbusSpace))
-                                    return;
-
-                                uint16_t length = GetDataTypeSize(GetDataType(base->AsVariableValue()->GetVariantValue()));
-
-                                if (checkCollision(modbusAddress, length, addr, count))
-                                {
-                                    IVariableValue *variable = base->AsVariableValue();
-
-                                    if (!variable)
-                                        return;
-
-                                    modbusMapper && modbusMapper->GetFromModbus(*base, address);
-
-                                    if (auto *serializable = base->AsSerializable())
-                                        writePersistencyData(name, serializable);
-                                }
-                            }
-                        }
-                    }
-                });
-        }
-
     public:
         VariableProvider(ExecutionEnv *executionEnv)
         {
             this->executionEnv = executionEnv;
             dtoMapper = std::make_unique<VariableDTOMapper>();
-            modbusMapper = std::make_unique<VariableModbusMapper>(executionEnv);
-
-            executionEnv->GetModbusServerManager()->RegisterWriteCallback(
-                [this](const ModbusWriteEvent &evt)
-                {
-                    this->OnModbusWrite(evt.modbusSpace, evt.startAddr, evt.count);
-                });
         }
 
         template <class T>
@@ -152,27 +97,9 @@ namespace MadMax
 
                 std::string valueStr = VariableValueToString(value);
 
-                // executionEnv->GetMQTTClient()->publish(topic.c_str(), valueStr.c_str(), true);
                 executionEnv->GetMQTTManager()->Publish(topic.c_str(), valueStr.c_str(), true);
 
-                // Check if the variable has any protocol bindings
-                const auto &protocolBindings = GetProtocolBindings(name);
-                if (!protocolBindings.empty())
-                {
-                    for (const auto &protocolBinding : protocolBindings)
-                    {
-                        auto *bind = protocolBinding.get();
-                        if (bind->GetProtocolType() == ProtocolType::Modbus)
-                        {
-                            modbusMapper && modbusMapper->ExposeToModbus(*obj, static_cast<ModbusBinding *>(bind)->GetAddress());
-                        }
-                        else if (bind->GetProtocolType() == ProtocolType::Bacnet)
-                        {
-                        }
-                    }
-                }
-
-                // modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
+                executionEnv->GetBindingManager()->PropertyChanged(*obj, "value");
 
                 writePersistencyData(name, obj);
             }
@@ -198,27 +125,9 @@ namespace MadMax
 
                 std::string valueStr = VariableValueToString(value);
 
-                // executionEnv->GetMQTTClient()->publish(topic.c_str(), valueStr.c_str(), true);
                 executionEnv->GetMQTTManager()->Publish(topic.c_str(), valueStr.c_str(), true);
 
-                // Check if the variable has any protocol bindings
-                const auto &protocolBindings = GetProtocolBindings(name);
-                if (!protocolBindings.empty())
-                {
-                    for (const auto &protocolBinding : protocolBindings)
-                    {
-                        auto *bind = protocolBinding.get();
-                        if (bind->GetProtocolType() == ProtocolType::Modbus)
-                        {
-                            modbusMapper && modbusMapper->ExposeToModbus(*obj, static_cast<ModbusBinding *>(bind)->GetAddress());
-                        }
-                        else if (bind->GetProtocolType() == ProtocolType::Bacnet)
-                        {
-                        }
-                    }
-                }
-
-                // modbusMapper && modbusMapper->ExposeToModbus(*obj, address);
+                executionEnv->GetBindingManager()->PropertyChanged(*obj, "value");
 
                 if (auto *serializable = base->AsSerializable())
                     writePersistencyData(name, serializable);
@@ -302,40 +211,6 @@ namespace MadMax
 
             return true;
         }
-
 #pragma endregion IProviderDTO
-
-        /* New binding part */
-        template <class T>
-        bool AddProtocolBinding(const std::string &name, std::unique_ptr<ProtocolBinding> binding)
-        {
-            MM_LOG_TRACE("VariableProvider", "AddProtocolBinding: Adding protocol binding for variable '%s'", name.c_str());
-
-            auto *obj = static_cast<Variable<T> *>(ObjectProvider<IPrimitive>::Get(name));
-
-            if (!obj)
-            {
-                MM_LOG_TRACE("VariableProvider", "AddProtocolBinding: Object '%s' not found", name.c_str());
-                return false;
-            }
-
-            if (binding.get()->GetProtocolType() == ProtocolType::Modbus)
-            {
-                MM_LOG_TRACE("VariableProvider", "AddProtocolBinding: Exposing variable '%s' to Modbus", name.c_str());
-                modbusMapper && modbusMapper->ExposeToModbus(*obj, static_cast<ModbusBinding *>(binding.get())->GetAddress());
-            }
-
-            return ObjectProvider<IPrimitive>::AddProtocolBinding(obj, std::move(binding));
-        }
-
-        const std::vector<std::unique_ptr<ProtocolBinding>> &GetProtocolBindings(const std::string &name) const
-        {
-            auto *obj = ObjectProvider<IPrimitive>::Get(name);
-
-            if (!obj)
-                return std::vector<std::unique_ptr<ProtocolBinding>>{};
-
-            return ObjectProvider<IPrimitive>::GetProtocolBindings(obj);
-        }
     };
 }

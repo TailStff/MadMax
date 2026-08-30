@@ -76,35 +76,35 @@ void MyApp::Init()
 
     // Au démarrage de l'application, on crée les objets nécessaires et on charge leurs valeurs depuis la base de données de persistance et on les associe à des adresses de registres Modbus
 
-    mmVariables->Create<float>("varFloat1", {.value = 0.0f});
-    mmVariables->AddProtocolBinding<float>("varFloat1", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 32));
-    mmVariables->AddProtocolBinding<float>("varFloat1", std::make_unique<MadMax::BacnetBinding>("value", 2, 1001));
+    auto *float1 = mmVariables->Create<float>("varFloat1", {.value = 0.0f});
+    AddProtocolBinding(*float1, std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 32));
+    AddProtocolBinding(*float1, std::make_unique<MadMax::BacnetBinding>("value", 2, 1001));
 
-    mmVariables->Create<float>("AB", {.value = 0.0f});
-    mmVariables->AddProtocolBinding<float>("AB", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 34));
+    auto *AB = mmVariables->Create<float>("AB", {.value = 0.0f});
+    AddProtocolBinding(*AB, std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 34));
 
-    mmVariables->Create<float>("XW", {.value = 0.0f});
-    mmVariables->AddProtocolBinding<float>("XW", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 36));
+    auto *XW = mmVariables->Create<float>("XW", {.value = 0.0f});
+    AddProtocolBinding(*XW, std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 36));
 
-    mmVariables->Create<int8_t>("myChar", {.value = 0});
-    mmVariables->AddProtocolBinding<int8_t>("myChar", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 38));
+    auto *myChar = mmVariables->Create<int8_t>("myChar", {.value = 0});
+    AddProtocolBinding(*myChar, std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 38));
 
-    mmVariables->Create<bool>("myBool", {.value = false});
-    mmVariables->AddProtocolBinding<bool>("myBool", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 39));
+    auto *myBool = mmVariables->Create<bool>("myBool", {.value = false});
+    AddProtocolBinding(*myBool, std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 39));
 
-    mmVariables->Create<uint8_t>("pumps_nbr", {.value = 0});
-    mmVariables->AddProtocolBinding<uint8_t>("pumps_nbr", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 50));
+    auto *pumps_nbr = mmVariables->Create<uint8_t>("pumps_nbr", {.value = 0});
+    AddProtocolBinding(*pumps_nbr, std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 50));
 
-    mmVariables->Create<bool>("Acquittement", {.value = false});
-    mmVariables->AddProtocolBinding<bool>("Acquittement", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 80));
+    auto *Acquittement = mmVariables->Create<bool>("Acquittement", {.value = false});
+    AddProtocolBinding(*Acquittement, std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 80));
 
     mmPumpSwaps->Create("4pmp", 4, 10000);
 
-    mmAccums->Create<uint64_t>("accum1", {.value = 0});
-    mmAccums->AddProtocolBinding<uint64_t>("accum1", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 64));
+    auto *accum1 = mmAccums->Create<uint64_t>("accum1", {.value = 0});
+    AddProtocolBinding(*accum1, std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 64));
 
-    mmDigitalEquipments->Create("de0", {.runTime = 10, .startCount = 1});
-    mmDigitalEquipments->AddProtocolBinding("de0", std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 40));
+    auto *de0 = mmDigitalEquipments->Create("de0", {.runTime = 10, .startCount = 1});
+    AddProtocolBinding(*de0, std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 40));
 
     mmTPulses->Create("tp0", false);
 

@@ -15,6 +15,9 @@ ExecutionEnv::ExecutionEnv(unsigned int _cycle, RTCWrapper *rtcWrapper, Preferen
   this->miniPrefs = miniPrefs;
   this->display = display;
 
+  this->modbusAdapter = new MadMax::ModbusAdapter(*modbusServerManager, *modbusServerMemoryManager);
+  this->bindingManager.RegisterProtocolAdapter(*this->modbusAdapter);
+
   GetfromPrefs();
   RetreiveHeapSize();
 
@@ -297,4 +300,14 @@ IPConfigDhcp ExecutionEnv::GetETHProperties() { return ETH; }
 IPConfigSTA ExecutionEnv::GetSTAProperties() { return STA; }
 IPConfigWAP ExecutionEnv::GetWAPProperties() { return WAP; }
 
-MQTTManager* ExecutionEnv::GetMQTTManager() { return mqttManager; }
+MQTTManager *ExecutionEnv::GetMQTTManager() { return mqttManager; }
+
+bool ExecutionEnv::AddProtocolBinding(MadMax::IPrimitive &object, std::unique_ptr<MadMax::ProtocolBinding> protocolBinding)
+{
+  return this->bindingManager.Bind(object, std::move(protocolBinding));
+}
+
+MadMax::BindingManager *ExecutionEnv::GetBindingManager()
+{
+  return &this->bindingManager;
+}

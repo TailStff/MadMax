@@ -22,5 +22,10 @@ namespace MadMax
         {
             return ProtocolType::Bacnet;
         }
+        
+        const std::string &GetProperty() const
+        {
+            return property;
+        }
     };
 }

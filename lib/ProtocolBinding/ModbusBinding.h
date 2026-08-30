@@ -26,5 +26,20 @@ namespace MadMax
         {
             return address;
         }
+
+        const std::string &GetProperty() const
+        {
+            return property;
+        }
+
+        ModbusBinding *AsModbusBinding() override
+        {
+            return this;
+        }
+
+        const ModbusBinding *AsModbusBinding() const override
+        {
+            return this;
+        }
     };
 }

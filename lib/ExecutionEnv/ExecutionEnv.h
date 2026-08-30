@@ -5,6 +5,10 @@
 #include <HardwareSerial.h>
 #include <Preferences.h>
 #include "MiniPrefs.h"
+
+#include "BindingManager.h"
+#include "ModbusAdapter.h"
+
 #include "ModbusServerManager.h"
 #include "ModbusServerMemoryManager.h"
 
@@ -17,7 +21,7 @@
 #include "RTCWrapper.h"
 
 // MQTT protocol library
-//#include <PubSubClient.h>
+// #include <PubSubClient.h>
 #include "MQTTManager.h"
 
 struct IPConfigWAP
@@ -78,8 +82,12 @@ private:
 
   Adafruit_SH1107 *display;
 
+  MadMax::BindingManager bindingManager;
+
   MadMax::ModbusServerManager *modbusServerManager;
   MadMax::ModbusServerMemoryManager *modbusServerMemoryManager;
+
+  MadMax::ModbusAdapter *modbusAdapter;
 
   MQTTManager *mqttManager;
 
@@ -135,6 +143,8 @@ public:
   MadMax::ModbusServerManager *GetModbusServerManager();
   MadMax::ModbusServerMemoryManager *GetModbusServerMemoryManager();
 
+  MadMax::BindingManager *GetBindingManager();
+
   uint8_t getSecond();
   uint8_t getMinute();
   uint8_t getHour();
@@ -162,8 +172,10 @@ public:
   void SetETHProperties(IPConfigDhcp config);
   void SetSTAProperties(IPConfigSTA config);
   void SetWAPProperties(IPConfigWAP config);
-  
-  MQTTManager* GetMQTTManager();
+
+  MQTTManager *GetMQTTManager();
+
+  bool AddProtocolBinding(MadMax::IPrimitive &object, std::unique_ptr<MadMax::ProtocolBinding> protocolBinding);
 };
 
 #endif
