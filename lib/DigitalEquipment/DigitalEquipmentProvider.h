@@ -101,37 +101,5 @@ namespace MadMax
         }
 
 #pragma endregion IProviderDTO
-
-        /* New binding part */
-        bool AddProtocolBinding(const std::string &name, std::unique_ptr<ProtocolBinding> binding)
-        {
-            MM_LOG_TRACE("VariableProvider", "AddProtocolBinding: Adding protocol binding for variable '%s'", name.c_str());
-
-            auto *obj = ObjectProvider<DigitalEquipment>::Get(name);
-
-            if (!obj)
-            {
-                MM_LOG_TRACE("VariableProvider", "AddProtocolBinding: Object '%s' not found", name.c_str());
-                return false;
-            }
-
-            if (binding.get()->GetProtocolType() == ProtocolType::Modbus)
-            {
-                MM_LOG_TRACE("VariableProvider", "AddProtocolBinding: Exposing variable '%s' to Modbus", name.c_str());
-            }
-
-            return ObjectProvider<DigitalEquipment>::AddProtocolBinding(obj, std::move(binding));
-        }
-
-        const std::vector<std::unique_ptr<ProtocolBinding>> &GetProtocolBindings(const std::string &name) const
-        {
-            auto *obj = ObjectProvider<DigitalEquipment>::Get(name);
-
-            if (!obj)
-                return std::vector<std::unique_ptr<ProtocolBinding>>{};
-
-            return ObjectProvider<DigitalEquipment>::GetProtocolBindings(obj);
-        }
-
     };
 }

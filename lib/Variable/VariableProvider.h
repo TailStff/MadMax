@@ -4,7 +4,6 @@
 #include "Variable.h"
 #include "DataType.h"
 #include "VariableDTOMapper.h"
-#include "VariableModbusMapper.h"
 #include "ModbusBinding.h"
 
 #include "mmLogger.h"

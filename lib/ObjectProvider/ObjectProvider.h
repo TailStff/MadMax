@@ -16,8 +16,6 @@ namespace MadMax
         struct Entry
         {
             std::unique_ptr<T> object;
-            // List of protocol bindings associated to the object
-            std::vector<std::unique_ptr<ProtocolBinding>> protocolBindings;
         };
 
         std::unordered_map<std::string, Entry> objects;
@@ -98,33 +96,5 @@ namespace MadMax
 
         const_iterator begin() const { return objects.begin(); }
         const_iterator end() const { return objects.end(); }
-
-        bool AddProtocolBinding(T *object, std::unique_ptr<ProtocolBinding> binding)
-        {
-            for (auto &pair : objects)
-            {
-                if (pair.second.object.get() == object)
-                {
-                    pair.second.protocolBindings.push_back(std::move(binding));
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        const std::vector<std::unique_ptr<ProtocolBinding>> &GetProtocolBindings(T *object) const
-        {
-            for (auto &pair : objects)
-            {
-                if (pair.second.object.get() == object)
-                {
-                    return pair.second.protocolBindings;
-                }
-            }
-
-            static std::vector<std::unique_ptr<ProtocolBinding>> empty;
-            return empty;
-        }
     };
 }
