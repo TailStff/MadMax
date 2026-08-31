@@ -18,16 +18,16 @@ namespace MadMax
 
     private:
         CoilData *coils;
-        uint16_t sizeOfCoils = 1000;
+        uint16_t sizeOfCoils = 10000;
 
         CoilData *discreteInputs;
-        uint16_t sizeOfDiscreteInputs = 100;
+        uint16_t sizeOfDiscreteInputs = 10000;
 
         uint16_t *inputRegisters;
-        uint16_t sizeOfInputRegisters = 100;
+        uint16_t sizeOfInputRegisters = 10000;
 
         uint16_t *holdingRegisters;
-        uint16_t sizeOfHoldingRegisters = 1000;
+        uint16_t sizeOfHoldingRegisters = 10000;
 
     public:
         // Constructors
