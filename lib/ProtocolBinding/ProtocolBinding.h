@@ -7,6 +7,7 @@ namespace MadMax
     /// @brief ahead definition
     class ModbusBinding;
     class BacnetBinding;
+    class MQTTBinding;
 
     class ProtocolBinding
     {
@@ -25,5 +26,14 @@ namespace MadMax
             return nullptr;
         }
 
+        virtual const MQTTBinding *AsMQTTBinding() const
+        {
+            return nullptr;
+        }
+
+        virtual MQTTBinding *AsMQTTBinding()
+        {
+            return nullptr;
+        }
     };
 }

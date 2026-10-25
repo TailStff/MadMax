@@ -8,6 +8,7 @@
 
 #include "ModbusBinding.h"
 #include "BacnetBinding.h"
+#include "MQTTBinding.h"
 
 #include "PIDProvider.h"
 #include "MinOnOffProvider.h"

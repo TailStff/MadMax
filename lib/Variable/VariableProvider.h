@@ -29,18 +29,6 @@ namespace MadMax
             executionEnv->GetMiniPrefs()->Put(name.c_str(), dataToWrite.data(), dataToWrite.size());
         }
 
-        bool checkCollision(uint16_t variableModbusAddress, uint16_t variableLength, uint16_t addr, uint16_t count)
-        {
-            uint16_t varStart = variableModbusAddress;
-            uint16_t varLengthWords = (variableLength + 1) / 2;
-            uint16_t varEnd = varStart + varLengthWords;
-
-            uint16_t writeStart = addr;
-            uint16_t writeEnd = addr + count;
-
-            return (writeStart < varEnd && writeEnd > varStart);
-        }
-
     public:
         VariableProvider(ExecutionEnv *executionEnv)
         {

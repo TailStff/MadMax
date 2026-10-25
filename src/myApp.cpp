@@ -78,7 +78,8 @@ void MyApp::Init()
 
     auto *float1 = mmVariables->Create<float>("varFloat1", {.value = 0.0f});
     AddProtocolBinding(*float1, std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 32));
-    AddProtocolBinding(*float1, std::make_unique<MadMax::BacnetBinding>("value", 2, 1001));
+    //AddProtocolBinding(*float1, std::make_unique<MadMax::BacnetBinding>("value", 2, 1001));
+    AddProtocolBinding(*float1, std::make_unique<MadMax::MQTTBinding>("value", "MadMax2/instance/Variables/{name}", "MadMax2/instance/Variables/{name}/set"));
 
     auto *AB = mmVariables->Create<float>("AB", {.value = 0.0f});
     AddProtocolBinding(*AB, std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 34));

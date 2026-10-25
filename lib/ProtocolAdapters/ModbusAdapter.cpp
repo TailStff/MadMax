@@ -11,6 +11,95 @@ namespace MadMax
             });
     }
 
+    bool ModbusAdapter::Bind(Binding &binding)
+    {
+        if (!IsSupported(binding))
+            return false;
+
+        IPrimitive *object = binding.GetObject();
+
+        if (!object)
+            return false;
+
+        uint32_t address;
+
+        if (!GetModbusAddress(binding, address))
+            return false;
+
+        if (address == UINT32_MAX)
+            return false;
+
+        uint8_t memorySpace = (address & 0x00FF0000) >> 16;
+
+        // Première version :
+        // uniquement Holding Registers.
+        if (memorySpace != 4)
+            return false;
+
+        size_t words = GetWordSize(*object);
+
+        if (words == 0)
+            return false;
+
+        uint16_t modbusAddress = address & 0x0000FFFF;
+
+        if (memoryManager.CheckHoldingRegisterOverFlow(modbusAddress, words))
+            return false;
+
+        // Expose immédiatement la valeur actuelle.
+        if (!ExposeToModbus(binding))
+            return false;
+
+        bindings.push_back(&binding);
+
+        return true;
+    }
+
+    void ModbusAdapter::OnWrite(const ModbusWriteEvent &event)
+    {
+        for (auto *binding : bindings)
+        {
+            if (!binding)
+                continue;
+
+            uint32_t address;
+
+            if (!GetModbusAddress(*binding, address))
+                continue;
+
+            uint8_t memorySpace = (address & 0x00FF0000) >> 16;
+
+            if (memorySpace != static_cast<uint8_t>(event.modbusSpace))
+                continue;
+
+            uint16_t bindingAddress = address & 0x0000FFFF;
+
+            size_t bindingLength = GetWordSize(*binding->GetObject());
+
+            if (bindingLength == 0)
+                continue;
+
+            if (!CheckCollision(bindingAddress, bindingLength, event.startAddr, event.count))
+                continue;
+
+            GetFromModbus(*binding);
+        }
+    }
+
+    void ModbusAdapter::PropertyChanged(Binding &binding)
+    {
+        auto *protocolBinding = binding.GetProtocolBinding();
+
+        if (!protocolBinding)
+            return;
+
+        // Pour l'instant, seul "value" est supporté.
+        if (protocolBinding->GetProperty() != "value")
+            return;
+
+        ExposeToModbus(binding);
+    }
+
     bool ModbusAdapter::IsSupported(const Binding &binding) const
     {
         auto *protocolBinding = binding.GetProtocolBinding();
@@ -71,50 +160,6 @@ namespace MadMax
         return (writeAddress < bindingEnd && writeEnd > bindingAddress);
     }
 
-    bool ModbusAdapter::Bind(Binding &binding)
-    {
-        if (!IsSupported(binding))
-            return false;
-
-        IPrimitive *object = binding.GetObject();
-
-        if (!object)
-            return false;
-
-        uint32_t address;
-
-        if (!GetModbusAddress(binding, address))
-            return false;
-
-        if (address == UINT32_MAX)
-            return false;
-
-        uint8_t memorySpace = (address & 0x00FF0000) >> 16;
-
-        // Première version :
-        // uniquement Holding Registers.
-        if (memorySpace != 4)
-            return false;
-
-        size_t words = GetWordSize(*object);
-
-        if (words == 0)
-            return false;
-
-        uint16_t modbusAddress = address & 0x0000FFFF;
-
-        if (memoryManager.CheckHoldingRegisterOverFlow(modbusAddress, words))
-            return false;
-
-        // Expose immédiatement la valeur actuelle.
-        if (!ExposeToModbus(binding))
-            return false;
-
-        bindings.push_back(&binding);
-
-        return true;
-    }
-
     bool ModbusAdapter::ExposeToModbus(Binding &binding)
     {
         IPrimitive *object = binding.GetObject();
@@ -159,37 +204,6 @@ namespace MadMax
             value);
 
         return success;
-    }
-
-    void ModbusAdapter::OnWrite(const ModbusWriteEvent &event)
-    {
-        for (auto *binding : bindings)
-        {
-            if (!binding)
-                continue;
-
-            uint32_t address;
-
-            if (!GetModbusAddress(*binding, address))
-                continue;
-
-            uint8_t memorySpace = (address & 0x00FF0000) >> 16;
-
-            if (memorySpace != static_cast<uint8_t>(event.modbusSpace))
-                continue;
-
-            uint16_t bindingAddress = address & 0x0000FFFF;
-
-            size_t bindingLength = GetWordSize(*binding->GetObject());
-
-            if (bindingLength == 0)
-                continue;
-
-            if (!CheckCollision(bindingAddress, bindingLength, event.startAddr, event.count))
-                continue;
-
-            GetFromModbus(*binding);
-        }
     }
 
     bool ModbusAdapter::GetFromModbus(Binding &binding)
@@ -237,19 +251,5 @@ namespace MadMax
             current);
 
         return success;
-    }
-
-    void ModbusAdapter::PropertyChanged(Binding &binding)
-    {
-        auto *protocolBinding = binding.GetProtocolBinding();
-
-        if (!protocolBinding)
-            return;
-
-        // Pour l'instant, seul "value" est supporté.
-        if (protocolBinding->GetProperty() != "value")
-            return;
-
-        ExposeToModbus(binding);
     }
 }
