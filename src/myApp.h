@@ -49,12 +49,10 @@ private:
     // We store the last time we display something (to limit framerate)
     uint64_t lastMilliDisplay = 0;
 
-    /*
-    bool blink = false;
-    bool blink2 = false;
-    bool blink3 = false;
-    bool blink4 = false;
+    CoilData *writeCoils;
+    CoilData *readDIs;
 
+    /*
     double measure;
     double pidValue;
     */
@@ -85,6 +83,8 @@ private:
 
     // mmPumpSwap *permut4;
 
+    MBTask t1, t2, t3, t4, t5;
+
     bool AddProtocolBinding(MadMax::IPrimitive &object, std::unique_ptr<MadMax::ProtocolBinding> protocolBinding)
     {
         return this->executionEnv->AddProtocolBinding(object, std::move(protocolBinding));
@@ -92,7 +92,7 @@ private:
 
 public:
     // Constructors
-    MyApp(ExecutionEnv *executionEnv, ModbusClientRTU &MBRTU,  MadMax::ModbusServerManager *modbusServerManager, MadMax::ModbusServerMemoryManager *modbusServerMemoryManager, DigitalInputs *digitalInputs, DigitalOutputs *digitalOutputs);
+    MyApp(ExecutionEnv *executionEnv, ModbusClientRTU &MBRTU, MadMax::ModbusServerManager *modbusServerManager, MadMax::ModbusServerMemoryManager *modbusServerMemoryManager, DigitalInputs *digitalInputs, DigitalOutputs *digitalOutputs);
     ~MyApp();
 
     void Init();

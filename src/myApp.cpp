@@ -51,12 +51,17 @@ MyApp::MyApp(ExecutionEnv *executionEnv, ModbusClientRTU &MBRTU, MadMax::ModbusS
     mmPumpSwaps = new MadMax::PumpSwapProvider(executionEnv);
     mmVariables = new MadMax::VariableProvider(executionEnv);
     mmAccums = new MadMax::AccumProvider(executionEnv);
+
+    writeCoils = new CoilData(4, false);
+    readDIs = new CoilData(2, false);
 }
 
 MyApp::~MyApp()
 {
     delete this->scheduler;
     // delete feedbackError;
+
+    delete writeCoils;
 }
 
 void MyApp::Init()
@@ -78,7 +83,7 @@ void MyApp::Init()
 
     auto *float1 = mmVariables->Create<float>("varFloat1", {.value = 0.0f});
     AddProtocolBinding(*float1, std::make_unique<MadMax::ModbusBinding>("value", 4 << 16 | 32));
-    //AddProtocolBinding(*float1, std::make_unique<MadMax::BacnetBinding>("value", 2, 1001));
+    // AddProtocolBinding(*float1, std::make_unique<MadMax::BacnetBinding>("value", 2, 1001));
     AddProtocolBinding(*float1, std::make_unique<MadMax::MQTTBinding>("value", "MadMax2/instance/Variables/{name}", "MadMax2/instance/Variables/{name}/set"));
 
     auto *AB = mmVariables->Create<float>("AB", {.value = 0.0f});
@@ -114,6 +119,42 @@ void MyApp::Init()
     mmDelayOnOffs->Create("delay0", false);
 
     mmRunTimes->Create("rt0", {.value = 100});
+
+    t1.Set2(32, MBFunction::WriteMultipleCoils, 0, writeCoils->coils(), 1000, writeCoils->data(), [](const MBTask &r)
+            {
+                switch (r.state)
+                {
+                case MBTaskState::Done:
+                    MM_LOG_TRACE("MBRTU", "Task 1 done");
+                    break;
+                case MBTaskState::Error:
+                    MM_LOG_TRACE("MBRTU", "Task 1 error");
+                    break;
+                case MBTaskState::Timeout:
+                    MM_LOG_TRACE("MBRTU", "Task 1 timeout");
+                    break;
+                } });
+
+    t2.Set2(32, MBFunction::ReadDiscreteInputs, 0, 3, 1000, nullptr, [](const MBTask &r)
+           {
+                switch (r.state)
+                {
+                case MBTaskState::Done:
+                    MM_LOG_TRACE("MBRTU", "Task 2 done");
+                    MM_LOG_TRACE("MBRTU", std::to_string(r.readData[0]).c_str());
+                    break;
+                case MBTaskState::Error:
+                    MM_LOG_TRACE("MBRTU", "Task 2 error");
+                    break;
+                case MBTaskState::Timeout:
+                    MM_LOG_TRACE("MBRTU", "Task 2 timeout");
+                    break;
+                } });
+
+    this->scheduler->addTask(t1);
+    this->scheduler->addTask(t2);
+
+    // WriteSingleRegister
 
     /*
         // Tache modbus 1: lecture de 2 registres à l'adresse 0 du slave 1 toutes les secondes
@@ -263,6 +304,11 @@ void MyApp::Loop()
         mmPumpSwaps->SavePersistencyValuesToStorage("4pmp");
     }
     memMinute = minute;
+
+    writeCoils->set(0, this->executionEnv->getSecond() % 2 == 0);
+    writeCoils->set(1, this->executionEnv->getSecond() % 5 == 0);
+    writeCoils->set(2, this->executionEnv->getSecond() % 10 == 0);
+    writeCoils->set(3, this->executionEnv->getSecond() % 20 == 0);
 
     executionEnv->GetMiniPrefs()->defragStep();
 
@@ -522,6 +568,8 @@ void MyApp::Loop()
 
         executionEnv->Display()->display();
     }
+
+    this->scheduler->loop();
 
     /*
     bool cmd = digitalInputs->Get(0);

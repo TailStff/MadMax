@@ -1,4 +1,5 @@
 #include "ModbusScheduler.h"
+#include <CoilData.h>
 
 MBTask::MBTask()
 {
@@ -215,6 +216,27 @@ void ModbusScheduler::onData(ModbusMessage response, uint32_t token)
     t->readData.clear();
 
     uint8_t fc = response.getFunctionCode();
+
+    if (fc == 1 || fc == 2)
+    {
+        uint8_t byteCount = response[2];
+
+        // Read the data bytes and convert to 16-bit values
+        // this allow to return the data in the same format as read holding registers and read input registers
+        for (uint16_t i = 0; i < byteCount; i += 2)
+        {
+            uint16_t value = response[3 + i];
+
+            // Remarque sur le static_cast :
+            // static_cast : explicit conversion, more modern and expressive, preferred in C++.
+            // Cast C (uint16_t) : implicit conversion, older style, less safe, can lead to unexpected behavior if not used carefully.
+
+            if (i + 1 < byteCount)
+                value |= static_cast<uint16_t>(response[3 + i + 1]) << 8;
+
+            t->readData.push_back(value);
+        }
+    }
 
     if (fc == 3 || fc == 4)
     {
