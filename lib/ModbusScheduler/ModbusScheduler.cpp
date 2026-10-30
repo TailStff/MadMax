@@ -91,6 +91,10 @@ void ModbusScheduler::handleTimeouts()
                 t.nextPollTime = now + t.pollIntervalMs;
             }
 
+            // Reset the TriggerRequest flag if it was set
+            if (t.TriggerRequest)
+                t.TriggerRequest = false;
+
             if (t.callback)
                 t.callback(t);
         }
@@ -127,13 +131,28 @@ void ModbusScheduler::startPendingTasks()
 
         if (!t.inProgress && (now >= t.nextPollTime || t.TriggerRequest))
         {
-            sendRequest(t);
+            if (addModbusRequest(t))
+            {
+                t.inProgress = true;
+                t.requestStartTime = now;
+                t.state = MBTaskState::Running;
 
-            t.inProgress = true;
-            t.requestStartTime = now;
-            t.state = MBTaskState::Running;
+                active++;
+            }
+            else
+            {
+                // If the request was not added successfully, set the task state to Error
+                t.inProgress = false;
+                t.state = MBTaskState::Error;
+                t.nextPollTime = now + t.pollIntervalMs;
 
-            active++;
+                // Reset the TriggerRequest flag if it was set
+                if (t.TriggerRequest)
+                    t.TriggerRequest = false;
+
+                if (t.callback)
+                    t.callback(t);
+            }
         }
 
         // avance circulaire
@@ -142,7 +161,7 @@ void ModbusScheduler::startPendingTasks()
     }
 }
 
-void ModbusScheduler::sendRequest(MBTask &t)
+bool ModbusScheduler::addModbusRequest(MBTask &t)
 {
     uint32_t token = tokenCounter++;
 
@@ -181,14 +200,9 @@ void ModbusScheduler::sendRequest(MBTask &t)
     }
 
     if (err != Modbus::SUCCESS)
-    {
-        t.inProgress = false;
-        t.state = MBTaskState::Error;
-        t.nextPollTime = millis() + t.pollIntervalMs;
+        return false; // Return false to indicate that the request was not added successfully
 
-        if (t.callback)
-            t.callback(t);
-    }
+    return true; // Return true to indicate that the request was added successfully
 }
 
 MBTask *ModbusScheduler::findTaskByToken(uint32_t token)
@@ -248,11 +262,11 @@ void ModbusScheduler::onData(ModbusMessage response, uint32_t token)
         }
     }
 
-    if (t->callback)
-        t->callback(*t);
-
     if (t->TriggerRequest)
         t->TriggerRequest = false;
+
+    if (t->callback)
+        t->callback(*t);
 }
 
 void ModbusScheduler::onError(Modbus::Error error, uint32_t token)
@@ -274,6 +288,9 @@ void ModbusScheduler::onError(Modbus::Error error, uint32_t token)
         t->retryCount = 0;
         t->nextPollTime = millis() + t->pollIntervalMs;
     }
+
+    if (t->TriggerRequest)
+        t->TriggerRequest = false;
 
     if (t->callback)
         t->callback(*t);

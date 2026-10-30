@@ -120,7 +120,7 @@ void MyApp::Init()
 
     mmRunTimes->Create("rt0", {.value = 100});
 
-    t1.Set2(32, MBFunction::WriteMultipleCoils, 0, writeCoils->coils(), 1000, writeCoils->data(), [](const MBTask &r)
+    t1.Set2(32, MBFunction::WriteMultipleCoils, 0, writeCoils->coils(), 100, writeCoils->data(), [](const MBTask &r)
             {
                 switch (r.state)
                 {
@@ -135,7 +135,7 @@ void MyApp::Init()
                     break;
                 } });
 
-    t2.Set2(32, MBFunction::ReadDiscreteInputs, 0, 3, 1000, nullptr, [](const MBTask &r)
+    t2.Set2(32, MBFunction::ReadDiscreteInputs, 0, 3, 100, nullptr, [](const MBTask &r)
            {
                 switch (r.state)
                 {

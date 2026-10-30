@@ -54,7 +54,10 @@ public:
     // scheduling
     uint32_t pollIntervalMs = 1000;
     uint32_t nextPollTime = 0;
-    // Flag that can be set when it in case of many pending tasks. Still subject to maxParallel limit.
+
+    // Flag that indicates whether the task should be triggered immediately, bypassing the normal polling interval.
+    // When set to true, the task will be executed as soon as possible, regardless of its scheduled nextPollTime.
+    // After the task is executed, this flag will be reset to false.
     bool TriggerRequest = false;
 
     // communication
@@ -92,7 +95,7 @@ private:
     uint32_t tokenCounter = 1;
     size_t nextIndex = 0;
 
-    void sendRequest(MBTask &t);
+    bool addModbusRequest(MBTask &t);
     void handleTimeouts();
     void startPendingTasks();
 
