@@ -54,6 +54,10 @@ void ExecutionEnv::GetfromPrefs()
   WAP.SSID = prefs->getString("wapSSID", "AP_Madmax");
   WAP.Password = prefs->getString("wapPassword", "password");
 
+  modbusTCPServerConfig.Port = prefs->getUInt("mbTcpServ_Port", 502);
+  modbusTCPServerConfig.MaxClient = prefs->getUInt("mbTcpServ_MaxClient", 2);
+  modbusTCPServerConfig.Timeout = prefs->getUInt("mbTcpServ_Timeout", 20000);
+
   MM_LOG_TRACE("ExecutionEnv", "Done reading Preferences data");
 
   prefs->end();
@@ -310,4 +314,46 @@ bool ExecutionEnv::AddProtocolBinding(MadMax::IPrimitive &object, std::unique_pt
 MadMax::BindingManager *ExecutionEnv::GetBindingManager()
 {
   return &this->bindingManager;
+}
+
+void ExecutionEnv::InitModbusTCPServer()
+{
+  // Start ModbusTCP server
+  this->modbusServerManager->RegisterWorkers();
+  if (this->modbusServerManager->Start(modbusTCPServerConfig.Port, modbusTCPServerConfig.MaxClient, modbusTCPServerConfig.Timeout))
+    MM_LOG_TRACE("SYSTEM", "Modbus server successfully created");
+  else
+    MM_LOG_ERROR("SYSTEM", "Modbus server creation failed");
+}
+
+void ExecutionEnv::SetModbusTCPServerConfig(ModbusTCPServerConfig config)
+{
+  MM_LOG_TRACE("ExecutionEnv", "Entering SetModbusTCPServerConfig()");
+
+  // Update the ModbusTCP server configuration
+  modbusTCPServerConfig.Port = config.Port;
+  modbusTCPServerConfig.MaxClient = config.MaxClient;
+  modbusTCPServerConfig.Timeout = config.Timeout;
+
+  prefs->begin(PREFSAPPID, false);
+
+  prefs->putUInt("mbTcpServ_Port", config.Port);
+  prefs->putUInt("mbTcpServ_MaxClient", config.MaxClient);
+  prefs->putUInt("mbTcpServ_Timeout", config.Timeout);
+
+  prefs->end();
+
+  MM_LOG_TRACE("ExecutionEnv", "Exiting SetModbusTCPServerConfig()");
+}
+
+void ExecutionEnv::GetModbusTCPServerConfig(ModbusTCPServerConfig &config)
+{
+  MM_LOG_TRACE("ExecutionEnv", "Entering GetModbusTCPServerConfig()");
+
+  // Retrieve the ModbusTCP server configuration
+  config.Port = modbusTCPServerConfig.Port;
+  config.MaxClient = modbusTCPServerConfig.MaxClient;
+  config.Timeout = modbusTCPServerConfig.Timeout;
+
+  MM_LOG_TRACE("ExecutionEnv", "Exiting GetModbusTCPServerConfig()");
 }

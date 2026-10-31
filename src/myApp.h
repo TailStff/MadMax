@@ -84,6 +84,10 @@ private:
     // mmPumpSwap *permut4;
 
     MBTask t1, t2, t3, t4, t5;
+    MBTask ASTask01;
+    MBTask ASTask02;
+    MBTask ASTask03;
+    MBTask ASTask04;
 
     bool AddProtocolBinding(MadMax::IPrimitive &object, std::unique_ptr<MadMax::ProtocolBinding> protocolBinding)
     {

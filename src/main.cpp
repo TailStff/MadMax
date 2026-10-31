@@ -73,10 +73,6 @@
 #include "ModbusServerMemoryManager.h"
 #include "ModbusServerManager.h"
 
-const uint16_t MBserver_Port = 502;      // Port number the server shall listen to
-const uint16_t MBserver_MaxClient = 2;   // Max clients connected at the same time
-const uint16_t MBserver_Timeout = 20000; // Timeout
-
 MadMax::ModbusServerMemoryManager modbusServerMemoryManager;
 MadMax::ModbusServerManager mbServerManager(modbusServerMemoryManager);
 #pragma endregion
@@ -153,7 +149,10 @@ public:
   }
 };
 
+// Create a Modbus RTU client instance
 MyModbusClientRTU MBRTU(Serial2);
+
+// ModbusClientTCP MBTCP(ETH.localIP(), 502, 2000, 2); // Create a Modbus TCP client instance
 
 // OLED screen global object
 #ifdef OLED_SSD1306
@@ -464,12 +463,8 @@ void setup()
   // Prepare hardware to manage Inputs and Outputs
   SetupInputsOutputs();
 
-  // Start ModbusTCP server
-  mbServerManager.RegisterWorkers();
-  if (mbServerManager.Start(MBserver_Port, MBserver_MaxClient, MBserver_Timeout))
-    MM_LOG_TRACE("SYSTEM", "Modbus server successfully created");
-  else
-    MM_LOG_ERROR("SYSTEM", "Modbus server creation failed");
+  // Initialize ModbusTCP server
+  executionEnv->InitModbusTCPServer();
 
   // Start Web server
   webAPI = new WebAPI(server, myApp, executionEnv);

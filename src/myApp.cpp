@@ -2,6 +2,7 @@
 
 #include <ModbusClientRTU.h>
 #include <HardwareSerial.h>
+#include "ModbusFrameDecoder.h"
 
 #define GPIO0 0
 #define DISPLAYPERIOD 0
@@ -135,7 +136,7 @@ void MyApp::Init()
                     break;
                 } });
 
-    t2.Set2(32, MBFunction::ReadDiscreteInputs, 0, 3, 100, nullptr, [](const MBTask &r)
+    t2.Set(32, MBFunction::ReadDiscreteInputs, 0, 3, 100, nullptr, [](const MBTask &r)
            {
                 switch (r.state)
                 {
@@ -151,9 +152,108 @@ void MyApp::Init()
                     break;
                 } });
 
+    // Validated on AS with 10 discretes inputs to read, 2000ms polling interval, and a callback function that logs the task state and the first value read from the Modbus device.
+    // Timeout handling doesn't work for now, return Error state instead of Timeout state when the task times out, need to investigate why.
+    ASTask01.Set(1, MBFunction::ReadDiscreteInputs, 0, 10, 2000, nullptr, [](const MBTask &r)
+                 {
+                switch (r.state)
+                {
+                case MBTaskState::Done:
+                    MM_LOG_TRACE("MBRTU", "AS Task 1 done");
+
+                    bool resultBool;
+                    if (ModbusCoilsFrameDecoder(r.readData, 0, resultBool))
+                        MM_LOG_TRACE("MBRTU", ("AS Task 1 decoded bool: " + std::to_string(resultBool)).c_str());
+                    else
+                        MM_LOG_TRACE("MBRTU", "AS Task 1 failed to decode bool");
+
+                    break;
+                case MBTaskState::Error:
+                    MM_LOG_TRACE("MBRTU", "AS Task 1 error");
+                    break;
+                case MBTaskState::Timeout:
+                    MM_LOG_TRACE("MBRTU", "AS Task 1 timeout");
+                    break;
+                } });
+
+    // Validated on AS with 10 coils to read, 2000ms polling interval, and a callback function that logs the task state and the first value read from the Modbus device.
+    // Timeout handling doesn't work for now, return Error state instead of Timeout state when the task times out, need to investigate why.
+    ASTask02.Set(1, MBFunction::ReadCoils, 0, 10, 2000, nullptr, [](const MBTask &r)
+                 {
+                switch (r.state)
+                {
+                case MBTaskState::Done:
+                    MM_LOG_TRACE("MBRTU", "AS Task 2 done");
+
+                    bool resultBool;
+                    if (ModbusCoilsFrameDecoder(r.readData, 1, resultBool))
+                        MM_LOG_TRACE("MBRTU", ("AS Task 2 decoded bool: " + std::to_string(resultBool)).c_str());
+                    else
+                        MM_LOG_TRACE("MBRTU", "AS Task 2 failed to decode bool");
+
+                    break;
+                case MBTaskState::Error:
+                    MM_LOG_TRACE("MBRTU", "AS Task 2 error");
+                    break;
+                case MBTaskState::Timeout:
+                    MM_LOG_TRACE("MBRTU", "AS Task 2 timeout");
+                    break;
+                } });
+
+    // Validated on AS with 10 holding registers to read, 2000ms polling interval, and a callback function that logs the task state and the first value read from the Modbus device.
+    // Timeout handling doesn't work for now, return Error state instead of Timeout state when the task times out, need to investigate why.
+    ASTask03.Set(1, MBFunction::ReadHoldingRegisters, 20, 10, 2000, nullptr, [](const MBTask &r)
+                 {
+                switch (r.state)
+                {
+                case MBTaskState::Done:
+                    MM_LOG_TRACE("MBRTU", "AS Task 3 done");
+
+                    float resultFloat;
+                    if (ModbusRegistersFrameDecoder(r.readData, 0, resultFloat, WordOrder::LowWordFirst))
+                        MM_LOG_TRACE("MBRTU", ("AS Task 3 decoded float: " + std::to_string(resultFloat)).c_str());
+                    else
+                        MM_LOG_TRACE("MBRTU", "AS Task 3 failed to decode float");
+
+                    break;
+                case MBTaskState::Error:
+                    MM_LOG_TRACE("MBRTU", "AS Task 3 error");
+                    break;
+                case MBTaskState::Timeout:
+                    MM_LOG_TRACE("MBRTU", "AS Task 3 timeout");
+                    break;
+                } });
+
+    // Validated on AS with 10 holding registers to read, 2000ms polling interval, and a callback function that logs the task state and the first value read from the Modbus device.
+    // Timeout handling doesn't work for now, return Error state instead of Timeout state when the task times out, need to investigate why.
+    ASTask04.Set(1, MBFunction::ReadInputRegisters, 20, 10, 2000, nullptr, [](const MBTask &r)
+                 {
+                switch (r.state)
+                {
+                case MBTaskState::Done:
+                    MM_LOG_TRACE("MBRTU", "AS Task 4 done");
+
+                    float resultFloat;
+                    if (ModbusRegistersFrameDecoder(r.readData, 2, resultFloat, WordOrder::HighWordFirst))
+                        MM_LOG_TRACE("MBRTU", ("AS Task 4 decoded float: " + std::to_string(resultFloat)).c_str());
+                    else
+                        MM_LOG_TRACE("MBRTU", "AS Task 4 failed to decode float");
+                        
+                    break;
+                case MBTaskState::Error:
+                    MM_LOG_TRACE("MBRTU", "AS Task 4 error");
+                    break;
+                case MBTaskState::Timeout:
+                    MM_LOG_TRACE("MBRTU", "AS Task 4 timeout");
+                    break;
+                } });
+
     this->scheduler->addTask(t1);
     this->scheduler->addTask(t2);
-
+    this->scheduler->addTask(ASTask01);
+    this->scheduler->addTask(ASTask02);
+    this->scheduler->addTask(ASTask03);
+    this->scheduler->addTask(ASTask04);
     // WriteSingleRegister
 
     /*

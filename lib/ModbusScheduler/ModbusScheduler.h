@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <functional>
-#include <stdint.h>
 #include <ModbusClientRTU.h>
 
 enum class MBTaskState
@@ -33,7 +32,17 @@ public:
     MBTask();
     ~MBTask();
 
+    /// @brief Set a new task with the specified parameters. This method initializes the task's properties, including the slave address, function code, starting address, quantity of registers or coils to read/write, polling interval, pointer to the value(s) to write (if applicable), and a callback function to be invoked upon task completion or error.
+    /// @param slave Slave address of the Modbus device to communicate with.
+    /// @param function Function code representing the Modbus operation to perform (e.g., read/write).
+    /// @param address Starting address of the Modbus operation.
+    /// @param quantity Quantity of registers or coils to read/write.
+    /// @param pollIntervalMs Polling interval in milliseconds.
+    /// @param writeValuePtr Pointer to the value(s) to send through the Modbus interface (nullptr if not applicable).
+    /// @param callback Callback function to be invoked upon task completion or error.
     void Set(uint8_t slave, MBFunction function, uint16_t address, uint16_t quantity = 1, uint32_t pollIntervalMs = 1000, uint16_t *writeValuePtr = nullptr, std::function<void(const MBTask &)> callback = nullptr);
+
+
     void Set2(uint8_t slave, MBFunction function, uint16_t address, uint16_t quantity = 1, uint32_t pollIntervalMs = 1000, uint8_t *writeValuePtr = nullptr, std::function<void(const MBTask &)> callback = nullptr);
 
     uint8_t slave;

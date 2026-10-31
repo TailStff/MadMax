@@ -53,6 +53,13 @@ struct IPConfigSTA : public IPConfigDhcp
   String Password;
 };
 
+struct ModbusTCPServerConfig
+{
+  uint16_t Port;
+  uint16_t MaxClient;
+  uint16_t Timeout;
+}; 
+
 class ExecutionEnv
 {
 private:
@@ -104,6 +111,8 @@ private:
 
   IPConfigDhcp actualETH;
   IPConfigDhcp actualSTA;
+
+  ModbusTCPServerConfig modbusTCPServerConfig;
 
   void GetfromPrefs();
   IPAddress GetIPAddressFromPrefs(const char *stringID, IPAddress defaultValue);
@@ -176,6 +185,11 @@ public:
   MQTTManager *GetMQTTManager();
 
   bool AddProtocolBinding(MadMax::IPrimitive &object, std::unique_ptr<MadMax::ProtocolBinding> protocolBinding);
+
+  void InitModbusTCPServer();
+
+  void SetModbusTCPServerConfig(ModbusTCPServerConfig config);
+  void GetModbusTCPServerConfig(ModbusTCPServerConfig &config);
 };
 
 #endif
