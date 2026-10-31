@@ -68,6 +68,8 @@ void WebAPI::handleAPI(AsyncWebServerRequest *request)
                 return getRunTimesList(request);
             else if (parts[0] == "Interfaces")
                 return getInterfacesList(request);
+            else if (parts[0] == "Protocols")
+                return getProtocolsList(request);
         }
         else if (parts.size() == 2)
         {
@@ -95,6 +97,11 @@ void WebAPI::handleAPI(AsyncWebServerRequest *request)
                     return getInterfaceSta(request);
                 else if (parts[1] == "wap")
                     return getInterfaceWap(request);
+            }
+            else if (parts[0] == "Protocols")
+            {
+                if (parts[1] == "ModbusTCPServer")
+                    return getProtocolModbusTCPServer(request);
             }
         }
         else if (parts.size() == 3)
@@ -900,6 +907,54 @@ void WebAPI::apiRouter(AsyncWebServerRequest *request)
 }
 
 #pragma endregion Interfaces
+
+#pragma region Protocols
+
+void WebAPI::getProtocolsList(AsyncWebServerRequest *request)
+{
+    JsonDocument doc;
+    JsonArray arr = doc.to<JsonArray>();
+
+    std::vector<std::string> _list = {"ModbusTCPServer"};
+
+    for (const auto &dto : _list)
+    {
+        JsonObject obj = arr.add<JsonObject>();
+        obj["name"] = dto;
+
+        if (dto == "ModbusTCPServer")
+            getProtocolModbusTCPServerProperties(obj);
+    }
+
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
+    serializeJson(doc, *response);
+    request->send(response);
+}
+
+void WebAPI::getProtocolModbusTCPServer(AsyncWebServerRequest *request)
+{
+    JsonDocument doc;
+    JsonObject obj = doc.to<JsonObject>();
+
+    obj["name"] = "ModbusTCPServer";
+    getProtocolModbusTCPServerProperties(obj);
+
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
+    serializeJson(doc, *response);
+    request->send(response);
+}
+
+void WebAPI::getProtocolModbusTCPServerProperties(JsonObject obj)
+{
+    auto mbTcpServ = executionEnv->GetModbusTCPServerConfig();
+
+    obj["active"] = mbTcpServ.Active;
+    obj["port"] = mbTcpServ.Port;
+    obj["maxClient"] = mbTcpServ.MaxClient;
+    obj["timeout"] = mbTcpServ.Timeout;
+}
+
+#pragma endregion Protocols
 
 void WebAPI::apiBodyHandler(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
 {

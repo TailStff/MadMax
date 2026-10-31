@@ -55,10 +55,15 @@ struct IPConfigSTA : public IPConfigDhcp
 
 struct ModbusTCPServerConfig
 {
+  /// @brief Flag to indicate if the ModbusTCP server is active or not
+  bool Active;
+  /// @brief Port number the server shall listen to
   uint16_t Port;
+  /// @brief Max clients connected at the same time
   uint16_t MaxClient;
+  /// @brief Timeout in milliseconds for client connections
   uint16_t Timeout;
-}; 
+};
 
 class ExecutionEnv
 {
@@ -189,7 +194,7 @@ public:
   void InitModbusTCPServer();
 
   void SetModbusTCPServerConfig(ModbusTCPServerConfig config);
-  void GetModbusTCPServerConfig(ModbusTCPServerConfig &config);
+  ModbusTCPServerConfig GetModbusTCPServerConfig();
 };
 
 #endif

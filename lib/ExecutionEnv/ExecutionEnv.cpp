@@ -54,6 +54,7 @@ void ExecutionEnv::GetfromPrefs()
   WAP.SSID = prefs->getString("wapSSID", "AP_Madmax");
   WAP.Password = prefs->getString("wapPassword", "password");
 
+  modbusTCPServerConfig.Active = prefs->getBool("mbTcpServ_Active", true);
   modbusTCPServerConfig.Port = prefs->getUInt("mbTcpServ_Port", 502);
   modbusTCPServerConfig.MaxClient = prefs->getUInt("mbTcpServ_MaxClient", 2);
   modbusTCPServerConfig.Timeout = prefs->getUInt("mbTcpServ_Timeout", 20000);
@@ -318,6 +319,15 @@ MadMax::BindingManager *ExecutionEnv::GetBindingManager()
 
 void ExecutionEnv::InitModbusTCPServer()
 {
+  if (!modbusTCPServerConfig.Active)
+    return;
+
+  if (this->modbusServerManager == nullptr || this->modbusServerMemoryManager == nullptr)
+  {
+    MM_LOG_ERROR("ExecutionEnv", "Modbus server manager or memory manager is not initialized");
+    return;
+  }
+
   // Start ModbusTCP server
   this->modbusServerManager->RegisterWorkers();
   if (this->modbusServerManager->Start(modbusTCPServerConfig.Port, modbusTCPServerConfig.MaxClient, modbusTCPServerConfig.Timeout))
@@ -331,12 +341,14 @@ void ExecutionEnv::SetModbusTCPServerConfig(ModbusTCPServerConfig config)
   MM_LOG_TRACE("ExecutionEnv", "Entering SetModbusTCPServerConfig()");
 
   // Update the ModbusTCP server configuration
+  modbusTCPServerConfig.Active = config.Active;
   modbusTCPServerConfig.Port = config.Port;
   modbusTCPServerConfig.MaxClient = config.MaxClient;
   modbusTCPServerConfig.Timeout = config.Timeout;
 
   prefs->begin(PREFSAPPID, false);
 
+  prefs->putBool("mbTcpServ_Active", config.Active);
   prefs->putUInt("mbTcpServ_Port", config.Port);
   prefs->putUInt("mbTcpServ_MaxClient", config.MaxClient);
   prefs->putUInt("mbTcpServ_Timeout", config.Timeout);
@@ -346,14 +358,4 @@ void ExecutionEnv::SetModbusTCPServerConfig(ModbusTCPServerConfig config)
   MM_LOG_TRACE("ExecutionEnv", "Exiting SetModbusTCPServerConfig()");
 }
 
-void ExecutionEnv::GetModbusTCPServerConfig(ModbusTCPServerConfig &config)
-{
-  MM_LOG_TRACE("ExecutionEnv", "Entering GetModbusTCPServerConfig()");
-
-  // Retrieve the ModbusTCP server configuration
-  config.Port = modbusTCPServerConfig.Port;
-  config.MaxClient = modbusTCPServerConfig.MaxClient;
-  config.Timeout = modbusTCPServerConfig.Timeout;
-
-  MM_LOG_TRACE("ExecutionEnv", "Exiting GetModbusTCPServerConfig()");
-}
+ModbusTCPServerConfig ExecutionEnv::GetModbusTCPServerConfig() { return modbusTCPServerConfig; }
