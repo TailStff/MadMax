@@ -61,9 +61,12 @@ private:
     void setInterfaceWap(JsonDocument doc, AsyncWebServerRequest *request);
 #pragma endregion Interfaces
 
+#pragma region Protocols
     void getProtocolsList(AsyncWebServerRequest *request);
     void getProtocolModbusTCPServer(AsyncWebServerRequest *request);
     void getProtocolModbusTCPServerProperties(JsonObject obj);
+    void setProtocolModbusTCPServerProperties(JsonDocument doc, AsyncWebServerRequest *request);
+#pragma endregion Protocols
 
 public:
     WebAPI(AsyncWebServer &server, MyApp *app, ExecutionEnv *env);

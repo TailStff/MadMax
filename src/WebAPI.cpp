@@ -139,6 +139,13 @@ void WebAPI::handleAPI(AsyncWebServerRequest *request)
                 if (parts[1] == "eth" || parts[1] == "sta" || parts[1] == "wap")
                     return;
             }
+
+            if (parts[0] == "Protocols")
+            {
+                // We check Interface existence before reading the body, to avoid reading a potentially big body if the Interface doesn't exist or is not writable
+                if (parts[1] == "ModbusTCPServer")
+                    return;
+            }
         }
         else if (parts.size() == 4)
         {
@@ -954,6 +961,21 @@ void WebAPI::getProtocolModbusTCPServerProperties(JsonObject obj)
     obj["timeout"] = mbTcpServ.Timeout;
 }
 
+void WebAPI::setProtocolModbusTCPServerProperties(JsonDocument doc, AsyncWebServerRequest *request)
+{
+    ModbusTCPServerConfig config;
+    config.Active = doc["active"].as<bool>();
+    config.Port = doc["port"].as<uint16_t>();
+    config.MaxClient = doc["maxClient"].as<uint8_t>();
+    config.Timeout = doc["timeout"].as<uint16_t>();
+
+    executionEnv->SetModbusTCPServerConfig(config);
+
+    executionEnv->SetRestart();
+
+    request->send(200, "text/plain", "OK");
+}
+
 #pragma endregion Protocols
 
 void WebAPI::apiBodyHandler(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
@@ -1147,6 +1169,22 @@ void WebAPI::apiBodyHandler(AsyncWebServerRequest *request, uint8_t *data, size_
         else
         {
             request->send(400, "text/plain", "Unsupported interface");
+            return;
+        }
+    }
+
+    if (parts[0] == "Protocols")
+    {
+        // check if URL consists of 2 parts -> /API/Protocols/{name}
+        if (parts.size() != 2)
+        {
+            request->send(400, "text/plain", "Invalid URL");
+            return;
+        }
+
+        if (parts[1] == "ModbusTCPServer")
+        {
+            setProtocolModbusTCPServerProperties(doc, request);
             return;
         }
     }
