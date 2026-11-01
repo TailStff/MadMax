@@ -3,6 +3,8 @@
 #include <vector>
 #include <functional>
 #include <ModbusClientRTU.h>
+#include "ModbusSingleBit.h"
+#include "ModbusRegisters.h"
 
 enum class MBTaskState
 {
@@ -42,8 +44,72 @@ public:
     /// @param callback Callback function to be invoked upon task completion or error.
     void Set(uint8_t slave, MBFunction function, uint16_t address, uint16_t quantity = 1, uint32_t pollIntervalMs = 1000, uint16_t *writeValuePtr = nullptr, std::function<void(const MBTask &)> callback = nullptr);
 
-
     void Set2(uint8_t slave, MBFunction function, uint16_t address, uint16_t quantity = 1, uint32_t pollIntervalMs = 1000, uint8_t *writeValuePtr = nullptr, std::function<void(const MBTask &)> callback = nullptr);
+
+    /// @brief Prepares a task to write a single coil
+    /// @param slave Slave address of the Modbus device to communicate with.
+    /// @param address Starting address of the Modbus operation.
+    /// @param pollIntervalMs Polling interval in milliseconds.
+    /// @param obj Object containing the coil value to write.
+    /// @param callback Callback function to be invoked upon task completion or error.
+    void PrepareWriteSingleCoilTask(uint8_t slave, uint16_t address, uint32_t pollIntervalMs, ModbusSingleBit *obj, std::function<void(const MBTask &)> callback);
+
+    /// @brief Prepares a task to write a single register
+    /// @param slave Slave address of the Modbus device to communicate with.
+    /// @param address Starting address of the Modbus operation.
+    /// @param pollIntervalMs Polling interval in milliseconds.
+    /// @param obj Object containing the register value to write.
+    /// @param callback Callback function to be invoked upon task completion or error.
+    void PrepareWriteSingleRegisterTask(uint8_t slave, uint16_t address, uint32_t pollIntervalMs, uint16_t *obj, std::function<void(const MBTask &)> callback);
+
+    /// @brief Prepares a task to write multiple registers
+    /// @param slave Slave address of the Modbus device to communicate with.
+    /// @param address Starting address of the Modbus operation.
+    /// @param pollIntervalMs Polling interval in milliseconds.
+    /// @param obj Object containing the register values to write.
+    /// @param callback Callback function to be invoked upon task completion or error.
+    void PrepareWriteMultipleRegistersTask(uint8_t slave, uint16_t address, uint32_t pollIntervalMs, ModbusRegisters *obj, std::function<void(const MBTask &)> callback);
+
+    /// @brief Prepares a task to read input registers
+    /// @param slave Slave address of the Modbus device to communicate with.
+    /// @param address Starting address of the Modbus operation.
+    /// @param quantity Quantity of input registers to read.
+    /// @param pollIntervalMs Polling interval in milliseconds.
+    /// @param callback Callback function to be invoked upon task completion or error.
+    void PrepareReadInputRegistersTask(uint8_t slave, uint16_t address, uint16_t quantity, uint32_t pollIntervalMs, std::function<void(const MBTask &)> callback);
+
+    /// @brief Prepares a task to read holding registers
+    /// @param slave Slave address of the Modbus device to communicate with.
+    /// @param address Starting address of the Modbus operation.
+    /// @param quantity Quantity of holding registers to read.
+    /// @param pollIntervalMs Polling interval in milliseconds.
+    /// @param callback Callback function to be invoked upon task completion or error.
+    void PrepareReadHoldingRegistersTask(uint8_t slave, uint16_t address, uint16_t quantity, uint32_t pollIntervalMs, std::function<void(const MBTask &)> callback);
+
+    /// @brief Prepares a task to read coils
+    /// @param slave Slave address of the Modbus device to communicate with.
+    /// @param address Starting address of the Modbus operation.
+    /// @param quantity Quantity of coils to read.
+    /// @param pollIntervalMs Polling interval in milliseconds.
+    /// @param callback Callback function to be invoked upon task completion or error.
+    void PrepareReadCoilsTask(uint8_t slave, uint16_t address, uint16_t quantity, uint32_t pollIntervalMs, std::function<void(const MBTask &)> callback);
+
+    /// @brief Prepares a task to read discrete inputs
+    /// @param slave Slave address of the Modbus device to communicate with.
+    /// @param address Starting address of the Modbus operation.
+    /// @param quantity Quantity of discrete inputs to read.
+    /// @param pollIntervalMs Polling interval in milliseconds.
+    /// @param callback Callback function to be invoked upon task completion or error.
+    void PrepareReadDiscreteInputsTask(uint8_t slave, uint16_t address, uint16_t quantity, uint32_t pollIntervalMs, std::function<void(const MBTask &)> callback);
+
+    /// @brief Prepares a task to write multiple coils
+    /// @param slave Slave address of the Modbus device to communicate with.
+    /// @param address Starting address of the Modbus operation.
+    /// @param quantity Quantity of coils to write.
+    /// @param pollIntervalMs Polling interval in milliseconds.
+    /// @param writeValuePtr Pointer to the array of coil values to write.
+    /// @param callback Callback function to be invoked upon task completion or error.
+    void PrepareWriteMultipleCoilsTask(uint8_t slave, uint16_t address, uint16_t quantity, uint32_t pollIntervalMs, uint8_t *writeValuePtr, std::function<void(const MBTask &)> callback);
 
     uint8_t slave;
     MBFunction function;

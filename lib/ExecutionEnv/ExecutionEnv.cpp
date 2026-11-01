@@ -54,10 +54,10 @@ void ExecutionEnv::GetfromPrefs()
   WAP.SSID = prefs->getString("wapSSID", "AP_Madmax");
   WAP.Password = prefs->getString("wapPassword", "password");
 
-  modbusTCPServerConfig.Active = prefs->getBool("mbTcpServ_Active", true);
-  modbusTCPServerConfig.Port = prefs->getUInt("mbTcpServ_Port", 502);
-  modbusTCPServerConfig.MaxClient = prefs->getUInt("mbTcpServ_MaxClient", 2);
-  modbusTCPServerConfig.Timeout = prefs->getUInt("mbTcpServ_Timeout", 20000);
+  modbusTCPServerConfig.Active = prefs->getBool("mbTcpSrv_Act", true);
+  modbusTCPServerConfig.Port = prefs->getUInt("mbTcpSrv_Port", 502);
+  modbusTCPServerConfig.MaxClient = prefs->getUInt("mbTcpSrv_MaxC", 2);
+  modbusTCPServerConfig.Timeout = prefs->getUInt("mbTcpSrv_TOut", 20000);
 
   MM_LOG_TRACE("ExecutionEnv", "Done reading Preferences data");
 
@@ -348,10 +348,10 @@ void ExecutionEnv::SetModbusTCPServerConfig(ModbusTCPServerConfig config)
 
   prefs->begin(PREFSAPPID, false);
 
-  prefs->putBool("mbTcpServ_Active", config.Active);
-  prefs->putUInt("mbTcpServ_Port", config.Port);
-  prefs->putUInt("mbTcpServ_MaxClient", config.MaxClient);
-  prefs->putUInt("mbTcpServ_Timeout", config.Timeout);
+  prefs->putBool("mbTcpSrv_Act", config.Active);
+  prefs->putUInt("mbTcpSrv_Port", config.Port);
+  prefs->putUInt("mbTcpSrv_MaxC", config.MaxClient);
+  prefs->putUInt("mbTcpSrv_TOut", config.Timeout);
 
   prefs->end();
 

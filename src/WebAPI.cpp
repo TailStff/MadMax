@@ -966,7 +966,7 @@ void WebAPI::setProtocolModbusTCPServerProperties(JsonDocument doc, AsyncWebServ
     ModbusTCPServerConfig config;
     config.Active = doc["active"].as<bool>();
     config.Port = doc["port"].as<uint16_t>();
-    config.MaxClient = doc["maxClient"].as<uint8_t>();
+    config.MaxClient = doc["maxClient"].as<uint16_t>();
     config.Timeout = doc["timeout"].as<uint16_t>();
 
     executionEnv->SetModbusTCPServerConfig(config);

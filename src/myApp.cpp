@@ -55,6 +55,11 @@ MyApp::MyApp(ExecutionEnv *executionEnv, ModbusClientRTU &MBRTU, MadMax::ModbusS
 
     writeCoils = new CoilData(4, false);
     readDIs = new CoilData(2, false);
+
+    SingleCoil1 = ModbusSingleBit(false);
+    SingleRegister1 = 0;
+
+    MultipleRegisters1 = new ModbusRegisters(10);
 }
 
 MyApp::~MyApp()
@@ -63,6 +68,8 @@ MyApp::~MyApp()
     // delete feedbackError;
 
     delete writeCoils;
+    delete readDIs;
+    delete MultipleRegisters1;
 }
 
 void MyApp::Init()
@@ -121,12 +128,11 @@ void MyApp::Init()
 
     mmRunTimes->Create("rt0", {.value = 100});
 
-    t1.Set2(32, MBFunction::WriteMultipleCoils, 0, writeCoils->coils(), 100, writeCoils->data(), [](const MBTask &r)
-            {
+    t1.PrepareWriteMultipleCoilsTask(32, 0, 4, 500, writeCoils->data(), [](const MBTask &r)
+                                     {
                 switch (r.state)
                 {
                 case MBTaskState::Done:
-                    MM_LOG_TRACE("MBRTU", "Task 1 done");
                     break;
                 case MBTaskState::Error:
                     MM_LOG_TRACE("MBRTU", "Task 1 error");
@@ -136,13 +142,27 @@ void MyApp::Init()
                     break;
                 } });
 
-    t2.Set(32, MBFunction::ReadDiscreteInputs, 0, 3, 100, nullptr, [](const MBTask &r)
-           {
+    t2.PrepareReadDiscreteInputsTask(32, 0, 2, 500, [](const MBTask &r)
+                                     {
                 switch (r.state)
                 {
                 case MBTaskState::Done:
-                    MM_LOG_TRACE("MBRTU", "Task 2 done");
-                    MM_LOG_TRACE("MBRTU", std::to_string(r.readData[0]).c_str());
+
+                    bool resultBool;
+                    if (ModbusCoilsFrameDecoder(r.readData, 0, resultBool))
+                    {
+                        //MM_LOG_TRACE("MBRTU", ("Task 2 decoded bool index 0: " + std::to_string(resultBool)).c_str());
+                    }
+                    else
+                        MM_LOG_TRACE("MBRTU", "Task 2 failed to decode bool index 0");
+
+                    if (ModbusCoilsFrameDecoder(r.readData, 1, resultBool))
+                    {
+                        //MM_LOG_TRACE("MBRTU", ("Task 2 decoded bool index 1: " + std::to_string(resultBool)).c_str());
+                    }
+                    else
+                        MM_LOG_TRACE("MBRTU", "Task 2 failed to decode bool index 1");
+
                     break;
                 case MBTaskState::Error:
                     MM_LOG_TRACE("MBRTU", "Task 2 error");
@@ -154,16 +174,17 @@ void MyApp::Init()
 
     // Validated on AS with 10 discretes inputs to read, 2000ms polling interval, and a callback function that logs the task state and the first value read from the Modbus device.
     // Timeout handling doesn't work for now, return Error state instead of Timeout state when the task times out, need to investigate why.
-    ASTask01.Set(1, MBFunction::ReadDiscreteInputs, 0, 10, 2000, nullptr, [](const MBTask &r)
-                 {
+    ASTask01.PrepareReadDiscreteInputsTask(1, 0, 10, 2000, [](const MBTask &r)
+                                           {
                 switch (r.state)
                 {
                 case MBTaskState::Done:
-                    MM_LOG_TRACE("MBRTU", "AS Task 1 done");
 
                     bool resultBool;
                     if (ModbusCoilsFrameDecoder(r.readData, 0, resultBool))
-                        MM_LOG_TRACE("MBRTU", ("AS Task 1 decoded bool: " + std::to_string(resultBool)).c_str());
+                    {
+                        //MM_LOG_TRACE("MBRTU", ("AS Task 1 decoded bool: " + std::to_string(resultBool)).c_str());
+                    }
                     else
                         MM_LOG_TRACE("MBRTU", "AS Task 1 failed to decode bool");
 
@@ -178,16 +199,17 @@ void MyApp::Init()
 
     // Validated on AS with 10 coils to read, 2000ms polling interval, and a callback function that logs the task state and the first value read from the Modbus device.
     // Timeout handling doesn't work for now, return Error state instead of Timeout state when the task times out, need to investigate why.
-    ASTask02.Set(1, MBFunction::ReadCoils, 0, 10, 2000, nullptr, [](const MBTask &r)
-                 {
+    ASTask02.PrepareReadCoilsTask(1, 0, 10, 2000, [](const MBTask &r)
+                                  {
                 switch (r.state)
                 {
                 case MBTaskState::Done:
-                    MM_LOG_TRACE("MBRTU", "AS Task 2 done");
 
                     bool resultBool;
                     if (ModbusCoilsFrameDecoder(r.readData, 1, resultBool))
-                        MM_LOG_TRACE("MBRTU", ("AS Task 2 decoded bool: " + std::to_string(resultBool)).c_str());
+                    {
+                        //MM_LOG_TRACE("MBRTU", ("AS Task 2 decoded bool: " + std::to_string(resultBool)).c_str());
+                    }
                     else
                         MM_LOG_TRACE("MBRTU", "AS Task 2 failed to decode bool");
 
@@ -202,16 +224,17 @@ void MyApp::Init()
 
     // Validated on AS with 10 holding registers to read, 2000ms polling interval, and a callback function that logs the task state and the first value read from the Modbus device.
     // Timeout handling doesn't work for now, return Error state instead of Timeout state when the task times out, need to investigate why.
-    ASTask03.Set(1, MBFunction::ReadHoldingRegisters, 20, 10, 2000, nullptr, [](const MBTask &r)
-                 {
+    ASTask03.PrepareReadHoldingRegistersTask(1, 20, 10, 2000, [](const MBTask &r)
+                                             {
                 switch (r.state)
                 {
                 case MBTaskState::Done:
-                    MM_LOG_TRACE("MBRTU", "AS Task 3 done");
 
                     float resultFloat;
                     if (ModbusRegistersFrameDecoder(r.readData, 0, resultFloat, WordOrder::LowWordFirst))
-                        MM_LOG_TRACE("MBRTU", ("AS Task 3 decoded float: " + std::to_string(resultFloat)).c_str());
+                    {
+                        //MM_LOG_TRACE("MBRTU", ("AS Task 3 decoded float: " + std::to_string(resultFloat)).c_str());
+                    }
                     else
                         MM_LOG_TRACE("MBRTU", "AS Task 3 failed to decode float");
 
@@ -224,18 +247,19 @@ void MyApp::Init()
                     break;
                 } });
 
-    // Validated on AS with 10 holding registers to read, 2000ms polling interval, and a callback function that logs the task state and the first value read from the Modbus device.
+    // Validated on AS with 10 inputs registers to read, 2000ms polling interval, and a callback function that logs the task state and the first value read from the Modbus device.
     // Timeout handling doesn't work for now, return Error state instead of Timeout state when the task times out, need to investigate why.
-    ASTask04.Set(1, MBFunction::ReadInputRegisters, 20, 10, 2000, nullptr, [](const MBTask &r)
-                 {
+    ASTask04.PrepareReadInputRegistersTask(1, 20, 10, 2000, [](const MBTask &r)
+                                           {
                 switch (r.state)
                 {
                 case MBTaskState::Done:
-                    MM_LOG_TRACE("MBRTU", "AS Task 4 done");
 
                     float resultFloat;
                     if (ModbusRegistersFrameDecoder(r.readData, 2, resultFloat, WordOrder::HighWordFirst))
-                        MM_LOG_TRACE("MBRTU", ("AS Task 4 decoded float: " + std::to_string(resultFloat)).c_str());
+                    {
+                        //MM_LOG_TRACE("MBRTU", ("AS Task 4 decoded float: " + std::to_string(resultFloat)).c_str());
+                    }
                     else
                         MM_LOG_TRACE("MBRTU", "AS Task 4 failed to decode float");
                         
@@ -248,72 +272,63 @@ void MyApp::Init()
                     break;
                 } });
 
+    // Validated on AS with 1 coil to write, 500ms polling interval, and a callback function that logs the task state and the first value read from the Modbus device.
+    // Timeout handling doesn't work for now, return Error state instead of Timeout state when the task times out, need to investigate why.
+    ASTask05.PrepareWriteSingleCoilTask(1, 0, 500, &SingleCoil1, [](const MBTask &r)
+                                        {
+                switch (r.state)
+                {
+                case MBTaskState::Done:
+                    break;
+                case MBTaskState::Error:
+                    MM_LOG_TRACE("MBRTU", "AS Task 5 error");
+                    break;
+                case MBTaskState::Timeout:
+                    MM_LOG_TRACE("MBRTU", "AS Task 5 timeout");
+                    break;
+                } });
+
+    // Validated on AS with 1 holding register to write, 1000 ms polling interval, and a callback function that logs the task state and the first value read from the Modbus device.
+    // Timeout handling doesn't work for now, return Error state instead of Timeout state when the task times out, need to investigate why.
+    ASTask06.PrepareWriteSingleRegisterTask(1, 0, 10000, &SingleRegister1, [](const MBTask &r)
+                                            {
+                switch (r.state)
+                {
+                case MBTaskState::Done:
+                    break;
+                case MBTaskState::Error:
+                    MM_LOG_TRACE("MBRTU", "AS Task 6 error");
+                    break;
+                case MBTaskState::Timeout:
+                    MM_LOG_TRACE("MBRTU", "AS Task 6 timeout");
+                    break;
+                } });
+
+    // Validated on AS with 10 holding registers to write, 10000 ms polling interval, and a callback function that logs the task state and the first value read from the Modbus device.
+    // Timeout handling doesn't work for now, return Error state instead of Timeout state when the task times out, need to investigate why.
+    ASTask07.PrepareWriteMultipleRegistersTask(1, 1, 10000, MultipleRegisters1, [](const MBTask &r)
+                                               {
+                switch (r.state)
+                {
+                case MBTaskState::Done:
+                    break;
+                case MBTaskState::Error:
+                    MM_LOG_TRACE("MBRTU", "AS Task 7 error");
+                    break;
+                case MBTaskState::Timeout:
+                    MM_LOG_TRACE("MBRTU", "AS Task 7 timeout");
+                    break;
+                } });
+
     this->scheduler->addTask(t1);
     this->scheduler->addTask(t2);
     this->scheduler->addTask(ASTask01);
     this->scheduler->addTask(ASTask02);
     this->scheduler->addTask(ASTask03);
     this->scheduler->addTask(ASTask04);
-    // WriteSingleRegister
-
-    /*
-        // Tache modbus 1: lecture de 2 registres à l'adresse 0 du slave 1 toutes les secondes
-        t1.Set(1, MBFunction::ReadHoldingRegisters, 0, 2, 1000, nullptr, [](const MBTask &r)
-               { if (r.state == MBTaskState::Done) { for (auto v : r.readData) Serial.println(v);} });
-        this->scheduler->addTask(t1);
-
-        // Tache modbus 2: écriture d'un registre à l'adresse 0 du slave 1 toutes les secondes
-        t2.Set(1, MBFunction::WriteSingleRegister, 0, 1, 100, &writeValue, [](const MBTask &r) {});
-        this->scheduler->addTask(t2);
-
-        // Tache modbus 3: lecture de 1 registre à l'adresse 2 du slave 1 toutes les secondes
-        t3.Set(1, MBFunction::ReadHoldingRegisters, 2, 1, 1000, nullptr, [](const MBTask &r)
-               { if (r.state == MBTaskState::Done) { for (auto v : r.readData) Serial.println(v);} });
-        this->scheduler->addTask(t3);
-
-        // Tache modbus 4: lecture de 1 registre à l'adresse 3 du slave 1 toutes les secondes
-        t4.Set(1, MBFunction::ReadHoldingRegisters, 3, 1, 1000, nullptr, [](const MBTask &r)
-               { if (r.state == MBTaskState::Done) { for (auto v : r.readData) Serial.println(v); } });
-        this->scheduler->addTask(t4);
-
-        // Tache modbus 5: lecture de 1 registre à l'adresse 4 du slave 1 toutes les secondes
-        t5.Set(1, MBFunction::ReadHoldingRegisters, 4, 1, 1000, nullptr, [](const MBTask &r)
-               { if (r.state == MBTaskState::Done) { for (auto v : r.readData) Serial.println(v); } });
-        this->scheduler->addTask(t5);
-
-        // Tache modbus
-        t6.Set(2, MBFunction::ReadHoldingRegisters, 22, 2, 1000, nullptr, [](const MBTask &r)
-               { if (r.state == MBTaskState::Done) { counter1 = *(uint32_t*)&r.readData[0]; } });
-        this->scheduler->addTask(t6);
-
-        // Tache modbus
-        t7.Set(2, MBFunction::ReadInputRegisters, 15, 1, 100, nullptr, [](const MBTask &r)
-               { if (r.state == MBTaskState::Done) { for (auto v : r.readData) Serial.println(v); } });
-        this->scheduler->addTask(t7);*/
-
-    // Tache modbus
-    /*
-    t8.Set(3, MBFunction::ReadHoldingRegisters, 0, 1, 100, nullptr, [](const MBTask &r)
-           { if (r.state == MBTaskState::Done) { for (auto v : r.readData) Serial.println(v); } });
-    this->scheduler->addTask(t8);
-
-    uint16_t *writeValues = new uint16_t[4]{1, 2, 3, 4};
-
-    t9.Set(3, MBFunction::WriteMultipleRegisters, 1, 4, 1000, writeValues, [](const MBTask &r)
-           { if (r.state == MBTaskState::Done) { for (auto v : r.readData) Serial.println(v); } });
-    this->scheduler->addTask(t9);
-
-    t10.Set2(3, MBFunction::WriteMultipleCoils, 2, writeCoils.coils(), 100, writeCoils.data(), [](const MBTask &r)
-             { if (r.state == MBTaskState::Done) { for (auto v : r.readData) Serial.println(v); } });
-    this->scheduler->addTask(t10);
-
-    floatValue = (float *)new uint16_t[2]; // reserve 2 registers for a float value
-    *floatValue = 0;
-
-    t11.Set(3, MBFunction::WriteMultipleRegisters, 5, 2, 1000, (uint16_t *)floatValue, [](const MBTask &r)
-            { if (r.state == MBTaskState::Done) { for (auto v : r.readData) Serial.println(v); } });
-    this->scheduler->addTask(t11);
-    */
+    this->scheduler->addTask(ASTask05);
+    this->scheduler->addTask(ASTask06);
+    this->scheduler->addTask(ASTask07);
 }
 
 MadMax::DigitalEquipmentStatus status;
@@ -409,6 +424,14 @@ void MyApp::Loop()
     writeCoils->set(1, this->executionEnv->getSecond() % 5 == 0);
     writeCoils->set(2, this->executionEnv->getSecond() % 10 == 0);
     writeCoils->set(3, this->executionEnv->getSecond() % 20 == 0);
+
+    SingleCoil1.set(this->executionEnv->getSecond() % 2 == 0);
+    SingleRegister1 = this->executionEnv->getSecond();
+
+    MultipleRegisters1->set(0, this->executionEnv->getSecond());
+    MultipleRegisters1->set(1, this->executionEnv->getMinute());
+    MultipleRegisters1->set(2, this->executionEnv->getHour());
+    MultipleRegisters1->set(3, this->executionEnv->getDay());
 
     executionEnv->GetMiniPrefs()->defragStep();
 

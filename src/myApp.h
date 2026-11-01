@@ -51,6 +51,9 @@ private:
 
     CoilData *writeCoils;
     CoilData *readDIs;
+    ModbusSingleBit SingleCoil1;
+    uint16_t SingleRegister1;
+    ModbusRegisters *MultipleRegisters1;
 
     /*
     double measure;
@@ -88,6 +91,9 @@ private:
     MBTask ASTask02;
     MBTask ASTask03;
     MBTask ASTask04;
+    MBTask ASTask05;
+    MBTask ASTask06;
+    MBTask ASTask07;
 
     bool AddProtocolBinding(MadMax::IPrimitive &object, std::unique_ptr<MadMax::ProtocolBinding> protocolBinding)
     {
