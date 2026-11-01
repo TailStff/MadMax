@@ -4,28 +4,6 @@
 MBTask::MBTask() {}
 MBTask::~MBTask() {}
 
-void MBTask::Set(uint8_t slave, MBFunction function, uint16_t address, uint16_t quantity, uint32_t pollIntervalMs, uint16_t *writeValuePtr, std::function<void(const MBTask &)> callback)
-{
-    this->slave = slave;
-    this->function = function;
-    this->address = address;
-    this->quantity = quantity;
-    this->pollIntervalMs = pollIntervalMs;
-    this->writeValuePtr = writeValuePtr;
-    this->callback = callback;
-}
-
-void MBTask::Set2(uint8_t slave, MBFunction function, uint16_t address, uint16_t quantity, uint32_t pollIntervalMs, uint8_t *writeValuePtr, std::function<void(const MBTask &)> callback)
-{
-    this->slave = slave;
-    this->function = function;
-    this->address = address;
-    this->quantity = quantity;
-    this->pollIntervalMs = pollIntervalMs;
-    this->coilsValuePtr = writeValuePtr;
-    this->callback = callback;
-}
-
 /// @brief Prepares a task to write a single coil
 /// @param slave Slave address of the Modbus device to communicate with.
 /// @param address Starting address of the Modbus operation.
