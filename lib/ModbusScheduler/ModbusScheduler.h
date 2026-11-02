@@ -6,14 +6,16 @@
 #include "ModbusSingleBit.h"
 #include "ModbusRegisters.h"
 
+#include "mmLogger.h"
+
 enum class MBTaskState
 {
     // Task is waiting for its next poll time to be reached, initial state
     Idle,
     Running,
+    RetryWait,
     Done,
-    Error,
-    Timeout
+    Failed
 };
 
 enum class MBFunction
@@ -138,12 +140,14 @@ public:
     // communication
     bool inProgress = false;
     uint32_t requestStartTime = 0;
-    uint32_t timeoutMs = 1000;
+    uint32_t timeoutMs = 3000;
 
     uint8_t retryCount = 0;
     uint8_t retryMax = 3;
 
     uint32_t token;
+
+    Modbus::Error lastError = Modbus::SUCCESS;
 
     // callback
     std::function<void(const MBTask &)> callback;
@@ -166,7 +170,7 @@ public:
 private:
     ModbusClientRTU &mb;
     std::vector<MBTask> tasks;
-    uint8_t maxParallel = 200;
+    uint8_t maxParallel = 1;
     uint32_t tokenCounter = 1;
     size_t nextIndex = 0;
 

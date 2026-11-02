@@ -408,8 +408,8 @@ void setup()
   MM_LOG_TRACE("SYSTEM", "RS485 interface setted successfully");
 
   // Set up ModbusRTU client.
-  MBRTU.setTimeout(100);
-  MBRTU.setQueueLimit(200);
+  MBRTU.setTimeout(2000); // Timout global pour l'interface ModbusRTU
+  MBRTU.setQueueLimit(1);
   MBRTU.begin(Serial2);
 
   MM_LOG_TRACE("SYSTEM", "RS485 client setted successfully");

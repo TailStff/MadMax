@@ -134,11 +134,8 @@ void MyApp::Init()
                 {
                 case MBTaskState::Done:
                     break;
-                case MBTaskState::Error:
-                    MM_LOG_TRACE("MBRTU", "Task 1 error");
-                    break;
-                case MBTaskState::Timeout:
-                    MM_LOG_TRACE("MBRTU", "Task 1 timeout");
+                case MBTaskState::Failed:
+                    MM_LOG_TRACE("MBRTU", "Task 1 failed");
                     break;
                 } });
 
@@ -164,11 +161,8 @@ void MyApp::Init()
                         MM_LOG_TRACE("MBRTU", "Task 2 failed to decode bool index 1");
 
                     break;
-                case MBTaskState::Error:
-                    MM_LOG_TRACE("MBRTU", "Task 2 error");
-                    break;
-                case MBTaskState::Timeout:
-                    MM_LOG_TRACE("MBRTU", "Task 2 timeout");
+                case MBTaskState::Failed:
+                    MM_LOG_TRACE("MBRTU", "Task 2 failed");
                     break;
                 } });
 
@@ -189,11 +183,8 @@ void MyApp::Init()
                         MM_LOG_TRACE("MBRTU", "AS Task 1 failed to decode bool");
 
                     break;
-                case MBTaskState::Error:
-                    MM_LOG_TRACE("MBRTU", "AS Task 1 error");
-                    break;
-                case MBTaskState::Timeout:
-                    MM_LOG_TRACE("MBRTU", "AS Task 1 timeout");
+                case MBTaskState::Failed:
+                    MM_LOG_TRACE("MBRTU", "AS Task 1 failed");
                     break;
                 } });
 
@@ -214,11 +205,8 @@ void MyApp::Init()
                         MM_LOG_TRACE("MBRTU", "AS Task 2 failed to decode bool");
 
                     break;
-                case MBTaskState::Error:
-                    MM_LOG_TRACE("MBRTU", "AS Task 2 error");
-                    break;
-                case MBTaskState::Timeout:
-                    MM_LOG_TRACE("MBRTU", "AS Task 2 timeout");
+                case MBTaskState::Failed:
+                    MM_LOG_TRACE("MBRTU", "AS Task 2 failed");
                     break;
                 } });
 
@@ -239,11 +227,8 @@ void MyApp::Init()
                         MM_LOG_TRACE("MBRTU", "AS Task 3 failed to decode float");
 
                     break;
-                case MBTaskState::Error:
-                    MM_LOG_TRACE("MBRTU", "AS Task 3 error");
-                    break;
-                case MBTaskState::Timeout:
-                    MM_LOG_TRACE("MBRTU", "AS Task 3 timeout");
+                case MBTaskState::Failed:
+                    MM_LOG_TRACE("MBRTU", "AS Task 3 failed");
                     break;
                 } });
 
@@ -264,11 +249,8 @@ void MyApp::Init()
                         MM_LOG_TRACE("MBRTU", "AS Task 4 failed to decode float");
                         
                     break;
-                case MBTaskState::Error:
-                    MM_LOG_TRACE("MBRTU", "AS Task 4 error");
-                    break;
-                case MBTaskState::Timeout:
-                    MM_LOG_TRACE("MBRTU", "AS Task 4 timeout");
+                case MBTaskState::Failed:
+                    MM_LOG_TRACE("MBRTU", "AS Task 4 failed");
                     break;
                 } });
 
@@ -280,11 +262,8 @@ void MyApp::Init()
                 {
                 case MBTaskState::Done:
                     break;
-                case MBTaskState::Error:
-                    MM_LOG_TRACE("MBRTU", "AS Task 5 error");
-                    break;
-                case MBTaskState::Timeout:
-                    MM_LOG_TRACE("MBRTU", "AS Task 5 timeout");
+                case MBTaskState::Failed:
+                    MM_LOG_TRACE("MBRTU", "AS Task 5 failed");
                     break;
                 } });
 
@@ -296,11 +275,8 @@ void MyApp::Init()
                 {
                 case MBTaskState::Done:
                     break;
-                case MBTaskState::Error:
-                    MM_LOG_TRACE("MBRTU", "AS Task 6 error");
-                    break;
-                case MBTaskState::Timeout:
-                    MM_LOG_TRACE("MBRTU", "AS Task 6 timeout");
+                case MBTaskState::Failed:
+                    MM_LOG_TRACE("MBRTU", "AS Task 6 failed");
                     break;
                 } });
 
@@ -312,11 +288,8 @@ void MyApp::Init()
                 {
                 case MBTaskState::Done:
                     break;
-                case MBTaskState::Error:
-                    MM_LOG_TRACE("MBRTU", "AS Task 7 error");
-                    break;
-                case MBTaskState::Timeout:
-                    MM_LOG_TRACE("MBRTU", "AS Task 7 timeout");
+                case MBTaskState::Failed:
+                    MM_LOG_TRACE("MBRTU", "AS Task 7 failed");
                     break;
                 } });
 
