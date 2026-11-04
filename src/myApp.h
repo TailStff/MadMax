@@ -23,6 +23,7 @@
 #include "VariableProvider.h"
 #include "AccumProvider.h"
 
+#include "ModbusTask.h"
 #include "ModbusScheduler.h"
 #include "ModbusServerManager.h"
 #include "ModbusServerMemoryManager.h"

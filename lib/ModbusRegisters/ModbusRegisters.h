@@ -1,13 +1,16 @@
 #pragma once
 
 #include <stdio.h>
+#include <cstring>
 
 class ModbusRegisters
 {
 public:
-    ModbusRegisters(uint16_t _count = 0)
+    ModbusRegisters(uint16_t _count = 0) : count(_count), rawdata(nullptr)
     {
-        count = _count;
+        if (count == 0)
+            return;
+
         rawdata = new uint16_t[count];
         memset(rawdata, 0, count << 1);
     }
@@ -16,6 +19,10 @@ public:
     {
         delete[] rawdata;
     }
+
+    // Disable copy functionnality to prevent accidental copying of the ModbusRegisters object, which could lead to memory management issues.
+    ModbusRegisters(const ModbusRegisters &) = delete;
+    ModbusRegisters &operator=(const ModbusRegisters &) = delete;
 
     template <typename T>
     bool set(uint16_t index, const T &value)
