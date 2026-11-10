@@ -1,10 +1,9 @@
 #include "ModbusScheduler.h"
 #include <CoilData.h>
 
-#define READINTERVALBETWEENRETRY 2000
-#define READINTERVALAFTERERROR 60000
-
-ModbusScheduler::ModbusScheduler(ModbusClientRTU &client) : mb(client)
+ModbusScheduler::ModbusScheduler(ModbusClientRTU &client, uint32_t readIntervalAfterError, uint32_t readIntervalBetweenRetry) : mb(client),
+                                                                                                                                readIntervalAfterError(readIntervalAfterError),
+                                                                                                                                readIntervalBetweenRetry(readIntervalBetweenRetry)
 {
     mb.onDataHandler([this](ModbusMessage response, uint32_t token)
                      { onData(response, token); });
@@ -59,13 +58,13 @@ void ModbusScheduler::handleTimeouts()
             {
                 // retry
                 t.retryCount++;
-                t.nextPollTime = now + READINTERVALBETWEENRETRY;
+                t.nextPollTime = now + readIntervalBetweenRetry;
                 t.state = MBTaskState::RetryWait;
             }
             else
             {
                 t.retryCount = 0;
-                t.nextPollTime = now + READINTERVALAFTERERROR;
+                t.nextPollTime = now + readIntervalAfterError;
                 t.state = MBTaskState::Failed;
 
                 // Reset the TriggerRequest flag if it was set
@@ -109,7 +108,12 @@ void ModbusScheduler::startPendingTasks()
 
         if (!t.inProgress && (now >= t.nextPollTime || t.TriggerRequest))
         {
-            if (addModbusRequest(t))
+            // If TriggerRequest is set, we prioritize this task and reset the flag after processing.
+            t.TriggerRequest = false;
+
+            Modbus::Error result = addModbusRequest(t);
+
+            if (result == Modbus::SUCCESS)
             {
                 MM_LOG_TRACE("ModbusScheduler", ("startPendingTasks: Added task successfully " + std::to_string(t.token)).c_str());
 
@@ -123,14 +127,14 @@ void ModbusScheduler::startPendingTasks()
             {
                 MM_LOG_TRACE("ModbusScheduler", ("startPendingTasks: Failed to add task " + std::to_string(t.token)).c_str());
 
+                // If adding the request fails, we set the task state to Failed and schedule the next poll time after an error interval.
+                // this is likely frame isn't valid, we should not retry immediately but wait for a while before the next attempt.
+
                 // If the request was not added successfully, set the task state to Error
                 t.inProgress = false;
                 t.state = MBTaskState::Failed;
-                t.nextPollTime = now + READINTERVALAFTERERROR;
-
-                // Reset the TriggerRequest flag if it was set
-                if (t.TriggerRequest)
-                    t.TriggerRequest = false;
+                t.nextPollTime = now + readIntervalAfterError;
+                t.lastError = result;
 
                 if (t.callback)
                     t.callback(t);
@@ -143,7 +147,7 @@ void ModbusScheduler::startPendingTasks()
     }
 }
 
-bool ModbusScheduler::addModbusRequest(MBTask &t)
+Modbus::Error ModbusScheduler::addModbusRequest(MBTask &t)
 {
     uint32_t token = tokenCounter++;
 
@@ -179,12 +183,13 @@ bool ModbusScheduler::addModbusRequest(MBTask &t)
         // Tested ok on AS-P
         err = mb.addRequest(token, t.slave, (uint8_t)t.function, t.address, t.quantity, t.quantity * 2, t.writeValuePtr);
         break;
+
+    default:
+        err = Modbus::ILLEGAL_FUNCTION;
+        break;
     }
 
-    if (err != Modbus::SUCCESS)
-        return false; // Return false to indicate that the request was not added successfully
-
-    return true; // Return true to indicate that the request was added successfully
+    return err;
 }
 
 MBTask *ModbusScheduler::findTaskByToken(uint32_t token)
@@ -201,7 +206,7 @@ MBTask *ModbusScheduler::findTaskByToken(uint32_t token)
 void ModbusScheduler::onData(ModbusMessage response, uint32_t token)
 {
     MBTask *t = findTaskByToken(token);
-    if (!t)
+    if (!t || !t->inProgress)
     {
         MM_LOG_TRACE("ModbusScheduler", ("onData: Task not found for token " + std::to_string(token)).c_str());
         return;
@@ -260,7 +265,7 @@ void ModbusScheduler::onData(ModbusMessage response, uint32_t token)
 void ModbusScheduler::onError(Modbus::Error error, uint32_t token)
 {
     MBTask *t = findTaskByToken(token);
-    if (!t)
+    if (!t || !t->inProgress)
     {
         MM_LOG_TRACE("ModbusScheduler", ("onError: Task not found for token " + std::to_string(token)).c_str());
         return;
@@ -274,7 +279,7 @@ void ModbusScheduler::onError(Modbus::Error error, uint32_t token)
         MM_LOG_TRACE("ModbusScheduler", ("onError: Error occurred for token, placed in retry queue " + std::to_string(token)).c_str());
 
         t->retryCount++;
-        t->nextPollTime = millis() + READINTERVALBETWEENRETRY;
+        t->nextPollTime = millis() + readIntervalBetweenRetry;
         t->state = MBTaskState::RetryWait;
     }
     else
@@ -282,7 +287,7 @@ void ModbusScheduler::onError(Modbus::Error error, uint32_t token)
         MM_LOG_TRACE("ModbusScheduler", ("onError: Error occurred for token, placed in error queue " + std::to_string(token)).c_str());
 
         t->retryCount = 0;
-        t->nextPollTime = millis() + READINTERVALAFTERERROR;
+        t->nextPollTime = millis() + readIntervalAfterError;
         t->state = MBTaskState::Failed;
 
         if (t->TriggerRequest)
