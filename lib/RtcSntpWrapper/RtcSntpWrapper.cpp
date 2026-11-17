@@ -43,7 +43,7 @@ static void setTimeZone(long offset, int daylight)
 void RtcSntpWrapper::time_sync_notification_cb(struct timeval *tv)
 {
   (void)tv;
-  MM_LOG_INFO("RTCWrapper", "RTC notification of a time synchronization event");
+  MM_LOG_INFO("RtcSntpWrapper", "RTC notification of a time synchronization event");
   rtcNeedToSaveRTC.store(true, std::memory_order_release);
 }
 
@@ -62,32 +62,32 @@ void RtcSntpWrapper::begin()
 
   if (!this->rtc.begin(i2cbus))
   {
-    MM_LOG_ERROR("RTCWrapper", "RTC not detected");
+    MM_LOG_WARN("RtcSntpWrapper", "RTC not detected");
   }
   else
   {
-    MM_LOG_TRACE("RTCWrapper", "RTC detected");
-
-    // We prepare sntp to get the time from NTP servers and set the timezone
-    esp_netif_init();
-    if (sntp_enabled())
-    {
-      sntp_stop();
-    }
-    sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    sntp_setservername(0, (char *)this->ntpServer);
-    sntp_setservername(1, nullptr);
-    sntp_setservername(2, nullptr);
-
-    sntp_set_sync_interval(2 * 3600 * 1000); // 2 * 3600 * 1000 = 2 hours
-    sntp_set_time_sync_notification_cb(&RtcSntpWrapper::time_sync_notification_cb);
-
-    sntp_init();
-
-    setTimeZone(-this->gmtOffset_sec, this->daylightOffset_sec);
+    MM_LOG_TRACE("RtcSntpWrapper", "RTC detected");
 
     this->rtcInitialized = true;
   }
+
+  // We prepare sntp to get the time from NTP servers and set the timezone
+  esp_netif_init();
+  if (sntp_enabled())
+  {
+    sntp_stop();
+  }
+  sntp_setoperatingmode(SNTP_OPMODE_POLL);
+  sntp_setservername(0, (char *)this->ntpServer);
+  sntp_setservername(1, nullptr);
+  sntp_setservername(2, nullptr);
+
+  sntp_set_sync_interval(syncIntervalMs);
+  sntp_set_time_sync_notification_cb(&RtcSntpWrapper::time_sync_notification_cb);
+
+  sntp_init();
+
+  setTimeZone(-this->gmtOffset_sec, this->daylightOffset_sec);
 }
 
 // Destructor
@@ -99,40 +99,30 @@ RtcSntpWrapper::~RtcSntpWrapper()
 /// @remark This function is non-blocking and returns immediately. The actual synchronization may take some time, depending on network conditions and NTP server response times.
 void RtcSntpWrapper::asynchroneSyncDateTimeFromNTP()
 {
-  // Check if the RTC is initialized
-  if (!this->rtcInitialized)
-    return;
-
   if (!rtcNeedToSaveRTC.exchange(false, std::memory_order_seq_cst)) // read and reset the flag atomically
     return;
 
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo, 50)) // wait 50 ms to get the time from NTP servers
   {
-    MM_LOG_WARN("RTCWrapper", "RTC date/time could not be saved because getting time from NTP servers failed");
+    MM_LOG_WARN("RtcSntpWrapper", "RTC date/time could not be saved because getting time from NTP servers failed");
     rtcNeedToSaveRTC.store(true, std::memory_order_release);
     return;
   }
 
-  DateTime ntpTime(
-      timeinfo.tm_year + 1900,
-      timeinfo.tm_mon + 1,
-      timeinfo.tm_mday,
-      timeinfo.tm_hour,
-      timeinfo.tm_min,
-      timeinfo.tm_sec);
+  DateTime ntpTime(timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
 
-  rtc.adjust(ntpTime);
+  if (this->rtcInitialized)
+  {
+    rtc.adjust(ntpTime);
+    MM_LOG_INFO("RtcSntpWrapper", "Saved RTC date/time from NTP servers successfully");
+  }
 
-  MM_LOG_INFO("RTCWrapper", "Synchronization from NTP servers successfully done");
+  MM_LOG_INFO("RtcSntpWrapper", "Synchronization from NTP servers successfully done");
 }
 
 void RtcSntpWrapper::synchroneSyncDateTimeFromNTP()
 {
-  // Check if the RTC is initialized
-  if (!this->rtcInitialized)
-    return;
-
   struct tm timeinfo;
 
   if (!getNtpTime(timeinfo))
@@ -141,17 +131,15 @@ void RtcSntpWrapper::synchroneSyncDateTimeFromNTP()
     return;
   }
 
-  DateTime ntpTime(
-      timeinfo.tm_year + 1900,
-      timeinfo.tm_mon + 1,
-      timeinfo.tm_mday,
-      timeinfo.tm_hour,
-      timeinfo.tm_min,
-      timeinfo.tm_sec);
+  DateTime ntpTime(timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
 
-  rtc.adjust(ntpTime);
+  if (this->rtcInitialized)
+  {
+    rtc.adjust(ntpTime);
+    MM_LOG_INFO("RtcSntpWrapper", "Saved RTC date/time from NTP servers successfully");
+  }
 
-  MM_LOG_TRACE("RtcSntpWrapper", "Synchronization from NTP servers successfully done");
+  MM_LOG_INFO("RtcSntpWrapper", "Synchronization from NTP servers successfully done");
 }
 
 /// Function that SET Date/Time ///
@@ -164,7 +152,7 @@ bool RtcSntpWrapper::RTCSet(DateTime &dateTime)
 
   this->rtc.adjust(dateTime);
 
-  MM_LOG_TRACE("RtcSntpWrapper", "RTC date/time set successfully");
+  MM_LOG_INFO("RtcSntpWrapper", "Saved RTC date/time from user successfully");
 
   return true;
 }

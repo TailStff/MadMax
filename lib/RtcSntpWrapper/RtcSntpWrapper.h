@@ -22,8 +22,9 @@ private:
   static std::atomic_bool rtcNeedToSaveRTC;
 
   const char *ntpServer = "pool.ntp.org";
-  long gmtOffset_sec = 3600;     // France
-  int daylightOffset_sec = 3600; // DST
+  long gmtOffset_sec = 3600;                 // France
+  int daylightOffset_sec = 3600;             // DST
+  uint32_t syncIntervalMs = 2 * 3600 * 1000; // 2 * 3600 * 1000 = 2 hours
 
   /// @brief Gets the current time from an NTP server, with a specified timeout
   /// @param timeinfo Reference to store the retrieved time
