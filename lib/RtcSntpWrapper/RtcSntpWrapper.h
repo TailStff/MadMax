@@ -1,12 +1,12 @@
-#ifndef RTCWRAPPER_H
-#define RTCWRAPPER_H
+#ifndef RTCSNTPWRAPPER_H
+#define RTCSNTPWRAPPER_H
 
 #include <atomic>
 #include <RTClib.h>
 #include <time.h>
 #include "mmLogger.h"
 
-class RTCWrapper
+class RtcSntpWrapper
 {
 
 private:
@@ -31,13 +31,13 @@ private:
   /// @return true if successful, false otherwise
   bool getNtpTime(struct tm &timeinfo, uint32_t timeoutMs = 5000);
 
+  static void time_sync_notification_cb(struct timeval *tv);
+
 public:
-  RTCWrapper(TwoWire *i2cbus);
-  ~RTCWrapper();
+  RtcSntpWrapper(TwoWire *i2cbus);
+  ~RtcSntpWrapper();
 
   void begin();
-
-  static void time_sync_notification_cb(struct timeval *tv);
 
   void asynchroneSyncDateTimeFromNTP();
   void synchroneSyncDateTimeFromNTP();

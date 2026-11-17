@@ -1,8 +1,8 @@
-#include "RTCWrapper.h"
+#include "RtcSntpWrapper.h"
 #include <esp_netif.h>
 #include <esp_sntp.h>
 
-std::atomic_bool RTCWrapper::rtcNeedToSaveRTC{false};
+std::atomic_bool RtcSntpWrapper::rtcNeedToSaveRTC{false};
 
 /// @brief Function to set the time zone based on the provided offset and daylight saving time (From esp32-hal-time.c)
 /// @param offset The offset in seconds from UTC (e.g., 3600 for UTC+1).
@@ -40,7 +40,7 @@ static void setTimeZone(long offset, int daylight)
 
 /// @brief Static callback function for time synchronization events from SNTP. This function is called when the system time is synchronized with an NTP server.
 /// @param tv
-void RTCWrapper::time_sync_notification_cb(struct timeval *tv)
+void RtcSntpWrapper::time_sync_notification_cb(struct timeval *tv)
 {
   (void)tv;
   MM_LOG_INFO("RTCWrapper", "RTC notification of a time synchronization event");
@@ -48,7 +48,7 @@ void RTCWrapper::time_sync_notification_cb(struct timeval *tv)
 }
 
 // Constructor
-RTCWrapper::RTCWrapper(TwoWire *i2cbus)
+RtcSntpWrapper::RtcSntpWrapper(TwoWire *i2cbus)
 {
   this->i2cbus = i2cbus;
 
@@ -56,7 +56,7 @@ RTCWrapper::RTCWrapper(TwoWire *i2cbus)
 }
 
 // Initialization function
-void RTCWrapper::begin()
+void RtcSntpWrapper::begin()
 {
   this->rtcInitialized = false;
 
@@ -79,8 +79,8 @@ void RTCWrapper::begin()
     sntp_setservername(1, nullptr);
     sntp_setservername(2, nullptr);
 
-    sntp_set_sync_interval(2 * 3600 * 1000); // 2 hours
-    sntp_set_time_sync_notification_cb(&RTCWrapper::time_sync_notification_cb);
+    sntp_set_sync_interval(2 * 3600 * 1000); // 2 * 3600 * 1000 = 2 hours
+    sntp_set_time_sync_notification_cb(&RtcSntpWrapper::time_sync_notification_cb);
 
     sntp_init();
 
@@ -91,11 +91,13 @@ void RTCWrapper::begin()
 }
 
 // Destructor
-RTCWrapper::~RTCWrapper()
+RtcSntpWrapper::~RtcSntpWrapper()
 {
 }
 
-void RTCWrapper::asynchroneSyncDateTimeFromNTP()
+/// @brief Asynchronously synchronize the RTC date/time from NTP servers. This function checks if the RTC is initialized and if a synchronization is needed, then retrieves the current time from NTP servers and updates the RTC accordingly.
+/// @remark This function is non-blocking and returns immediately. The actual synchronization may take some time, depending on network conditions and NTP server response times.
+void RtcSntpWrapper::asynchroneSyncDateTimeFromNTP()
 {
   // Check if the RTC is initialized
   if (!this->rtcInitialized)
@@ -125,7 +127,7 @@ void RTCWrapper::asynchroneSyncDateTimeFromNTP()
   MM_LOG_INFO("RTCWrapper", "Synchronization from NTP servers successfully done");
 }
 
-void RTCWrapper::synchroneSyncDateTimeFromNTP()
+void RtcSntpWrapper::synchroneSyncDateTimeFromNTP()
 {
   // Check if the RTC is initialized
   if (!this->rtcInitialized)
@@ -135,7 +137,7 @@ void RTCWrapper::synchroneSyncDateTimeFromNTP()
 
   if (!getNtpTime(timeinfo))
   {
-    MM_LOG_ERROR("RTCWrapper", "Getting time from NTP servers failed");
+    MM_LOG_ERROR("RtcSntpWrapper", "Getting time from NTP servers failed");
     return;
   }
 
@@ -149,12 +151,12 @@ void RTCWrapper::synchroneSyncDateTimeFromNTP()
 
   rtc.adjust(ntpTime);
 
-  MM_LOG_TRACE("RTCWrapper", "Synchronization from NTP servers successfully done");
+  MM_LOG_TRACE("RtcSntpWrapper", "Synchronization from NTP servers successfully done");
 }
 
 /// Function that SET Date/Time ///
 ///
-bool RTCWrapper::RTCSet(DateTime &dateTime)
+bool RtcSntpWrapper::RTCSet(DateTime &dateTime)
 {
   // Check if the RTC is initialized
   if (!this->rtcInitialized)
@@ -162,12 +164,12 @@ bool RTCWrapper::RTCSet(DateTime &dateTime)
 
   this->rtc.adjust(dateTime);
 
-  MM_LOG_TRACE("RTCWrapper", "RTC date/time set successfully");
+  MM_LOG_TRACE("RtcSntpWrapper", "RTC date/time set successfully");
 
   return true;
 }
 
-bool RTCWrapper::RTCGet(DateTime &now)
+bool RtcSntpWrapper::RTCGet(DateTime &now)
 {
   // Check if the RTC is initialized
   if (!this->rtcInitialized)
@@ -178,7 +180,7 @@ bool RTCWrapper::RTCGet(DateTime &now)
   return true;
 }
 
-bool RTCWrapper::getNtpTime(struct tm &timeinfo, uint32_t timeoutMs)
+bool RtcSntpWrapper::getNtpTime(struct tm &timeinfo, uint32_t timeoutMs)
 {
   uint32_t start = millis();
 

@@ -59,7 +59,7 @@
 
 #include "MadMax.h"
 
-#include "RTCWrapper.h"
+#include "RtcSntpWrapper.h"
 
 #include "IntervalCallback.h"
 #include "myApp.h"
@@ -128,7 +128,7 @@ PCF8574 pcf8574_I2(&I2Cone, 0x21, PIN_SDA, PIN_SCL);
 PCF8574 pcf8574_R1(&I2Cone, 0x24, PIN_SDA, PIN_SCL);
 PCF8574 pcf8574_R2(&I2Cone, 0x25, PIN_SDA, PIN_SCL);
 
-RTCWrapper rtcWrapper(&I2Cone);
+RtcSntpWrapper rtcSntpWrapper(&I2Cone);
 
 // Preferences object
 Preferences prefs;
@@ -378,7 +378,7 @@ void setup()
   mqttManager = std::unique_ptr<MQTTManager>(new MQTTManager("192.168.10.126", 1883, "MadMax2"));
   mqttManager->Begin();
 
-  executionEnv = new ExecutionEnv(MMCYCLE, &rtcWrapper, &prefs, myPrefs, &display, &mbServerManager, &modbusServerMemoryManager, mqttManager.get(), onNetworkInit);
+  executionEnv = new ExecutionEnv(MMCYCLE, &rtcSntpWrapper, &prefs, myPrefs, &display, &mbServerManager, &modbusServerMemoryManager, mqttManager.get(), onNetworkInit);
 
   MM_LOG_TRACE("SYSTEM", "ExecutionEnv object created");
 
@@ -420,7 +420,7 @@ void setup()
 
   // Serial.println(myPrefs.putString("applicationName", "MadMax"));
 
-  rtcWrapper.begin();
+  rtcSntpWrapper.begin();
 
 #ifdef OLED_SSD1306
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
@@ -481,7 +481,7 @@ void setup()
 
 void loop()
 {
-  rtcWrapper.asynchroneSyncDateTimeFromNTP();
+  rtcSntpWrapper.asynchroneSyncDateTimeFromNTP();
   delay(10);
   intervalCallback.Tick();
 }

@@ -18,7 +18,7 @@
 
 #include <Adafruit_SH110X.h>
 
-#include "RTCWrapper.h"
+#include "RtcSntpWrapper.h"
 
 // MQTT protocol library
 // #include <PubSubClient.h>
@@ -85,7 +85,7 @@ private:
   uint32_t freeHeap = 0;
   uint32_t heapSize = 0;
 
-  RTCWrapper *rtcWrapper;
+  RtcSntpWrapper *rtcWrapper;
 
   DateTime dateTime;
 
@@ -125,7 +125,7 @@ private:
 
 public:
   // Constructor
-  ExecutionEnv(unsigned int _cycle, RTCWrapper *rtcWrapper, Preferences *prefs, MiniPrefs *miniPrefs, Adafruit_SH1107 *display, MadMax::ModbusServerManager *modbusServerManager, MadMax::ModbusServerMemoryManager *modbusServerMemoryManager, MQTTManager *mqttManager, std::function<bool(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit);
+  ExecutionEnv(unsigned int _cycle, RtcSntpWrapper *rtcWrapper, Preferences *prefs, MiniPrefs *miniPrefs, Adafruit_SH1107 *display, MadMax::ModbusServerManager *modbusServerManager, MadMax::ModbusServerMemoryManager *modbusServerMemoryManager, MQTTManager *mqttManager, std::function<bool(IPConfigDhcp eth, IPConfigSTA sta, IPConfigWAP wap, String mDNS)> networkInit);
 
   // Destructor
   ~ExecutionEnv();
