@@ -101,13 +101,14 @@ void RTCWrapper::asynchroneSyncDateTimeFromNTP()
   if (!this->rtcInitialized)
     return;
 
-  if (!rtcNeedToSaveRTC.load(std::memory_order_acquire))
+  if (!rtcNeedToSaveRTC.exchange(false, std::memory_order_seq_cst)) // read and reset the flag atomically
     return;
 
   struct tm timeinfo;
-  if (!getLocalTime(&timeinfo))
+  if (!getLocalTime(&timeinfo, 50)) // wait 50 ms to get the time from NTP servers
   {
     MM_LOG_WARN("RTCWrapper", "RTC date/time could not be saved because getting time from NTP servers failed");
+    rtcNeedToSaveRTC.store(true, std::memory_order_release);
     return;
   }
 
@@ -120,8 +121,6 @@ void RTCWrapper::asynchroneSyncDateTimeFromNTP()
       timeinfo.tm_sec);
 
   rtc.adjust(ntpTime);
-
-  rtcNeedToSaveRTC.store(false, std::memory_order_release);
 
   MM_LOG_INFO("RTCWrapper", "Synchronization from NTP servers successfully done");
 }
