@@ -57,8 +57,6 @@
 #include "millis64.h"
 #include "SafeSet.h"
 
-#include "MadMax.h"
-
 #include "RtcSntpWrapper.h"
 
 #include "IntervalCallback.h"
@@ -76,6 +74,8 @@
 MadMax::ModbusServerMemoryManager modbusServerMemoryManager;
 MadMax::ModbusServerManager mbServerManager(modbusServerMemoryManager);
 #pragma endregion
+
+void callbackExecution();
 
 #include "main.h"
 
