@@ -1,7 +1,6 @@
 #include "ModbusTask.h"
 #include "ModbusSingleBit.h"
 #include "ModbusRegisters.h"
-#include <cstdint>
 
 MBTask::MBTask() {}
 MBTask::~MBTask() {}

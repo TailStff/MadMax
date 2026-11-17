@@ -102,8 +102,6 @@ DigitalOutputs digitalOutputs;
 static bool eth_connected = false;
 // Global variable used to indicate if STA is connected
 static bool sta_connected = false;
-// Global variable used to indicate if RTC sync is needed
-static bool triggerRTCsync = false;
 
 static bool triggerMQTTOnline = false;
 
@@ -214,7 +212,6 @@ void networkOnEvent(arduino_event_id_t event, arduino_event_info_t info)
     executionEnv->RefreshActualEthInfo(info.got_ip.ip_info.ip.addr, info.got_ip.ip_info.netmask.addr, info.got_ip.ip_info.gw.addr, ETH.dnsIP(0), ETH.dnsIP(1));
 
     eth_connected = true;
-    triggerRTCsync = true;
     triggerMQTTOnline = true;
     break;
 
@@ -240,7 +237,6 @@ void networkOnEvent(arduino_event_id_t event, arduino_event_info_t info)
     executionEnv->RefreshActualSTAInfo(info.got_ip.ip_info.ip.addr, info.got_ip.ip_info.netmask.addr, info.got_ip.ip_info.gw.addr, WiFi.dnsIP(0), WiFi.dnsIP(1));
 
     sta_connected = true;
-    triggerRTCsync = true;
     triggerMQTTOnline = true;
   }
   break;
@@ -333,7 +329,7 @@ void setup()
   Serial.begin(115200);
 
   MadMax::Logger::Begin(SerialLoggerCallback);
-  MadMax::Logger::SetLevel(MadMax::LogLevel::Trace);
+  MadMax::Logger::SetLevel(MadMax::LogLevel::Info);
 
   delay(1000);
 
@@ -485,14 +481,9 @@ void setup()
 
 void loop()
 {
+  rtcWrapper.asynchroneSyncDateTimeFromNTP();
+  delay(10);
   intervalCallback.Tick();
-  delay(50);
-
-  if (triggerRTCsync)
-  {
-    triggerRTCsync = false;
-    rtcWrapper.SyncDateTimeFromNTP();
-  }
 }
 
 void callbackExecution()

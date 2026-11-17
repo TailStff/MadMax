@@ -1,6 +1,7 @@
 #ifndef RTCWRAPPER_H
 #define RTCWRAPPER_H
 
+#include <atomic>
 #include <RTClib.h>
 #include <time.h>
 #include "mmLogger.h"
@@ -12,18 +13,17 @@ private:
   TwoWire *i2cbus;
   RTC_DS1307 rtc;
 
+  /// @brief Flag indicating whether the RTC has been successfully initialized
   bool rtcInitialized = false;
+
+  /// @brief Flag indicating whether the RTC date/time needs to be saved
+  /// @remark This flag is set to true when the RTC date/time is updated and needs to be saved to the RTC device. It is set to false after the date/time has been successfully saved.
+  /// @remark This is atomic boolean to ensure thread-safe access in a multi-threaded environment.
+  static std::atomic_bool rtcNeedToSaveRTC;
 
   const char *ntpServer = "pool.ntp.org";
   long gmtOffset_sec = 3600;     // France
   int daylightOffset_sec = 3600; // DST
-
-  /// @brief Calculates the day of the week for a given date
-  /// @param year 
-  /// @param month 
-  /// @param day 
-  /// @return The day of the week (0 = Sunday, 1 = Monday, etc.)
-  uint8_t getDayOfWeek(uint16_t year, uint8_t month, uint8_t day);
 
   /// @brief Gets the current time from an NTP server, with a specified timeout
   /// @param timeinfo Reference to store the retrieved time
@@ -37,7 +37,10 @@ public:
 
   void begin();
 
-  void SyncDateTimeFromNTP();
+  static void time_sync_notification_cb(struct timeval *tv);
+
+  void asynchroneSyncDateTimeFromNTP();
+  void synchroneSyncDateTimeFromNTP();
 
   /// @brief Gets the current date and time from the RTC
   /// @param now Reference to store the retrieved date and time

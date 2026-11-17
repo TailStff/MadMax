@@ -89,13 +89,10 @@ namespace MadMax
         // Compute physical values
         ComputePhysicalValues(logicalValues);
 
-        // rawInputs.clear();
-        // for (auto &ptr : inputsValues)
-        //     rawInputs.push_back(ptr.get());
-
-        // Populate pre-allocated rawInputs to avoid heap fragmentation
-        for (size_t i = 0; i < count; i++)
-            rawInputs[i] = inputsValues[i].get();
+        // Get values from inputsValues and put them in rawInputs to give access to callback function
+        rawInputs.clear();
+        for (auto &ptr : inputsValues)
+            rawInputs.push_back(ptr.get());
 
         // Call lambda callback with inputs values
         callbackFunction(rawInputs);

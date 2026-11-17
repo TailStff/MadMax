@@ -1,19 +1,58 @@
 #include "RTCWrapper.h"
+#include <esp_netif.h>
+#include <esp_sntp.h>
 
-uint8_t RTCWrapper::getDayOfWeek(uint16_t year, uint8_t month, uint8_t day)
+std::atomic_bool RTCWrapper::rtcNeedToSaveRTC{false};
+
+/// @brief Function to set the time zone based on the provided offset and daylight saving time (From esp32-hal-time.c)
+/// @param offset The offset in seconds from UTC (e.g., 3600 for UTC+1).
+/// @param daylight The daylight saving time offset in seconds (e.g., 3600 for 1 hour).
+static void setTimeZone(long offset, int daylight)
 {
-  static int t[] = {0, 3, 2, 5, 3, 0, 5, 1, 4, 6, 2, 4};
-  if (month < 3)
+  char cst[17] = {0};
+  char cdt[17] = "DST";
+  char tz[33] = {0};
+
+  if (offset % 3600)
   {
-    year -= 1;
+    sprintf(cst, "UTC%ld:%02u:%02u", offset / 3600, abs((offset % 3600) / 60), abs(offset % 60));
   }
-  return (year + year / 4 - year / 400 + year / 100 + t[month - 1] + day) % 7;
+  else
+  {
+    sprintf(cst, "UTC%ld", offset / 3600);
+  }
+  if (daylight != 3600)
+  {
+    long tz_dst = offset - daylight;
+    if (tz_dst % 3600)
+    {
+      sprintf(cdt, "DST%ld:%02u:%02u", tz_dst / 3600, abs((tz_dst % 3600) / 60), abs(tz_dst % 60));
+    }
+    else
+    {
+      sprintf(cdt, "DST%ld", tz_dst / 3600);
+    }
+  }
+  sprintf(tz, "%s%s", cst, cdt);
+  setenv("TZ", tz, 1);
+  tzset();
+}
+
+/// @brief Static callback function for time synchronization events from SNTP. This function is called when the system time is synchronized with an NTP server.
+/// @param tv
+void RTCWrapper::time_sync_notification_cb(struct timeval *tv)
+{
+  (void)tv;
+  MM_LOG_INFO("RTCWrapper", "RTC notification of a time synchronization event");
+  rtcNeedToSaveRTC.store(true, std::memory_order_release);
 }
 
 // Constructor
 RTCWrapper::RTCWrapper(TwoWire *i2cbus)
 {
   this->i2cbus = i2cbus;
+
+  rtcNeedToSaveRTC.store(false, std::memory_order_release);
 }
 
 // Initialization function
@@ -27,9 +66,27 @@ void RTCWrapper::begin()
   }
   else
   {
-    this->rtcInitialized = true;
     MM_LOG_TRACE("RTCWrapper", "RTC detected");
-    configTime(this->gmtOffset_sec, this->daylightOffset_sec, this->ntpServer);
+
+    // We prepare sntp to get the time from NTP servers and set the timezone
+    esp_netif_init();
+    if (sntp_enabled())
+    {
+      sntp_stop();
+    }
+    sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    sntp_setservername(0, (char *)this->ntpServer);
+    sntp_setservername(1, nullptr);
+    sntp_setservername(2, nullptr);
+
+    sntp_set_sync_interval(2 * 3600 * 1000); // 2 hours
+    sntp_set_time_sync_notification_cb(&RTCWrapper::time_sync_notification_cb);
+
+    sntp_init();
+
+    setTimeZone(-this->gmtOffset_sec, this->daylightOffset_sec);
+
+    this->rtcInitialized = true;
   }
 }
 
@@ -38,13 +95,42 @@ RTCWrapper::~RTCWrapper()
 {
 }
 
-void RTCWrapper::SyncDateTimeFromNTP()
+void RTCWrapper::asynchroneSyncDateTimeFromNTP()
 {
+  // Check if the RTC is initialized
   if (!this->rtcInitialized)
+    return;
+
+  if (!rtcNeedToSaveRTC.load(std::memory_order_acquire))
+    return;
+
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo))
   {
-    MM_LOG_WARN("RTCWrapper", "Synchronization from NTP servers could not be done");
+    MM_LOG_WARN("RTCWrapper", "RTC date/time could not be saved because getting time from NTP servers failed");
     return;
   }
+
+  DateTime ntpTime(
+      timeinfo.tm_year + 1900,
+      timeinfo.tm_mon + 1,
+      timeinfo.tm_mday,
+      timeinfo.tm_hour,
+      timeinfo.tm_min,
+      timeinfo.tm_sec);
+
+  rtc.adjust(ntpTime);
+
+  rtcNeedToSaveRTC.store(false, std::memory_order_release);
+
+  MM_LOG_INFO("RTCWrapper", "Synchronization from NTP servers successfully done");
+}
+
+void RTCWrapper::synchroneSyncDateTimeFromNTP()
+{
+  // Check if the RTC is initialized
+  if (!this->rtcInitialized)
+    return;
 
   struct tm timeinfo;
 
@@ -71,11 +157,9 @@ void RTCWrapper::SyncDateTimeFromNTP()
 ///
 bool RTCWrapper::RTCSet(DateTime &dateTime)
 {
+  // Check if the RTC is initialized
   if (!this->rtcInitialized)
-  {
-    MM_LOG_WARN("RTCWrapper", "Setting RTC date/time could not be done");
     return false;
-  }
 
   this->rtc.adjust(dateTime);
 
@@ -86,11 +170,9 @@ bool RTCWrapper::RTCSet(DateTime &dateTime)
 
 bool RTCWrapper::RTCGet(DateTime &now)
 {
+  // Check if the RTC is initialized
   if (!this->rtcInitialized)
-  {
-    MM_LOG_WARN("RTCWrapper", "Getting RTC date/time could not be done");
     return false;
-  }
 
   now = this->rtc.now();
 
