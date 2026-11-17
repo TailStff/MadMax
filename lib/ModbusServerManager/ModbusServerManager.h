@@ -9,6 +9,9 @@
 #include "ModbusServerMemoryManager.h"
 #include "ModbusServerWriteEvent.h"
 
+#define MAX_MODBUS_READ_REGISTERS 125
+#define MAX_MODBUS_WRITE_REGISTERS 123
+
 namespace MadMax
 {
     class ModbusServerManager

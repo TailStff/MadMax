@@ -57,6 +57,20 @@ namespace MadMax
         request.get(2, addr);   // read address from request
         request.get(4, words);  // read # of words from request
 
+        if (words == 0)
+        {
+            // Invalid request - send respective error response
+            response.setError(request.getServerID(), request.getFunctionCode(), ILLEGAL_DATA_VALUE);
+            return response;
+        }
+
+        if (words > MAX_MODBUS_READ_REGISTERS)
+        {
+            // Invalid request - send respective error response
+            response.setError(request.getServerID(), request.getFunctionCode(), ILLEGAL_DATA_VALUE);
+            return response;
+        }
+
         // Address overflow?
         if (modbusServerMemoryManager.CheckHoldingRegisterOverFlow(addr, words))
         {
@@ -82,6 +96,20 @@ namespace MadMax
         uint16_t words = 0;     // # of words requested
         request.get(2, addr);   // read address from request
         request.get(4, words);  // read # of words from request
+
+        if (words == 0)
+        {
+            // Invalid request - send respective error response
+            response.setError(request.getServerID(), request.getFunctionCode(), ILLEGAL_DATA_VALUE);
+            return response;
+        }
+
+        if (words > MAX_MODBUS_READ_REGISTERS)
+        {
+            // Invalid request - send respective error response
+            response.setError(request.getServerID(), request.getFunctionCode(), ILLEGAL_DATA_VALUE);
+            return response;
+        }
 
         // Address overflow?
         if (modbusServerMemoryManager.CheckInputRegisterOverFlow(addr, words))
@@ -142,9 +170,9 @@ namespace MadMax
         request.get(6, bytes);  // read # of data bytes from request (seems redundant with # of words)
 
         // # of registers proper?
-        if ((bytes != (words * 2)) // byte count in request must match # of words in request
-            || (words > 123))      // can't support more than this in request packet
-        {                          // Yes - send respective error response
+        if ((bytes != (words * 2))                   // byte count in request must match # of words in request
+            || (words > MAX_MODBUS_WRITE_REGISTERS)) // can't support more than this in request packet
+        {                                            // Yes - send respective error response
             response.setError(request.getServerID(), request.getFunctionCode(), ILLEGAL_DATA_VALUE);
             return response;
         }
