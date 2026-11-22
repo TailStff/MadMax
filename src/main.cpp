@@ -353,7 +353,7 @@ void setup()
     MM_LOG_ERROR("SYSTEM", "Failed to initialize I2Cone bus");
 
   // speeds are 10000, 100000, 400000, 1000000
-  I2Cone.setClock(1000000);
+  I2Cone.setClock(100000);
 
   // Initialise I2C bus
   MM_LOG_TRACE("SYSTEM", "Initializing I2C bus (I2Ctwo) for FRAM");

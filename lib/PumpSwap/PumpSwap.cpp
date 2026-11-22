@@ -2,12 +2,8 @@
 
 namespace MadMax
 {
-    PumpSwap::PumpSwap(ExecutionEnv *_executionEnv, uint8_t count, uint32_t feedbackDelay, PumpSwapPersistencyValues &persistancyValues)
+    PumpSwap::PumpSwap(ExecutionEnv *_executionEnv, uint8_t count, uint32_t feedbackDelay, PumpSwapPersistencyValues &persistancyValues) : executionEnv(_executionEnv), count(count), feedbackDelay(feedbackDelay)
     {
-        this->executionEnv = _executionEnv;
-        this->count = count;
-        this->feedbackDelay = feedbackDelay;
-
         memFaults.assign(count, false);
         physicalValues.assign(count, false);
 
@@ -53,11 +49,6 @@ namespace MadMax
         // statuses is deleted by itself
     }
 
-    uint8_t PumpSwap::GetCount() const
-    {
-        return this->count;
-    }
-
     std::vector<bool> PumpSwap::GetPhysicalValues() const
     {
         return this->physicalValues;
@@ -73,21 +64,21 @@ namespace MadMax
         return pumpSwapResult;
     }
 
-    /// @brief Evaluate function, here we user lambda with enclosure to give access to pumps inputs values while keeping access to env.
-    /// @param callbackFunction Callback lambda function that allow user to inject values
-    /// @param logicalValues List of values to apply
-    /// @param reevaluation Flag that force to recompute indexes
-    /// @param acknowledge Flag that
-    /// @return mmPumpSwap value that give all pumps informations
+    /// @brief Function used to EVALUATE the pump swap object,
+    /// @param callbackFunction Callback function used to pass dynamically pumps feedback and fault
+    /// @param logicalValues List of logical values, meaning false or true for run pumps
+    /// @param reevaluation Boolean flag to RE-EVALUATE all priorities without keeping any previous working states
+    /// @param acknowledge Boolean flag to ACKNOWLEDGE any faults
+    /// @return PumpSwapResult object that describe all properties
     PumpSwapResult PumpSwap::Evaluate(std::function<void(std::vector<SetPumpValue *> &)> callbackFunction, std::initializer_list<bool> logicalValues, bool reevaluation, bool acknowledge)
     {
-        bool _needToAcknowledge = acknowledgeBit;
+        std::lock_guard<std::mutex> lock(mutex);
 
         // We compute the number of pumps that are needed for optimal operation
         uint8_t requestedPumps = HelpersVectors::countTrue(logicalValues);
 
         // Compute physical values
-        ComputePhysicalValues(logicalValues);
+        retreivePhysicalValues(logicalValues);
 
         // Get values from inputsValues and put them in rawInputs to give access to callback function
         rawInputs.clear();
@@ -110,7 +101,7 @@ namespace MadMax
 
         for (uint8_t i = 0; i < count; i++)
         {
-            nodes[i]->Evaluate(physicalValues[i], inputsValues[i]->Feedback, inputsValues[i]->Fault, acknowledge || acknowledgeBit, feedbackDelay, statuses[i].get());
+            nodes[i]->Evaluate(physicalValues[i], inputsValues[i]->Feedback, inputsValues[i]->Fault, acknowledge || externalAcknowledgeBit, feedbackDelay, statuses[i].get());
 
             bool synDef = statuses[i]->fault || statuses[i]->feedbackFault;
 
@@ -137,14 +128,12 @@ namespace MadMax
         if (flagFault || flagReevaluation || (flagRecovery && runningPumps < requestedPumps) || permut)
             computeIndexes(permut);
 
-        enumCapacityState capacityState = GetCapacityState(availablePumps, requestedPumps);
+        enumCapacityState capacityState = getCapacityState(availablePumps, requestedPumps);
 
         memReevaluation = reevaluation;
 
-        if (_needToAcknowledge && acknowledgeBit)
-        {
-            acknowledgeBit = false;
-        }
+        // Reset external ack flag
+        externalAcknowledgeBit = false;
 
         rawStatuses.clear();
         for (auto &ptr : statuses)
@@ -219,9 +208,9 @@ namespace MadMax
         }
     }
 
-    void PumpSwap::ComputePhysicalValues(std::initializer_list<bool> logicalValues)
+    void PumpSwap::retreivePhysicalValues(std::initializer_list<bool> logicalValues)
     {
-        // Reset all physical values
+        // Reset all internal physical values
         for (uint8_t i = 0; i < count; i++)
             physicalValues[i] = false;
 
@@ -237,7 +226,7 @@ namespace MadMax
         }
     }
 
-    enumCapacityState PumpSwap::GetCapacityState(uint8_t availablePumps, uint8_t requestedPumps)
+    enumCapacityState PumpSwap::getCapacityState(uint8_t availablePumps, uint8_t requestedPumps)
     {
         if (availablePumps == count)
             return enumCapacityState::Optimal;
@@ -261,22 +250,41 @@ namespace MadMax
             persistencyValues.data.push_back({.runTime = statuses[i]->runTimeValue, .startCount = statuses[i]->startCountValue});
     }
 
-    void PumpSwap::ResetAllStartCounts()
+    void PumpSwap::resetAllStartCounts()
     {
         for (uint8_t i = 0; i < count; i++)
             nodes[i]->SetStartCount(0);
     }
 
-    void PumpSwap::ResetAllRuntimes()
+    void PumpSwap::ResetAllStartCounts()
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        resetAllStartCounts();
+    }
+
+    void PumpSwap::resetAllRuntimes()
     {
         for (uint8_t i = 0; i < count; i++)
             nodes[i]->SetRuntime(0);
     }
 
+    void PumpSwap::ResetAllRuntimes()
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        resetAllRuntimes();
+    }
+
     void PumpSwap::TriggerResetAction()
     {
-        ResetAllRuntimes();
-        ResetAllStartCounts();
+        std::lock_guard<std::mutex> lock(mutex);
+        resetAllRuntimes();
+        resetAllStartCounts();
+    }
+
+    void PumpSwap::TriggerAcknowledge()
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        externalAcknowledgeBit = true;
     }
 
     /// @brief Serialize persistency values into a byte vector

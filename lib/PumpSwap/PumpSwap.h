@@ -5,10 +5,6 @@
 #include <array>
 
 #include "ISerializable.h"
-#include "FeedbackError.h"
-#include "structFaults.h"
-#include "RunTime.h"
-#include "Accum.h"
 #include "DigitalEquipment.h"
 #include "helpersVector.h"
 #include "MiniScheduler.h"
@@ -59,13 +55,13 @@ namespace MadMax
     private:
         ExecutionEnv *executionEnv;
 
-        // Number of equipement managed
-        uint8_t count;
+        // Number of equipement managed, setted at construction
+        const uint8_t count;
 
         // Delay before mark equipment in fault
         uint32_t feedbackDelay;
 
-        bool acknowledgeBit = false;
+        bool externalAcknowledgeBit = false;
 
         std::vector<std::unique_ptr<DigitalEquipment>> nodes;
         std::vector<std::unique_ptr<SetPumpValue>> inputsValues;
@@ -86,25 +82,34 @@ namespace MadMax
         // temporary vector used to keep tracing of already selected indexes
         std::vector<bool> selectedIndex;
 
+        std::mutex mutex;
+
         void computeIndexes(bool recomputeAllFlag = true);
-        enumCapacityState GetCapacityState(uint8_t availablePumps, uint8_t requestedPumps);
+        enumCapacityState getCapacityState(uint8_t availablePumps, uint8_t requestedPumps);
         void GetBytesInto(std::vector<uint8_t> &data) const;
 
         PumpSwapResult pumpSwapResult;
+
+        void resetAllStartCounts();
+        void resetAllRuntimes();
+
+        void retreivePhysicalValues(std::initializer_list<bool> logicalValues);
 
     public:
         // Constructors
         PumpSwap(ExecutionEnv *_executionEnv, uint8_t count, uint32_t feedbackDelay, PumpSwapPersistencyValues &persistancyValues);
         ~PumpSwap();
 
-        void ComputePhysicalValues(std::initializer_list<bool> logicalValues);
-
-        uint8_t GetCount() const;
         std::vector<bool> GetPhysicalValues() const;
         const DigitalEquipmentStatus &GetStatus(uint8_t index) const;
         const PumpSwapResult GetPumpSwapResult() const;
 
-        // Evaluate function, here we user lambda with enclosure to give access to pumps inputs values while keeping access to env.
+        /// @brief Function used to EVALUATE the pump swap object,
+        /// @param callbackFunction Callback function used to pass dynamically pumps feedback and fault
+        /// @param logicalValues List of logical values, meaning false or true for run pumps
+        /// @param reevaluation Boolean flag to RE-EVALUATE all priorities without keeping any previous working states
+        /// @param acknowledge Boolean flag to ACKNOWLEDGE any faults
+        /// @return PumpSwapResult object that describe all properties
         PumpSwapResult Evaluate(std::function<void(std::vector<SetPumpValue *> &)> callbackFunction, std::initializer_list<bool> logicalValues, bool reevaluation, bool acknowledge);
 
         /// @brief Static function that give the size of the serialized data of the object, here we just serialize all pumps runtimes and start counts in a byte vector, so size is just count of pumps multiplied by size of runtime and start count values
@@ -115,12 +120,21 @@ namespace MadMax
             return sizeof(PumpSwapPersistencyValue) * count;
         }
 
+        /// @brief Function that allow to reset all runtimes and start counts of the pumps, this function will be called by the user when he want to reset all runtimes and start counts
+        /// @note This function is thread safe, it will lock the mutex before resetting all runtimes and start counts
         void ResetAllRuntimes();
+
+        /// @brief Function that allow to reset all start counts of the pumps, this function will be called by the user when he want to reset all start counts
+        /// @note This function is thread safe, it will lock the mutex before resetting all start counts
         void ResetAllStartCounts();
+
+        /// @brief Function that allow to reset all runtimes and start counts of the pumps, this function will be called by the user when he want to reset all runtimes and start counts
+        /// @note This function is thread safe, it will lock the mutex before resetting all runtimes and start counts
         void TriggerResetAction();
 
         /// @brief Function that allow to acknowledge all feedback faults of the pumps, this function will be called by the user when he want to acknowledge all faults and feedback faults
-        void TriggerAcknowledge() { acknowledgeBit = true; }
+        /// @note This function is thread safe, it will lock the mutex before acknowledging all feedback faults
+        void TriggerAcknowledge();
 
         void GetPersistencyValues(PumpSwapPersistencyValues &persistencyValues) const; // override;
         void GetBytesFromData(std::vector<uint8_t> &data) const override;

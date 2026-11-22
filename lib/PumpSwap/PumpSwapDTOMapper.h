@@ -38,20 +38,18 @@ namespace MadMax
                 dto.fields.push_back({"runningPumps", pumpSwapResult.RunningPumps});
                 dto.fields.push_back({"totalPumps", pumpSwapResult.TotalPumps});
 
-                for (auto i = 0; i < primitive->GetCount(); i++)
+                for (auto i = 0; i < pumpSwapResult.TotalPumps; i++)
                 {
                     DTOBase status;
                     status.objectName = std::to_string(i);
 
-                    auto &statusObj = primitive->GetStatus(i);
-
-                    status.fields.push_back({"command", statusObj.command});
-                    status.fields.push_back({"feedback", statusObj.feedback});
-                    status.fields.push_back({"value", statusObj.output});
-                    status.fields.push_back({"runTime", statusObj.runTimeValue});
-                    status.fields.push_back({"startCount", statusObj.startCountValue});
-                    status.fields.push_back({"fault", statusObj.fault});
-                    status.fields.push_back({"feedbackFault", statusObj.feedbackFault});
+                    status.fields.push_back({"command", pumpSwapResult.PumpsStatus[i]->command});
+                    status.fields.push_back({"feedback", pumpSwapResult.PumpsStatus[i]->feedback});
+                    status.fields.push_back({"value", pumpSwapResult.PumpsStatus[i]->output});
+                    status.fields.push_back({"runTime", pumpSwapResult.PumpsStatus[i]->runTimeValue});
+                    status.fields.push_back({"startCount", pumpSwapResult.PumpsStatus[i]->startCountValue});
+                    status.fields.push_back({"fault", pumpSwapResult.PumpsStatus[i]->fault});
+                    status.fields.push_back({"feedbackFault", pumpSwapResult.PumpsStatus[i]->feedbackFault});
 
                     dto.children.push_back(std::move(status));
                 }
