@@ -2,6 +2,7 @@
 
 namespace MadMax
 {
+#pragma region Publics functions
     PumpSwap::PumpSwap(ExecutionEnv *_executionEnv, uint8_t count, uint32_t feedbackDelay, PumpSwapPersistencyValues &persistancyValues) : executionEnv(_executionEnv), count(count), feedbackDelay(feedbackDelay)
     {
         memFaults.assign(count, false);
@@ -51,16 +52,13 @@ namespace MadMax
 
     std::vector<bool> PumpSwap::GetPhysicalValues() const
     {
+        std::lock_guard<std::mutex> lock(mutex);
         return this->physicalValues;
-    }
-
-    const DigitalEquipmentStatus &PumpSwap::GetStatus(uint8_t index) const
-    {
-        return *this->statuses.at(index);
     }
 
     const PumpSwapResult PumpSwap::GetPumpSwapResult() const
     {
+        std::lock_guard<std::mutex> lock(mutex);
         return pumpSwapResult;
     }
 
@@ -150,6 +148,58 @@ namespace MadMax
         return pumpSwapResult;
     }
 
+    void PumpSwap::ResetAllStartCounts()
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        resetAllStartCounts();
+    }
+
+    void PumpSwap::ResetAllRuntimes()
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        resetAllRuntimes();
+    }
+
+    void PumpSwap::TriggerResetAction()
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        resetAllRuntimes();
+        resetAllStartCounts();
+    }
+
+    void PumpSwap::TriggerAcknowledge()
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        externalAcknowledgeBit = true;
+    }
+
+    /// @brief Serialize persistency values into a byte vector
+    /// @param data Output vector that will receive the serialized bytes
+    void PumpSwap::GetBytesFromData(std::vector<uint8_t> &data) const
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        PumpSwapPersistencyValues persistencyValues;
+        getPersistencyValues(persistencyValues);
+
+        size_t size = persistencyValues.data.size() * sizeof(PumpSwapPersistencyValue);
+        data.resize(size);
+
+        if (!persistencyValues.data.empty())
+            memcpy(data.data(), persistencyValues.data.data(), size);
+    }
+
+    void PumpSwap::SetDataFromBytes(std::vector<uint8_t> &data)
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        if (data.size() != GetSerializedSize(count))
+            return;
+
+        PumpSwapPersistencyValues persistencyValues;
+        memcpy(&persistencyValues, data.data(), sizeof(PumpSwapPersistencyValues));
+    }
+#pragma endregion Publics functions
+
+#pragma region Privates functions
     /// @brief Function that allow to RECOMPUTE pumps orders by their actuals states and their runtimes
     /// @param recomputeAllFlag Flag that authorize to recompute all working pumps without taking thoses that were running before
     void PumpSwap::computeIndexes(bool recomputeAllFlag)
@@ -243,7 +293,7 @@ namespace MadMax
     /// @brief Get the persistency values of the object, here we just get all pumps runtimes and start counts and put thoses values in a vector
     /// @param persistencyValues Object that will receive persistency values
     /// @return true if we have an error during persistency values retrieval, false otherwise
-    void PumpSwap::GetPersistencyValues(PumpSwapPersistencyValues &persistencyValues) const
+    void PumpSwap::getPersistencyValues(PumpSwapPersistencyValues &persistencyValues) const
     {
         persistencyValues.data.clear();
         for (uint8_t i = 0; i < count; i++)
@@ -256,62 +306,10 @@ namespace MadMax
             nodes[i]->SetStartCount(0);
     }
 
-    void PumpSwap::ResetAllStartCounts()
-    {
-        std::lock_guard<std::mutex> lock(mutex);
-        resetAllStartCounts();
-    }
-
     void PumpSwap::resetAllRuntimes()
     {
         for (uint8_t i = 0; i < count; i++)
             nodes[i]->SetRuntime(0);
     }
-
-    void PumpSwap::ResetAllRuntimes()
-    {
-        std::lock_guard<std::mutex> lock(mutex);
-        resetAllRuntimes();
-    }
-
-    void PumpSwap::TriggerResetAction()
-    {
-        std::lock_guard<std::mutex> lock(mutex);
-        resetAllRuntimes();
-        resetAllStartCounts();
-    }
-
-    void PumpSwap::TriggerAcknowledge()
-    {
-        std::lock_guard<std::mutex> lock(mutex);
-        externalAcknowledgeBit = true;
-    }
-
-    /// @brief Serialize persistency values into a byte vector
-    /// @param data Output vector that will receive the serialized bytes
-    void PumpSwap::GetBytesFromData(std::vector<uint8_t> &data) const
-    {
-        PumpSwapPersistencyValues persistencyValues;
-        GetPersistencyValues(persistencyValues);
-
-        size_t size = persistencyValues.data.size() * sizeof(PumpSwapPersistencyValue);
-        data.resize(size);
-
-        if (!persistencyValues.data.empty())
-            memcpy(data.data(), persistencyValues.data.data(), size);
-    }
-
-    void PumpSwap::SetDataFromBytes(std::vector<uint8_t> &data)
-    {
-        if (data.size() != GetSerializedSize(count))
-            return;
-
-        PumpSwapPersistencyValues persistencyValues;
-        memcpy(&persistencyValues, data.data(), sizeof(PumpSwapPersistencyValues));
-
-        for (uint8_t i = 0; i < count; i++)
-        {
-            // nodes[i]->SetPersistencyValues(&persistencyValues.data[0]);
-        }
-    }
+#pragma endregion Privates functions
 }

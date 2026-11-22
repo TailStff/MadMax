@@ -82,7 +82,8 @@ namespace MadMax
         // temporary vector used to keep tracing of already selected indexes
         std::vector<bool> selectedIndex;
 
-        std::mutex mutex;
+        // Mutable to has possibility to be written inside const function
+        mutable std::mutex mutex;
 
         void computeIndexes(bool recomputeAllFlag = true);
         enumCapacityState getCapacityState(uint8_t availablePumps, uint8_t requestedPumps);
@@ -101,7 +102,6 @@ namespace MadMax
         ~PumpSwap();
 
         std::vector<bool> GetPhysicalValues() const;
-        const DigitalEquipmentStatus &GetStatus(uint8_t index) const;
         const PumpSwapResult GetPumpSwapResult() const;
 
         /// @brief Function used to EVALUATE the pump swap object,
@@ -136,7 +136,7 @@ namespace MadMax
         /// @note This function is thread safe, it will lock the mutex before acknowledging all feedback faults
         void TriggerAcknowledge();
 
-        void GetPersistencyValues(PumpSwapPersistencyValues &persistencyValues) const; // override;
+        void getPersistencyValues(PumpSwapPersistencyValues &persistencyValues) const;
         void GetBytesFromData(std::vector<uint8_t> &data) const override;
         void SetDataFromBytes(std::vector<uint8_t> &data) override;
 
