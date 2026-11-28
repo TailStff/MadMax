@@ -214,7 +214,6 @@ namespace MadMax
 #pragma endregion Publics functions
 
 #pragma region Privates functions
-
     void PumpSwap::computeIndexes(bool recomputeAllFlag)
     {
         // Array that keep selection state, all already selected won't be selected more than once

@@ -99,6 +99,13 @@ namespace MadMax
 
         void retreivePhysicalValues(std::initializer_list<bool> logicalValues);
 
+        /// @brief Get the persistency values of the object, here we just get all pumps runtimes and start counts and put thoses values in a vector
+        /// @param persistencyValues Object that will receive persistency values
+        /// @return true if we have an error during persistency values retrieval, false otherwise
+        void getPersistencyValues(PumpSwapPersistencyValues &persistencyValues) const;
+
+        void applyPersistencyValue(size_t index, const PumpSwapPersistencyValue &value);
+
     public:
         // Constructors
         PumpSwap(ExecutionEnv *_executionEnv, uint8_t count, uint32_t feedbackDelay, PumpSwapPersistencyValues &persistancyValues);
@@ -138,13 +145,6 @@ namespace MadMax
         /// @brief Function that allow to acknowledge all feedback faults of the pumps, this function will be called by the user when he want to acknowledge all faults and feedback faults
         /// @note This function is thread safe, it will lock the mutex before acknowledging all feedback faults
         void TriggerAcknowledge();
-
-        /// @brief Get the persistency values of the object, here we just get all pumps runtimes and start counts and put thoses values in a vector
-        /// @param persistencyValues Object that will receive persistency values
-        /// @return true if we have an error during persistency values retrieval, false otherwise
-        void getPersistencyValues(PumpSwapPersistencyValues &persistencyValues) const;
-
-        void applyPersistencyValue(size_t index, const PumpSwapPersistencyValue &value);
 
         /// @brief Serialize persistency values into a byte vector
         /// @param data Output vector that will receive the serialized bytes
