@@ -201,11 +201,30 @@ namespace MadMax
     void PumpSwap::SetDataFromBytes(std::vector<uint8_t> &data)
     {
         std::lock_guard<std::mutex> lock(mutex);
-        if (data.size() != GetSerializedSize(count))
+
+        const size_t expectedSize = GetSerializedSize(count);
+        if (data.size() != expectedSize)
             return;
 
-        PumpSwapPersistencyValues persistencyValues;
-        memcpy(&persistencyValues, data.data(), sizeof(PumpSwapPersistencyValues));
+        const size_t recordSize = sizeof(PumpSwapPersistencyValue);
+
+        for (size_t i = 0; i < count; ++i)
+        {
+            PumpSwapPersistencyValue value{};
+            const size_t offset = i * recordSize;
+
+            memcpy(&value, data.data() + offset, recordSize);
+
+            nodes[i]->SetRuntime(value.runTime);
+            nodes[i]->SetStartCount(value.startCount);
+
+            // Keep the exposed status and persisted values in sync immediately.
+            statuses[i]->runTimeValue = value.runTime;
+            statuses[i]->startCountValue = value.startCount;
+        }
+
+        // Refresh standby priorities while preserving healthy pumps already running.
+        computeIndexes(false);
     }
 #pragma endregion Publics functions
 
