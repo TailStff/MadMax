@@ -75,7 +75,7 @@ namespace MadMax
         // We compute the number of pumps that are needed for optimal operation
         uint8_t requestedPumps = HelpersVectors::countTrue(logicalValues);
         uint8_t availablePumps = 0;
-        uint8_t runningPumps = 0;
+        uint8_t healthyAssignedPumps = 0;
 
         // Scheduler part
         auto dateTime = DateTimeDefinition{.Year = ANY, .Month = ANY, .Day = ANY, .DayOfWeek = ANY, .Hour = ANY, .Minute = ANY, .Second = 0};
@@ -106,23 +106,27 @@ namespace MadMax
 
             bool synDef = statuses[i]->fault || statuses[i]->feedbackFault;
 
-            if (!flagFault && physicalValues[i] && synDef)
-                flagFault = true;
+            if (synDef)
+            {
+                if (!flagFault && physicalValues[i])
+                    flagFault = true;
+            }
+            else
+            {
+                if (!flagRecovery && memFaults[i])
+                    flagRecovery = true;
 
-            if (!flagRecovery && !synDef && memFaults[i])
-                flagRecovery = true;
+                if (physicalValues[i])
+                    healthyAssignedPumps++;
 
-            if (physicalValues[i] && !synDef)
-                runningPumps++;
-
-            if (!synDef)
                 availablePumps++;
+            }
 
             memFaults[i] = synDef;
         }
 
         // We re-compute indexes if running pump is in fault, if a pump recover from fail state or if we have an external request
-        if (flagFault || (flagRecovery && runningPumps < requestedPumps) || scheduledPermutation || manualPermutation)
+        if (flagFault || (flagRecovery && healthyAssignedPumps < requestedPumps) || scheduledPermutation || manualPermutation)
             computeIndexes(scheduledPermutation || manualPermutation);
 
         enumCapacityState capacityState = getCapacityState(availablePumps, requestedPumps);
@@ -139,7 +143,7 @@ namespace MadMax
         // Set pumpSwapResult return value
         pumpSwapResult.AvailablePumps = availablePumps;
         pumpSwapResult.RequestedPumps = requestedPumps;
-        pumpSwapResult.RunningPumps = runningPumps;
+        pumpSwapResult.RunningPumps = healthyAssignedPumps;
         pumpSwapResult.CapacityState = capacityState;
         pumpSwapResult.TotalPumps = count;
         pumpSwapResult.PumpsStatus = rawStatuses;
