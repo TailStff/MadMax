@@ -33,20 +33,18 @@ namespace MadMax
         // Default orders
         indexes.assign(count, -1);
 
-        for (uint8_t i = 0; i < count; i++)
+        for (size_t i = 0; i < count; ++i)
         {
-            DigitalEquipementPersistencyValues tempPersistencyValue{.runTime = persistancyValues.data[i].runTime, .startCount = persistancyValues.data[i].startCount};
-
-            // Create via make_unique as mmPumpSwap is taking ownership of thoses object (no need to share thoses objects via pointer)
-            nodes.push_back(std::make_unique<DigitalEquipment>(_executionEnv, tempPersistencyValue));
-
-            // Create unique object via make unique
+            nodes.push_back(std::make_unique<DigitalEquipment>(_executionEnv));
             inputsValues.push_back(std::make_unique<SetPumpValue>());
+            statuses.push_back(
+                std::make_unique<DigitalEquipmentStatus>());
 
-            statuses.push_back(std::make_unique<DigitalEquipmentStatus>(DigitalEquipmentStatus{.runTimeValue = persistancyValues.data[i].runTime, .startCountValue = persistancyValues.data[i].startCount}));
+            if (i < persistancyValues.data.size())
+                applyPersistencyValue(i, persistancyValues.data[i]);
         }
 
-        computeIndexes();
+        computeIndexes(true);
     }
 
     PumpSwap::~PumpSwap()
@@ -71,12 +69,6 @@ namespace MadMax
         return pumpSwapResult;
     }
 
-    /// @brief Function used to EVALUATE the pump swap object,
-    /// @param callbackFunction Callback function used to pass dynamically pumps feedback and fault
-    /// @param logicalValues List of logical values, meaning false or true for run pumps
-    /// @param reevaluation Boolean flag to RE-EVALUATE all priorities without keeping any previous working states
-    /// @param acknowledge Boolean flag to ACKNOWLEDGE any faults
-    /// @return PumpSwapResult object that describe all properties
     PumpSwapResult PumpSwap::Evaluate(std::function<void(std::vector<SetPumpValue *> &)> callbackFunction, std::initializer_list<bool> logicalValues, bool reevaluation, bool acknowledge)
     {
         std::lock_guard<std::mutex> lock(mutex);
@@ -183,8 +175,6 @@ namespace MadMax
         externalAcknowledgeBit = true;
     }
 
-    /// @brief Serialize persistency values into a byte vector
-    /// @param data Output vector that will receive the serialized bytes
     void PumpSwap::GetBytesFromData(std::vector<uint8_t> &data) const
     {
         std::lock_guard<std::mutex> lock(mutex);
@@ -215,12 +205,7 @@ namespace MadMax
 
             memcpy(&value, data.data() + offset, recordSize);
 
-            nodes[i]->SetRuntime(value.runTime);
-            nodes[i]->SetStartCount(value.startCount);
-
-            // Keep the exposed status and persisted values in sync immediately.
-            statuses[i]->runTimeValue = value.runTime;
-            statuses[i]->startCountValue = value.startCount;
+            applyPersistencyValue(i, value);
         }
 
         // Refresh standby priorities while preserving healthy pumps already running.
@@ -229,8 +214,7 @@ namespace MadMax
 #pragma endregion Publics functions
 
 #pragma region Privates functions
-    /// @brief Function that allow to RECOMPUTE pumps orders by their actuals states and their runtimes
-    /// @param recomputeAllFlag Flag that authorize to recompute all working pumps without taking thoses that were running before
+
     void PumpSwap::computeIndexes(bool recomputeAllFlag)
     {
         // Array that keep selection state, all already selected won't be selected more than once
@@ -319,14 +303,20 @@ namespace MadMax
         return enumCapacityState::Insufficient;
     }
 
-    /// @brief Get the persistency values of the object, here we just get all pumps runtimes and start counts and put thoses values in a vector
-    /// @param persistencyValues Object that will receive persistency values
-    /// @return true if we have an error during persistency values retrieval, false otherwise
     void PumpSwap::getPersistencyValues(PumpSwapPersistencyValues &persistencyValues) const
     {
         persistencyValues.data.clear();
         for (uint8_t i = 0; i < count; i++)
             persistencyValues.data.push_back({.runTime = statuses[i]->runTimeValue, .startCount = statuses[i]->startCountValue});
+    }
+
+    void PumpSwap::applyPersistencyValue(size_t index, const PumpSwapPersistencyValue &value)
+    {
+        nodes[index]->SetRuntime(value.runTime);
+        nodes[index]->SetStartCount(value.startCount);
+
+        statuses[index]->runTimeValue = value.runTime;
+        statuses[index]->startCountValue = value.startCount;
     }
 
     void PumpSwap::resetAllStartCounts()

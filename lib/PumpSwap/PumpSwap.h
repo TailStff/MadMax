@@ -83,14 +83,16 @@ namespace MadMax
         // temporary vector used to keep tracing of already selected indexes
         std::vector<bool> selectedIndex;
 
+        PumpSwapResult pumpSwapResult;
+
         // Mutable to has possibility to be written inside const function
         mutable std::mutex mutex;
 
+        /// @brief Function that allow to RECOMPUTE pumps orders by their actuals states and their runtimes
+        /// @param recomputeAllFlag Flag that authorize to recompute all working pumps without taking thoses that were running before
         void computeIndexes(bool recomputeAllFlag = true);
-        enumCapacityState getCapacityState(uint8_t availablePumps, uint8_t requestedPumps);
-        void GetBytesInto(std::vector<uint8_t> &data) const;
 
-        PumpSwapResult pumpSwapResult;
+        enumCapacityState getCapacityState(uint8_t availablePumps, uint8_t requestedPumps);
 
         void resetAllStartCounts();
         void resetAllRuntimes();
@@ -137,8 +139,17 @@ namespace MadMax
         /// @note This function is thread safe, it will lock the mutex before acknowledging all feedback faults
         void TriggerAcknowledge();
 
+        /// @brief Get the persistency values of the object, here we just get all pumps runtimes and start counts and put thoses values in a vector
+        /// @param persistencyValues Object that will receive persistency values
+        /// @return true if we have an error during persistency values retrieval, false otherwise
         void getPersistencyValues(PumpSwapPersistencyValues &persistencyValues) const;
+
+        void applyPersistencyValue(size_t index, const PumpSwapPersistencyValue &value);
+
+        /// @brief Serialize persistency values into a byte vector
+        /// @param data Output vector that will receive the serialized bytes
         void GetBytesFromData(std::vector<uint8_t> &data) const override;
+
         void SetDataFromBytes(std::vector<uint8_t> &data) override;
 
         const ISerializable *AsSerializable() const override { return this; }
