@@ -106,7 +106,7 @@ namespace MadMax
 
             bool synDef = statuses[i]->fault || statuses[i]->feedbackFault;
 
-            if (physicalValues[i] && synDef && !memFaults[i])
+            if (!flagFault && physicalValues[i] && synDef)
                 flagFault = true;
 
             if (!flagRecovery && !synDef && memFaults[i])
