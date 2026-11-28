@@ -106,7 +106,7 @@ namespace MadMax
 
             bool synDef = statuses[i]->fault || statuses[i]->feedbackFault;
 
-            if (!flagFault && physicalValues[i] && synDef && !memFaults[i])
+            if (physicalValues[i] && synDef && !memFaults[i])
                 flagFault = true;
             else if (physicalValues[i])
                 runningPumps++;
