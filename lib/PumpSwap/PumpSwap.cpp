@@ -74,6 +74,12 @@ namespace MadMax
 
         // We compute the number of pumps that are needed for optimal operation
         uint8_t requestedPumps = HelpersVectors::countTrue(logicalValues);
+        uint8_t availablePumps = 0;
+        uint8_t runningPumps = 0;
+
+        // Scheduler part
+        auto dateTime = DateTimeDefinition{.Year = ANY, .Month = ANY, .Day = ANY, .DayOfWeek = ANY, .Hour = ANY, .Minute = ANY, .Second = 0};
+        bool scheduledPermutation = miniScheduler->Evaluate(dateTime);
 
         // Get values from inputsValues and put them in rawInputs to give access to callback function
         rawInputs.clear();
@@ -83,16 +89,16 @@ namespace MadMax
         // Call lambda callback with inputs values
         callbackFunction(rawInputs);
 
-        uint8_t availablePumps = 0;
-        uint8_t runningPumps = 0;
+        // Compute physical values accoring to current indexes priorites array
+        retreivePhysicalValues(logicalValues);
 
         // Flag that indicate that an actually running pump failed
         bool flagFault = false;
 
-        // Flag that indicate that one or more pumps was recovered from fail state
+        // Flag that indicate that one or more pumps was recovered from fail state, it does not take in account if pump was necessary in demand
         bool flagRecovery = false;
 
-        bool flagReevaluation = reevaluation && !memReevaluation;
+        bool manualPermutation = reevaluation && !memReevaluation;
 
         for (uint8_t i = 0; i < count; i++)
         {
@@ -115,16 +121,9 @@ namespace MadMax
             memFaults[i] = synDef;
         }
 
-        // Compute physical values
-        retreivePhysicalValues(logicalValues);
-
-        auto dateTime = DateTimeDefinition{.Year = ANY, .Month = ANY, .Day = ANY, .DayOfWeek = ANY, .Hour = ANY, .Minute = ANY, .Second = 0};
-
-        bool permut = miniScheduler->Evaluate(dateTime);
-
         // We re-compute indexes if running pump is in fault, if a pump recover from fail state or if we have an external request
-        if (flagFault || flagReevaluation || (flagRecovery && runningPumps < requestedPumps) || permut)
-            computeIndexes(permut);
+        if (flagFault || (flagRecovery && runningPumps < requestedPumps) || scheduledPermutation || manualPermutation)
+            computeIndexes(scheduledPermutation || manualPermutation);
 
         enumCapacityState capacityState = getCapacityState(availablePumps, requestedPumps);
 
