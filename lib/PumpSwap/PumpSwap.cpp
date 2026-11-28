@@ -108,15 +108,14 @@ namespace MadMax
 
             if (!flagFault && physicalValues[i] && synDef && !memFaults[i])
                 flagFault = true;
+            else if (physicalValues[i])
+                runningPumps++;
 
             if (!flagRecovery && !synDef && memFaults[i])
                 flagRecovery = true;
 
             if (!synDef)
                 availablePumps++;
-
-            if (physicalValues[i])
-                runningPumps++;
 
             memFaults[i] = synDef;
         }
