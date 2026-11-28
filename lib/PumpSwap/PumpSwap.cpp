@@ -1,5 +1,14 @@
 #include "PumpSwap.h"
 
+inline void setFlagConditionally(bool &flag, bool condition) noexcept
+{
+    if (flag || !condition)
+        return;
+
+    flag = true;
+    return;
+}
+
 namespace MadMax
 {
 #pragma region Publics functions
@@ -108,13 +117,11 @@ namespace MadMax
 
             if (synDef)
             {
-                if (!flagFault && physicalValues[i])
-                    flagFault = true;
+                setFlagConditionally(flagFault, physicalValues[i]);
             }
             else
             {
-                if (!flagRecovery && memFaults[i])
-                    flagRecovery = true;
+                setFlagConditionally(flagRecovery, memFaults[i]);
 
                 if (physicalValues[i])
                     healthyAssignedPumps++;
