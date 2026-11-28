@@ -69,6 +69,7 @@ namespace MadMax
 
         std::unique_ptr<MiniScheduler> miniScheduler;
 
+        /// @brief Pump assignment order for logical demands
         std::vector<int> indexes;
         std::vector<bool> physicalValues;
         std::vector<bool> memFaults;

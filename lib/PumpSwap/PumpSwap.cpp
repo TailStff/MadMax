@@ -75,9 +75,6 @@ namespace MadMax
         // We compute the number of pumps that are needed for optimal operation
         uint8_t requestedPumps = HelpersVectors::countTrue(logicalValues);
 
-        // Compute physical values
-        retreivePhysicalValues(logicalValues);
-
         // Get values from inputsValues and put them in rawInputs to give access to callback function
         rawInputs.clear();
         for (auto &ptr : inputsValues)
@@ -117,6 +114,9 @@ namespace MadMax
 
             memFaults[i] = synDef;
         }
+
+        // Compute physical values
+        retreivePhysicalValues(logicalValues);
 
         auto dateTime = DateTimeDefinition{.Year = ANY, .Month = ANY, .Day = ANY, .DayOfWeek = ANY, .Hour = ANY, .Minute = ANY, .Second = 0};
 
